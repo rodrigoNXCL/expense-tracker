@@ -11,13 +11,10 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  // ✅ Fix para Next.js 16 + Turbopack:
-  // Usamos Webpack para compatibilidad con next-pwa
-  webpack: (config, { isServer }) => {
-    return config
-  },
-  // ✅ Silenciamos el warning de Turbopack explícitamente
-  turbopack: {}
+  webpack: (config, { isServer }) => config,
+  turbopack: {},
+  // ✅ Permitir acceso desde tu red local en desarrollo
+  allowedDevOrigins: ['192.168.176.140', 'localhost']
 }
 
 module.exports = withPWA(nextConfig)
