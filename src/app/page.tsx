@@ -22,7 +22,7 @@ export default function Home() {
 
   const handleOcrExtracted = (result: OcrResult) => {
     setOcrResult(result)
-    const parsed = parseBoletaChilena(result.fullText, result.confidence)
+    const parsed = parseBoletaChilena(result.text, result.confidence)
     setParsedData(parsed)
     setStep('review')
     console.log('Datos parseados:', parsed)
@@ -50,14 +50,16 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-4">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-primary">
-            📸 controlGASTOS_nxCHILE
-          </h1>
-          <p className="text-text-muted text-sm">
-            Registra gastos capturando boletas con tu cámara
-          </p>
-        </div>
+      {/* Header */}
+<div className="text-center space-y-2 mb-6">
+  <div className="text-5xl mb-2">📸</div>
+  <h1 className="text-3xl font-bold text-primary">
+    ExpenseTracker
+  </h1>
+  <p className="text-muted text-sm max-w-xs mx-auto">
+    Registra gastos capturando boletas con tu cámara
+  </p>
+</div>  
 
         {/* Mensajes de estado */}
         {error && (

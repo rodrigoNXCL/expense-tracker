@@ -25,31 +25,76 @@ export default function ExpenseForm({ initialData, onSave, onCancel }: ExpenseFo
   const [categoria, setCategoria] = useState<string>('Combustible')
   const [notas, setNotas] = useState<string>('')
   const [isValid, setIsValid] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-useEffect(() => {
-  const isValidForm = formData.monto > 0 && formData.fecha.length > 0 && categoria.length > 0
-  setIsValid(isValidForm)
-}, [formData, categoria])
+  useEffect(() => {
+    const isValidForm = formData.monto > 0 && formData.fecha.length > 0 && categoria.length > 0
+    setIsValid(isValidForm)
+  }, [formData, categoria])
 
   const handleChange = (field: keyof ParsedExpense, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    if (submitError) setSubmitError(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isValid) return
 
-    const dataToSave = {
-      ...formData,
-      categoria,
-      notas,
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      // 1. Preparar payload para la API
+      const payload = {
+        subdomain: 'nxchile', // TODO: extraer dinámicamente según entorno
+        email: 'admin@nxchile.cl', // TODO: obtener del usuario autenticado
+        fecha: formData.fecha,
+        rut: formData.rut,
+        proveedor: formData.proveedor,
+        monto: formData.monto,
+        categoria,
+        boleta_numero: formData.boletaNumero,
+        giro: formData.giro,
+        notas,
+        ocr_confidence: formData.confidence,
+      }
+
+      // 2. Llamar a la API save-expense
+      const response = await fetch('/api/save-expense', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error al guardar el gasto')
+      }
+
+      // 3. Notificar éxito al componente padre
+      onSave({ ...formData, categoria, notas })
+      
+    } catch (error) {
+      console.error('❌ Error guardando gasto:', error)
+      setSubmitError(error instanceof Error ? error.message : 'Error desconocido')
+    } finally {
+      setIsSubmitting(false)
     }
-    onSave(dataToSave)
   }
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-4 text-left">
       <h3 className="font-semibold text-lg text-center">✏️ Revisar y Editar Datos</h3>
+
+      {/* Mensaje de error de submit */}
+      {submitError && (
+        <div className="bg-error/10 text-error px-4 py-2 rounded-lg text-sm">
+          ⚠️ {submitError}
+        </div>
+      )}
 
       {/* Proveedor */}
       <div>
@@ -60,6 +105,7 @@ useEffect(() => {
           onChange={(e) => handleChange('proveedor', e.target.value)}
           className="input"
           placeholder="Ej: COPEC S.A."
+          disabled={isSubmitting}
         />
       </div>
 
@@ -72,6 +118,7 @@ useEffect(() => {
           onChange={(e) => handleChange('rut', e.target.value)}
           className="input"
           placeholder="Ej: 76258687-8"
+          disabled={isSubmitting}
         />
       </div>
 
@@ -84,6 +131,7 @@ useEffect(() => {
             value={formData.fecha}
             onChange={(e) => handleChange('fecha', e.target.value)}
             className="input"
+            disabled={isSubmitting}
           />
         </div>
         <div>
@@ -99,6 +147,7 @@ useEffect(() => {
             placeholder="Ingresa monto"
             min="0"
             step="1"
+            disabled={isSubmitting}
           />
           {formData.monto === 0 && (
             <p className="text-xs text-warning mt-1">⚠️ Ingresa el monto total</p>
@@ -113,6 +162,7 @@ useEffect(() => {
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
           className="input"
+          disabled={isSubmitting}
         >
           {CATEGORIAS.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
@@ -129,6 +179,7 @@ useEffect(() => {
           onChange={(e) => handleChange('boletaNumero', e.target.value)}
           className="input"
           placeholder="Ej: 5372609"
+          disabled={isSubmitting}
         />
       </div>
 
@@ -141,6 +192,7 @@ useEffect(() => {
           className="input"
           rows={2}
           placeholder="Detalles adicionales..."
+          disabled={isSubmitting}
         />
       </div>
 
@@ -158,15 +210,23 @@ useEffect(() => {
           type="button"
           onClick={onCancel}
           className="flex-1 btn btn-outline"
+          disabled={isSubmitting}
         >
           🗑️ Descartar
         </button>
         <button
           type="submit"
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
           className="flex-1 btn btn-primary disabled:opacity-50"
         >
-          💾 Guardar
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Guardando...
+            </span>
+          ) : (
+            '💾 Guardar'
+          )}
         </button>
       </div>
     </form>

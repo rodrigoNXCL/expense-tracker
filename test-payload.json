@@ -1,0 +1,13 @@
+{
+  "subdomain": "nxchile",
+  "email": "admin@nxchile.cl",
+  "fecha": "2025-01-17",
+  "rut": "76258687-8",
+  "proveedor": "COPEC S.A.",
+  "monto": 19622,
+  "categoria": "Combustible",
+  "boleta_numero": "5372609",
+  "giro": "Estacion de Servicio",
+  "notas": "Test desde API",
+  "ocr_confidence": 59
+}

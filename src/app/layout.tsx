@@ -5,6 +5,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'ExpenseTracker',
   description: 'Registro ágil de gastos con OCR',
+  manifest: '/manifest.json',  // ← Agregar esta línea
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -18,7 +19,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#2563eb'
+  themeColor: '#007AFF'
 }
 
 export default function RootLayout({

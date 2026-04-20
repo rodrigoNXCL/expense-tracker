@@ -1,22 +1,24 @@
 {
-  "name": "ExpenseTracker",
-  "short_name": "Expenses",
-  "description": "Registro ágil de gastos con OCR",
+  "name": "ExpenseTracker NXChile",
+  "short_name": "ExpenseTracker",
+  "description": "Registra gastos capturando boletas con tu cámara",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#2563eb",
+  "background_color": "#F2F2F7",
+  "theme_color": "#007AFF",
   "orientation": "portrait",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
