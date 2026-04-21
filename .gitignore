@@ -40,3 +40,14 @@ public/workbox-*.js
 *.swp
 *.swo
 *~
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Revision/temp files
+*.txt
+revision_*.txt
+
+# Logs
+*.log
