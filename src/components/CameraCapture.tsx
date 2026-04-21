@@ -1,6 +1,5 @@
 'use client'
-
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface CameraCaptureProps {
   onCapture: (imageBlob: Blob) => void
@@ -11,28 +10,29 @@ interface CameraCaptureProps {
 export default function CameraCapture({ onCapture, onPreview, onError }: CameraCaptureProps) {
   const [isCapturing, setIsCapturing] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [capturedFile, setCapturedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-
+    
     if (!file.type.startsWith('image/')) {
       onError?.('Por favor selecciona una imagen válida')
       return
     }
-
+    
     setIsCapturing(true)
-
+    
     const url = URL.createObjectURL(file)
     setPreviewUrl(url)
+    setCapturedFile(file)
     onPreview?.(url)
-
-    onCapture(file)
     
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+    
     setIsCapturing(false)
   }
 
@@ -44,13 +44,20 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
+      setCapturedFile(null)
     }
     triggerCamera()
   }
 
-  useState(() => () => {
+  const confirmPhoto = () => {
+    if (capturedFile) {
+      onCapture(capturedFile)
+    }
+  }
+
+  useEffect(() => () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl)
-  })
+  }, [previewUrl])
 
   return (
     <div className="space-y-4">
@@ -64,13 +71,12 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
         aria-label="Capturar imagen con cámara"
       />
 
-      {/* Preview de imagen capturada */}
       {previewUrl && (
         <div className="card p-3 space-y-3">
           <div className="relative rounded-lg overflow-hidden bg-gray-100 aspect-video flex items-center justify-center">
-            <img 
-              src={previewUrl} 
-              alt="Vista previa" 
+            <img
+              src={previewUrl}
+              alt="Vista previa"
               className="max-h-48 object-contain"
             />
           </div>
@@ -85,7 +91,7 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
             </button>
             <button
               type="button"
-              onClick={() => onCapture(previewUrlToBlob(previewUrl))}
+              onClick={confirmPhoto}
               className="flex-1 btn btn-primary text-sm py-2"
             >
               ✅ Confirmar
@@ -94,7 +100,6 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
         </div>
       )}
 
-      {/* Botón principal (solo si no hay preview) */}
       {!previewUrl && (
         <button
           type="button"
@@ -116,7 +121,6 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
         </button>
       )}
 
-      {/* Tips de calidad de foto */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
         <p className="text-xs font-semibold text-blue-800">💡 Tips para mejor OCR:</p>
         <ul className="text-xs text-blue-700 space-y-1 text-left">
@@ -132,8 +136,4 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
       </p>
     </div>
   )
-}
-
-function previewUrlToBlob(url: string): Blob {
-  return new Blob()
 }

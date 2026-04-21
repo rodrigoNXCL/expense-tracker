@@ -12,86 +12,99 @@ export interface ParsedExpense {
 }
 
 export function parseBoletaChilena(ocrText: string, confidence: number): ParsedExpense {
-  const lines = ocrText.split('\n').map(l => l.trim()).filter(l => l.length > 0)
-  const fullText = ocrText
+  // Normalizar texto: unificar saltos de línea y espacios
+  const normalized = ocrText
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{2,}/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .trim()
   
-  // Fecha: DD-MM-YYYY o YYYY-MM-DD
-  const fechaPattern = /(?:Fecha|Fcha|Emision)[:\s]*(\d{2}[-/]\d{2}[-/]\d{4}|\d{4}[-/]\d{2}[-/]\d{2})/i
-  const fechaMatch = fullText.match(fechaPattern)
-  const fecha = fechaMatch ? normalizeFecha(fechaMatch[1]) : new Date().toISOString().split('T')[0]
+  const lines = normalized.split('\n').map(l => l.trim()).filter(l => l.length > 0)
+  const fullText = normalized.toUpperCase()
 
-  // RUT: X.XXX.XXX-X o XXXXXXXX-X
-  const rutPattern = /RUT[:\s]*(\d{1,2}\.?\d{3}\.?\d{3}[-\s]?\d{Kk0-9}|\d{7,8}[-\s]?\d{Kk0-9})/i
-  const rutMatch = fullText.match(rutPattern)
-  const rut = rutMatch ? normalizeRut(rutMatch[1]) : ''
+  // ===== 1. FECHA =====
+  let fecha = new Date().toISOString().split('T')[0]
+  const fechaPatterns = [
+    /(?:FECHA|EMISION|EMISIÓN)[:\s\n]*(\d{2}[-/]\d{2}[-/]\d{4})/i,
+    /(\d{2}[-/]\d{2}[-/]\d{4})/,
+  ]
+  for (const pattern of fechaPatterns) {
+    const match = fullText.match(pattern)
+    if (match) {
+      fecha = normalizeFecha(match[1])
+      break
+    }
+  }
 
-  // Proveedor/Razón Social
-  const proveedorPattern = /(?:R\.?\s*Social|Razon)[:\s]*([A-Z\s\.&Y]+(?:LTDA|LDA|SA|SPA|S\.A\.|Y CIA)?)/i
-  const proveedorMatch = fullText.match(proveedorPattern)
-  const proveedor = proveedorMatch ? proveedorMatch[1].trim() : extractProveedorFromHeader(lines)
+  // ===== 2. RUT =====
+  let rut = ''
+  const rutPatterns = [
+    /RUT[:\s\n]*(\d{1,2}\.?\d{3}\.?\d{3}[-\s]?[\dKk])/,
+    /(\d{1,2}\.?\d{3}\.?\d{3}[-\s]?[\dKk])/,
+  ]
+  for (const pattern of rutPatterns) {
+    const match = fullText.match(pattern)
+    if (match) {
+      rut = normalizeRut(match[1])
+      break
+    }
+  }
 
-  // Monto total (SUBTOTAL o TOTAL)
-  const montoPattern = /(?:SUBTOTAL|TOTAL|Total)[\s:]*\$?\s*([\d\.]+,\d{2}|\d{1,3}(?:\.\d{3})*(?:,\d{2})?)/i
-  const montoMatch = fullText.match(montoPattern)
-  const monto = montoMatch ? parseMontoChileno(montoMatch[1]) : 0
+  // ===== 3. PROVEEDOR =====
+  let proveedor = 'Proveedor no detectado'
+  // Buscar primeras líneas que parezcan nombre (ignorar keywords)
+  for (const line of lines.slice(0, 10)) {
+    const upper = line.toUpperCase()
+    if (line.length > 5 && line.length < 50 &&
+        !upper.includes('RUT') && !upper.includes('FECHA') &&
+        !upper.includes('TOTAL') && !upper.includes('BOLETA') &&
+        !upper.includes('SII') && !/^\d+$/.test(line.replace(/[.\-\s]/g, ''))) {
+      proveedor = line
+      break
+    }
+  }
 
-  // Giro
-  const giroPattern = /Giro[:\s]*([A-Z\s\.]+(?:DE SERVICIO|COMERCIO|VENTAS)?)/i
-  const giroMatch = fullText.match(giroPattern)
+  // ===== 4. MONTO =====
+  let monto = 0
+  const montoPatterns = [
+    /TOTAL[:\s\n]*\$?\s*([\d\.]+,\d{2})/,
+    /([\d\.]+,\d{2})\s*$/, // Número al final de línea
+  ]
+  for (const pattern of montoPatterns) {
+    const match = fullText.match(pattern)
+    if (match) {
+      monto = parseMontoChileno(match[1])
+      if (monto > 0) break
+    }
+  }
+  // Fallback: número más grande razonable
+  if (monto === 0) {
+    const numbers = fullText.match(/\d{1,3}(?:\.\d{3})*(?:,\d{2})?/g)
+    if (numbers) {
+      const amounts = numbers.map(n => parseMontoChileno(n)).filter(n => n > 100 && n < 10000000)
+      if (amounts.length > 0) monto = Math.max(...amounts)
+    }
+  }
+
+  // ===== 5. GIRO y BOLETA =====
+  const giroMatch = fullText.match(/GIRO[:\s\n]*([A-Z\s\.]+)/i)
   const giro = giroMatch ? giroMatch[1].trim() : ''
 
-  // Número de boleta
-  const boletaPattern = /Boleta(?:\s*Electronica)?[:\s]*(\d{6,10})/i
-  const boletaMatch = fullText.match(boletaPattern)
+  const boletaMatch = fullText.match(/(?:BOLETA|N°|NO)\s*[:\.\s]*(\d{6,10})/i)
   const boletaNumero = boletaMatch ? boletaMatch[1] : ''
 
-  const result = {
-    fecha,
-    rut,
-    proveedor,
-    monto,
-    giro,
-    boletaNumero,
-    rawText: fullText,
-    confidence,
-  }
+  console.log('✅ Parseado:', { proveedor, rut, monto, fecha, boletaNumero })
 
-  // Warning si el monto es 0 o confianza es baja
-  if (monto === 0 && confidence < 70) {
-    console.warn('⚠️ OCR de baja calidad: monto=0, confianza=' + confidence + '%')
-    console.warn('Recomendación: Usar zoom 2x y mejor iluminación')
-  }
-
-  return result
+  return { fecha, rut, proveedor, monto, giro, boletaNumero, rawText: ocrText, confidence }
 }
 
 // ===== HELPERS =====
-
-function normalizeFecha(fechaStr: string): string {
-  const parts = fechaStr.split(/[-/]/)
-  if (parts.length === 3) {
-    if (parts[0].length === 4) {
-      return fechaStr
-    }
-    return `${parts[2]}-${parts[1]}-${parts[0]}`
-  }
-  return new Date().toISOString().split('T')[0]
+function normalizeFecha(f: string): string {
+  const p = f.split(/[-/]/)
+  return p.length === 3 ? (p[0].length === 4 ? f : `${p[2]}-${p[1]}-${p[0]}`) : new Date().toISOString().split('T')[0]
 }
-
-function normalizeRut(rutStr: string): string {
-  return rutStr.replace(/\./g, '').replace(/\s/g, '').toUpperCase()
-}
-
-function parseMontoChileno(montoStr: string): number {
-  const cleaned = montoStr.replace(/\./g, '').replace(',', '.')
-  const num = parseFloat(cleaned)
-  return isNaN(num) ? 0 : num
-}
-
-function extractProveedorFromHeader(lines: string[]): string {
-  const header = lines[0]
-  if (header && header.length < 30 && /^[A-Z\s\.]+$/.test(header)) {
-    return header
-  }
-  return 'Proveedor no detectado'
+function normalizeRut(r: string): string { return r.replace(/\./g, '').replace(/\s/g, '').toUpperCase() }
+function parseMontoChileno(m: string): number {
+  const n = parseFloat(m.replace(/\./g, '').replace(',', '.'))
+  return isNaN(n) ? 0 : n
 }

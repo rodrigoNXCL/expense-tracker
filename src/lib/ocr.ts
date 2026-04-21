@@ -1,4 +1,4 @@
-import Tesseract from 'tesseract.js'
+import { google } from 'googleapis'
 
 export interface OcrResult {
   text: string
@@ -10,49 +10,80 @@ export async function extractTextFromImage(
   onProgress?: (progress: number) => void
 ): Promise<OcrResult> {
   try {
-    // 1. Validar blob
-    if (!imageBlob || imageBlob.size === 0) {
-      throw new Error('Imagen inválida o vacía')
-    }
+    console.log('🚀 Enviando imagen a API OCR...')
+    onProgress?.(20)
 
-    // 2. Validar tamaño (máximo 5MB)
-    if (imageBlob.size > 5 * 1024 * 1024) {
-      throw new Error('Imagen demasiado grande. Máximo 5MB.')
-    }
+    // 1. Crear FormData
+    const formData = new FormData()
+    formData.append('file', imageBlob, 'receipt.jpg')
 
-    // 3. Validar tipo
-    if (imageBlob.type && !imageBlob.type.startsWith('image/')) {
-      throw new Error('El archivo no es una imagen válida')
-    }
+    onProgress?.(40)
 
-    // 4. Ejecutar OCR
-    const result = await Tesseract.recognize(imageBlob, 'spa', {
-      logger: (m) => {
-        if (m.status === 'recognizing text') {
-          const progress = Math.round(m.progress * 100)
-          console.log(` OCR Progreso: ${progress}%`)
-          onProgress?.(progress)
-        }
-      },
+    // 2. Llamar a la API Route
+    const response = await fetch('/api/ocr', {
+      method: 'POST',
+      body: formData,
     })
 
-    // 5. Validar resultado
-    if (!result.data || !result.data.text) {
-      throw new Error('No se pudo leer texto de la imagen')
+    onProgress?.(80)
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Error en OCR')
     }
 
-    const text = result.data.text.trim()
-    const confidence = result.data.confidence
+    const result = await response.json()
 
-    console.log(`✅ OCR Completado - Confianza: ${confidence.toFixed(0)}%`)
-    console.log(`📄 Texto extraído (${text.length} caracteres)`)
+    onProgress?.(100)
+
+    console.log(`✅ OCR: ${result.confidence.toFixed(0)}% confianza`)
+    console.log(`📄 Texto:`, result.text.substring(0, 300))
 
     return {
-      text,
-      confidence,
+      text: result.text,
+      confidence: result.confidence,
     }
   } catch (error) {
-    console.error('❌ Error en OCR:', error instanceof Error ? error.message : error)
+    console.error('❌ Error OCR:', error instanceof Error ? error.message : error)
     throw error
   }
+}
+
+// Convertir Blob a base64
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
+// Calcular confianza desde bloques de texto
+function calculateConfidenceFromBlocks(blocks: any[] | undefined): number {
+  if (!blocks || blocks.length === 0) return 0
+
+  let totalConfidence = 0
+  let blockCount = 0
+
+  for (const block of blocks) {
+    if (block.blockType === 'TEXT' && block.paragraphs) {
+      for (const paragraph of block.paragraphs) {
+        if (paragraph.words) {
+          for (const word of paragraph.words) {
+            if (word.symbols) {
+              for (const symbol of word.symbols) {
+                if (symbol.confidence) {
+                  totalConfidence += symbol.confidence
+                  blockCount++
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return blockCount > 0 ? (totalConfidence / blockCount) * 100 : 85
 }

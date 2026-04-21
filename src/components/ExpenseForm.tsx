@@ -1,7 +1,7 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { ParsedExpense } from '@/lib/parser'
+import { getSession } from '@/lib/auth'
 
 interface ExpenseFormProps {
   initialData: ParsedExpense
@@ -39,57 +39,27 @@ export default function ExpenseForm({ initialData, onSave, onCancel }: ExpenseFo
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!isValid) return
-
-    setIsSubmitting(true)
-    setSubmitError(null)
-
-    try {
-      // 1. Preparar payload para la API
-      const payload = {
-        subdomain: 'nxchile', // TODO: extraer dinámicamente según entorno
-        email: 'admin@nxchile.cl', // TODO: obtener del usuario autenticado
-        fecha: formData.fecha,
-        rut: formData.rut,
-        proveedor: formData.proveedor,
-        monto: formData.monto,
-        categoria,
-        boleta_numero: formData.boletaNumero,
-        giro: formData.giro,
-        notas,
-        ocr_confidence: formData.confidence,
-      }
-
-      // 2. Llamar a la API save-expense
-      const response = await fetch('/api/save-expense', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Error al guardar el gasto')
-      }
-
-      // 3. Notificar éxito al componente padre
-      onSave({ ...formData, categoria, notas })
-      
-    } catch (error) {
-      console.error('❌ Error guardando gasto:', error)
-      setSubmitError(error instanceof Error ? error.message : 'Error desconocido')
-    } finally {
-      setIsSubmitting(false)
-    }
+  e.preventDefault()
+  if (!isValid) return
+  
+  setIsSubmitting(true)
+  setSubmitError(null)
+  
+  try {
+    // ✅ Solo llamar al padre, NO guardar aquí
+    onSave({ ...formData, categoria, notas })
+  } catch (error) {
+    console.error('❌ Error:', error)
+    setSubmitError(error instanceof Error ? error.message : 'Error desconocido')
+  } finally {
+    setIsSubmitting(false)
   }
+}
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-4 text-left">
       <h3 className="font-semibold text-lg text-center">✏️ Revisar y Editar Datos</h3>
-
-      {/* Mensaje de error de submit */}
+      
       {submitError && (
         <div className="bg-error/10 text-error px-4 py-2 rounded-lg text-sm">
           ⚠️ {submitError}
@@ -122,7 +92,7 @@ export default function ExpenseForm({ initialData, onSave, onCancel }: ExpenseFo
         />
       </div>
 
-      {/* Fecha y Monto en una fila */}
+      {/* Fecha y Monto */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1">Fecha</label>
@@ -204,7 +174,7 @@ export default function ExpenseForm({ initialData, onSave, onCancel }: ExpenseFo
         )}
       </div>
 
-      {/* Botones de acción */}
+      {/* Botones */}
       <div className="flex gap-2 pt-2">
         <button
           type="button"

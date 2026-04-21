@@ -1,0 +1,659 @@
+===== Save-Expense route.ts =====
+import { NextRequest, NextResponse } from 'next/server'
+import { google } from 'googleapis'
+import { uploadReceiptImage } from '@/lib/storage'
+
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Parsear FormData (imagen + datos)
+    const formData = await request.formData()
+    const imageFile = formData.get('image') as File
+    const dataString = formData.get('data') as string
+    const expenseData = JSON.parse(dataString)
+
+    const {
+      fecha, rut, proveedor, monto, categoria,
+      boleta_numero, giro, notas, ocr_confidence,
+      userEmail, userEmpresa, userPlan, userLimite, userUsadas, userRol, userSheetId
+    } = expenseData
+
+    // 2. Validar campos requeridos
+    const requiredFields = ['fecha', 'monto', 'proveedor', 'categoria', 'userEmail', 'userSheetId']
+    const missingFields = requiredFields.filter(field => !expenseData[field])
+    
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        { error: 'Campos requeridos faltantes', missing: missingFields },
+        { status: 400 }
+      )
+    }
+
+    // 3. Validar monto positivo
+    if (typeof monto !== 'number' || monto <= 0) {
+      return NextResponse.json(
+        { error: 'El monto debe ser un número positivo' },
+        { status: 400 }
+      )
+    }
+
+    // 4. Validar límite de boletas
+    const boletasUsadas = Number(userUsadas) || 0
+    const limiteBoletas = Number(userLimite) || 100
+    
+    if (boletasUsadas >= limiteBoletas) {
+      return NextResponse.json(
+        {
+          error: `Límite de boletas alcanzado (${boletasUsadas}/${limiteBoletas}). Contacta para ampliar tu plan.`,
+          boletas_usadas: boletasUsadas,
+          limite_boletas: limiteBoletas,
+        },
+        { status: 403 }
+      )
+    }
+
+    // 5. Subir imagen a Supabase (si existe)
+    let imageUrl = null
+    if (imageFile && imageFile.size > 0) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      imageUrl = await uploadReceiptImage(imageFile, userEmail, timestamp)
+    }
+
+    // 6. Conectar a Google Sheets
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    })
+
+    const sheets = google.sheets({ version: 'v4', auth })
+    const spreadsheetId = userSheetId
+
+    if (!spreadsheetId) {
+      throw new Error('Usuario no tiene sheet asociado')
+    }
+
+    // 7. Preparar fila (AHORA CON image_url en columna L)
+    const timestamp = new Date().toISOString()
+    const row = [
+      timestamp,                    // A: timestamp
+      fecha,                        // B: fecha
+      rut || '',                    // C: rut
+      proveedor,                    // D: proveedor
+      monto,                        // E: monto
+      categoria || '',              // F: categoria
+      boleta_numero || '',          // G: boleta_numero
+      giro || '',                   // H: giro
+      notas || '',                  // I: notas
+      ocr_confidence || 0,          // J: ocr_confidence
+      imageUrl || '',               // K: image_url (NUEVA!)
+      userEmail,                    // L: creado_por
+    ]
+
+    // 8. Escribir en hoja "Gastos"
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: 'Gastos!A:L',  // Actualizado a 12 columnas
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [row],
+      },
+    })
+
+    // 9. Incrementar contador
+    const configSheetId = process.env.GOOGLE_CONFIG_SHEET_ID
+    
+    if (configSheetId) {
+      const usersResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId: configSheetId,
+        range: 'Usuarios!A2:J100',
+      })
+
+      const rows = usersResponse.data.values || []
+      const userIndex = rows.findIndex(row => row[0]?.toLowerCase() === userEmail.toLowerCase())
+      
+      if (userIndex >= 0) {
+        const newCount = boletasUsadas + 1
+        
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: configSheetId,
+          range: `Usuarios!F${userIndex + 2}`,
+          valueInputOption: 'RAW',
+          requestBody: {
+            values: [[newCount]],
+          },
+        })
+      }
+    }
+
+    console.log(`✅ Gasto guardado: ${userEmail} - $${monto}`)
+
+    return NextResponse.json({
+      success: true,
+      message: 'Gasto guardado exitosamente',
+      boletas_usadas: boletasUsadas + 1,
+      limite_boletas: limiteBoletas,
+      imageUrl: imageUrl,
+    })
+  } catch (error) {
+    console.error('❌ Error en save-expense:', error instanceof Error ? error.message : error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+===== Expenses route.ts =====
+import { NextRequest, NextResponse } from 'next/server'
+import { google } from 'googleapis'
+
+export async function GET(request: NextRequest) {
+  try {
+    // 1. Obtener sesión desde headers (NO desde localStorage)
+    const sessionHeader = request.headers.get('x-session')
+    
+    if (!sessionHeader) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+    }
+
+    let session
+    try {
+      session = JSON.parse(sessionHeader)
+    } catch {
+      return NextResponse.json({ error: 'Sesión inválida' }, { status: 401 })
+    }
+
+    // 2. Conectar a Google Sheets
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    })
+
+    const sheets = google.sheets({ version: 'v4', auth })
+    
+    // 3. Usar el sheet_id_asociado de la sesión
+    const spreadsheetId = session.sheet_id_asociado
+    
+    if (!spreadsheetId) {
+      throw new Error('Usuario no tiene sheet asociado')
+    }
+
+    // 4. Leer todos los gastos
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'Gastos!A2:L',
+    })
+
+    const rows = response.data.values || []
+    
+    // 5. Convertir a objetos
+    const expenses = rows.map(row => ({
+      timestamp: row[0] || '',
+      fecha: row[1] || '',
+      rut: row[2] || '',
+      proveedor: row[3] || '',
+      monto: parseFloat(row[4]) || 0,
+      categoria: row[5] || '',
+      boleta_numero: row[6] || '',
+      giro: row[7] || '',
+      notas: row[8] || '',
+      ocr_confidence: parseFloat(row[9]) || 0,
+      image_url: row[10] || '',      // NUEVO!
+      creado_por: row[11] || '',
+    }))
+
+    // 6. FILTRAR SEGÚN ROL
+    let filteredExpenses = expenses
+    if (session.rol === 'admin') {
+      // Admin ve TODOS los gastos de su empresa
+      filteredExpenses = expenses
+    } else {
+      // User normal solo ve SUS gastos
+      filteredExpenses = expenses.filter(exp => exp.creado_por === session.email)
+    }
+
+    // 7. Ordenar por fecha (más reciente primero)
+    filteredExpenses.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
+    return NextResponse.json({
+      expenses: filteredExpenses,
+      total: filteredExpenses.length,
+      total_monto: filteredExpenses.reduce((sum, exp) => sum + exp.monto, 0),
+    })
+  } catch (error) {
+    console.error('❌ Error obteniendo gastos:', error instanceof Error ? error.message : error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+===== Export route.ts =====
+import { NextRequest, NextResponse } from 'next/server'
+import { google } from 'googleapis'
+
+export async function GET(request: NextRequest) {
+  try {
+    // 1. Obtener sesión desde headers
+    const sessionHeader = request.headers.get('x-session')
+    
+    if (!sessionHeader) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+    }
+
+    let session
+    try {
+      session = JSON.parse(sessionHeader)
+    } catch {
+      return NextResponse.json({ error: 'Sesión inválida' }, { status: 401 })
+    }
+
+    // 2. Conectar a Google Sheets
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    })
+
+    const sheets = google.sheets({ version: 'v4', auth })
+    const spreadsheetId = session.sheet_id_asociado
+
+    if (!spreadsheetId) {
+      throw new Error('Usuario no tiene sheet asociado')
+    }
+
+    // 3. Leer gastos
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'Gastos!A2:L',
+    })
+
+    const rows = response.data.values || []
+    
+    // 4. Convertir a objetos
+    let expenses = rows.map(row => ({
+      timestamp: row[0] || '',
+      fecha: row[1] || '',
+      rut: row[2] || '',
+      proveedor: row[3] || '',
+      monto: parseFloat(row[4]) || 0,
+      categoria: row[5] || '',
+      boleta_numero: row[6] || '',
+      giro: row[7] || '',
+      notas: row[8] || '',
+      ocr_confidence: parseFloat(row[9]) || 0,
+      image_url: row[10] || '',      // NUEVO!
+      creado_por: row[11] || '',
+    }))
+
+    // 5. Filtrar según rol
+    if (session.rol !== 'admin') {
+      expenses = expenses.filter(exp => exp.creado_por === session.email)
+    }
+
+    // 6. Generar CSV
+    const headers = ['Fecha', 'RUT', 'Proveedor', 'Monto', 'Categoría', 'N° Boleta', 'Giro', 'Notas', 'URL Imagen', 'Creado Por']
+    const csvRows = [headers.join(',')]
+
+    for (const exp of expenses) {
+      csvRows.push([
+        exp.fecha,
+        exp.rut,
+        `"${exp.proveedor.replace(/"/g, '""')}"`,
+        exp.monto,
+        exp.categoria,
+        exp.boleta_numero,
+        `"${exp.giro.replace(/"/g, '""')}"`,
+        `"${exp.notas.replace(/"/g, '""')}"`,
+        exp.creado_por,
+      ].join(','))
+    }
+
+    const csvContent = csvRows.join('\n')
+
+    // 7. Retornar como archivo descargable
+    return new NextResponse(csvContent, {
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="gastos_${session.empresa_nombre}_${new Date().toISOString().split('T')[0]}.csv"`,
+      },
+    })
+  } catch (error) {
+    console.error('❌ Error exportando:', error instanceof Error ? error.message : error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+===== Storage.ts =====
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+export const supabase = createClient(supabaseUrl, supabaseKey)
+
+/**
+ * Subir imagen de boleta a Supabase Storage
+ * @param imageBlob - La imagen capturada
+ * @param userEmail - Email del usuario (para organizar carpetas)
+ * @param timestamp - Timestamp único para el nombre del archivo
+ * @returns URL pública de la imagen o null si falla
+ */
+export async function uploadReceiptImage(
+  imageBlob: Blob,
+  userEmail: string,
+  timestamp: string
+): Promise<string | null> {
+  try {
+    // Sanitizar email para usarlo en la ruta
+    const safeEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_')
+    const fileName = `${safeEmail}/${timestamp}.jpg`
+
+    // Subir al bucket "receipts"
+    const { data, error } = await supabase.storage
+      .from('receipts')
+      .upload(fileName, imageBlob, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: 'image/jpeg',
+      })
+
+    if (error) {
+      console.error('❌ Error subiendo imagen:', error.message)
+      return null
+    }
+
+    // Obtener URL pública
+    const { data: urlData } = supabase.storage
+      .from('receipts')
+      .getPublicUrl(fileName)
+
+    console.log(`✅ Imagen subida: ${urlData.publicUrl}`)
+    return urlData.publicUrl
+  } catch (error) {
+    console.error('❌ Error en uploadReceiptImage:', error)
+    return null
+  }
+}
+
+/**
+ * Eliminar imagen de boleta
+ * @param imageUrl - URL completa de la imagen
+ */
+export async function deleteReceiptImage(imageUrl: string): Promise<void> {
+  try {
+    // Extraer el path de la URL
+    const urlParts = imageUrl.split('/receipts/')
+    if (urlParts.length < 2) return
+
+    const path = urlParts[1]
+
+    await supabase.storage.from('receipts').remove([path])
+    console.log(`✅ Imagen eliminada: ${path}`)
+  } catch (error) {
+    console.error('❌ Error eliminando imagen:', error)
+  }
+}
+===== Page.tsx =====
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import CameraCapture from '@/components/CameraCapture'
+import OcrProcessor from '@/components/OcrProcessor'
+import ExpenseForm from '@/components/ExpenseForm'
+import { OcrResult } from '@/lib/ocr'
+import { ParsedExpense } from '@/lib/parser'
+import { getSession, logout, saveSession } from '@/lib/auth'  // ← saveSession agregado
+
+export default function Home() {
+  const router = useRouter()
+  const [step, setStep] = useState<'capture' | 'review' | 'saved'>('capture')
+  const [capturedImage, setCapturedImage] = useState<Blob | null>(null)
+  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null)
+  const [parsedData, setParsedData] = useState<ParsedExpense | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // 🔐 Verificar autenticación al montar
+  useEffect(() => {
+    const session = getSession()
+    
+    if (!session || !session.activo) {
+      router.replace('/login')
+    } else {
+      setIsCheckingAuth(false)
+    }
+  }, [router])
+
+  // Mostrar loading mientras verifica auth
+  if (isCheckingAuth) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-4">
+        <div className="card text-center space-y-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-muted">Verificando sesión...</p>
+        </div>
+      </main>
+    )
+  }
+
+  const handleImageCapture = (imageBlob: Blob) => {
+    console.log('📸 Imagen capturada:', { size: imageBlob.size, type: imageBlob.type })
+    setCapturedImage(imageBlob)
+    setError(null)
+    setStep('capture')
+  }
+
+  const handleOcrExtracted = (result: OcrResult) => {
+    setOcrResult(result)
+    const parsed = parseBoletaChilena(result.text, result.confidence)
+    setParsedData(parsed)
+    setStep('review')
+    console.log('Datos parseados:', parsed)
+  }
+
+  const handleError = (errorMessage: string) => {
+    setError(errorMessage)
+    console.error('Error:', errorMessage)
+  }
+
+  const handleSaveExpense = async (data: ParsedExpense) => {
+  setIsSubmitting(true)
+  setError(null)
+  
+  const session = getSession()
+  if (!session) {
+    setError('No hay sesión activa')
+    setIsSubmitting(false)
+    return
+  }
+
+  try {
+    // Crear FormData para enviar imagen + datos
+    const formData = new FormData()
+    
+    // Agregar imagen capturada
+    if (capturedImage) {
+      formData.append('image', capturedImage, 'receipt.jpg')
+    }
+    
+    // Agregar datos del gasto como JSON string
+    formData.append('data', JSON.stringify({
+      fecha: data.fecha,
+      rut: data.rut,
+      proveedor: data.proveedor,
+      monto: data.monto,
+      categoria: data.categoria,
+      boleta_numero: data.boletaNumero,
+      giro: data.giro,
+      notas: data.notas,
+      ocr_confidence: data.confidence,
+      
+      // Datos del usuario
+      userEmail: session.email,
+      userEmpresa: session.empresa_nombre,
+      userPlan: session.plan,
+      userLimite: session.limite_boletas,
+      userUsadas: session.boletas_usadas,
+      userRol: session.rol,
+      userSheetId: session.sheet_id_asociado,
+    }))
+
+    const response = await fetch('/api/save-expense', {
+      method: 'POST',
+      body: formData,  // FormData en vez de JSON
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Error al guardar el gasto')
+    }
+
+    console.log('✅ Gasto guardado:', result)
+    
+    // Actualizar sesión
+    const updatedSession = {
+      ...session,
+      boletas_usadas: result.boletas_usadas,
+    }
+    saveSession(updatedSession)
+    
+    setStep('saved')
+  } catch (err) {
+    console.error('❌ Error:', err)
+    setError(err instanceof Error ? err.message : 'Error al guardar')
+  } finally {
+    setIsSubmitting(false)
+  }
+}
+
+  const handleReset = () => {
+    setCapturedImage(null)
+    setOcrResult(null)
+    setParsedData(null)
+    setError(null)
+    setStep('capture')
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.replace('/login')
+  }
+
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-sm space-y-4">
+        
+        {/* Header con usuario y logout */}
+        <div className="text-center space-y-2 mb-4">
+          <div className="flex items-center justify-between">
+            <button 
+              onClick={handleLogout}
+              className="text-xs text-primary hover:underline"
+            >
+              🔐 Cerrar sesión
+            </button>
+            <span className="text-xs text-muted">
+              v0.5.0 • NXChile
+            </span>
+          </div>
+          <div className="text-5xl mb-2">📸</div>
+          <h1 className="text-3xl font-bold text-primary">ExpenseTracker</h1>
+          <p className="text-muted text-sm max-w-xs mx-auto">
+            Registra gastos capturando boletas con tu cámara
+          </p>
+        </div>
+
+        {/* Mensajes de estado */}
+        {error && (
+          <div className="bg-error/10 text-error px-4 py-2 rounded-lg text-sm">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {parsedData && parsedData.monto === 0 && (
+          <div className="bg-warning/10 text-warning px-4 py-2 rounded-lg text-sm">
+            ⚠️ <strong>Atención:</strong> El monto no fue detectado automáticamente. 
+            Por favor ingrésalo manualmente en el formulario.
+          </div>
+        )}
+
+        {ocrResult && ocrResult.confidence < 60 && (
+          <div className="bg-warning/10 text-warning px-4 py-2 rounded-lg text-sm">
+            ⚠️ OCR con baja confianza ({ocrResult.confidence.toFixed(0)}%). 
+            Revisa bien los datos antes de guardar.
+          </div>
+        )}
+
+        {/* Paso 1: Captura */}
+        {step === 'capture' && (
+          <CameraCapture 
+            onCapture={handleImageCapture}
+            onError={handleError}
+          />
+        )}
+
+        {/* Paso 2: Procesamiento OCR (invisible) */}
+        {capturedImage && !ocrResult && (
+          <OcrProcessor
+            imageBlob={capturedImage}
+            onExtracted={handleOcrExtracted}
+            onError={handleError}
+          />
+        )}
+
+        {/* Paso 3: Formulario de revisión */}
+        {step === 'review' && parsedData && (
+          <ExpenseForm
+            initialData={parsedData}
+            onSave={handleSaveExpense}
+            onCancel={handleReset}
+          />
+        )}
+
+        {/* Paso 4: Confirmación de guardado */}
+        {step === 'saved' && (
+          <div className="card text-center space-y-4">
+            <div className="text-5xl">✅</div>
+            <h3 className="text-xl font-semibold text-success">¡Gasto Guardado!</h3>
+            <p className="text-text-muted">
+              Los datos fueron guardados en Google Sheets.
+            </p>
+            <button onClick={handleReset} className="w-full btn btn-primary">
+              📷 Nuevo Gasto
+            </button>
+          </div>
+        )}
+
+        {/* Botón Historial (siempre visible) */}
+        {step !== 'review' && (
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="w-full btn btn-outline"
+          >
+            📋 Ver Historial
+          </button>
+        )}
+
+        {/* Footer */}
+        <p className="text-center text-xs text-text-muted">
+          v0.5.0 • NXChile
+        </p>
+      </div>
+    </main>
+  )
+}
+
+// Import necesario para parseBoletaChilena
+import { parseBoletaChilena } from '@/lib/parser'
