@@ -10,7 +10,6 @@ function hashPassword(password: string): string {
 export async function POST(request: NextRequest) {
   try {
     console.log('🔐 API Auth: Intentando login...')
-
     const { email, password } = await request.json()
 
     if (!email || !password) {
@@ -47,11 +46,10 @@ export async function POST(request: NextRequest) {
     // Leer hoja "Usuarios" en Config Maestro
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Usuarios!A2:J100', // Headers en fila 1, datos desde fila 2
+      range: 'Usuarios!A2:J100',
     })
 
     const rows = response.data.values
-
     if (!rows || rows.length === 0) {
       return NextResponse.json(
         { error: 'No hay usuarios registrados' },
@@ -61,11 +59,9 @@ export async function POST(request: NextRequest) {
 
     // Buscar usuario por email
     const passwordHash = hashPassword(password)
-    
     const userRow = rows.find(row => {
       const [rowEmail, rowPassword] = row
-      const emailMatch = rowEmail?.toLowerCase() === email.toLowerCase()
-      // Soporta hash o texto plano (para migración)
+      const emailMatch = rowEmail?.toLowerCase().trim() === email.toLowerCase().trim()
       const passwordMatch = rowPassword === passwordHash || rowPassword === password
       return emailMatch && passwordMatch
     })
@@ -91,42 +87,42 @@ export async function POST(request: NextRequest) {
       sheet_id_asociado,
     ] = userRow
 
-    // Verificar si está activo (comparación flexible)
-const activoStr = String(activo).toLowerCase().trim()
-const isActive = 
-  activo === true || 
-  activo === 'true' || 
-  activo === 'TRUE' ||
-  activo === 1 || 
-  activo === '1' ||
-  activoStr === 'true' ||
-  activoStr === 'verdadero' ||
-  activoStr === 'yes' ||
-  activoStr === 'si'
+    // Verificar si está activo
+    const activoStr = String(activo).toLowerCase().trim()
+    const isActive =
+      activo === true ||
+      activo === 'true' ||
+      activo === 'TRUE' ||
+      activo === 1 ||
+      activo === '1' ||
+      activoStr === 'true' ||
+      activoStr === 'verdadero' ||
+      activoStr === 'yes' ||
+      activoStr === 'si'
 
-console.log(`🔍 Debug activo: valor="${activo}", string="${activoStr}", resultado=${isActive}`)
+    console.log(`🔍 Debug activo: valor="${activo}", string="${activoStr}", resultado=${isActive}`)
 
-if (!isActive) {
-  console.error(`❌ Usuario inactivo: email="${email}", activo="${activo}"`)
-  return NextResponse.json(
-    { error: 'Usuario inactivo. Contacta al administrador.' },
-    { status: 403 }
-  )
-}
+    if (!isActive) {
+      console.error(`❌ Usuario inactivo: email="${email}", activo="${activo}"`)
+      return NextResponse.json(
+        { error: 'Usuario inactivo. Contacta al administrador.' },
+        { status: 403 }
+      )
+    }
 
-    // Construir objeto de sesión (sin datos sensibles)
+    // Construir objeto de sesión (CON .trim() en todos los campos)
     const user = {
-      email: userEmail,
-      empresa_nombre: empresa_nombre || '',
-      plan: plan || 'base',
+      email: String(userEmail).toLowerCase().trim(),
+      empresa_nombre: String(empresa_nombre || '').trim(),
+      plan: String(plan || 'base').trim(),
       limite_boletas: Number(limite_boletas) || 100,
       boletas_usadas: Number(boletas_usadas) || 0,
       activo: true,
-      rol: rol || 'user',
-      sheet_id_asociado: sheet_id_asociado || '',
+      rol: String(rol || 'user').toLowerCase().trim(),  // ← IMPORTANTE: .trim() + toLowerCase()
+      sheet_id_asociado: String(sheet_id_asociado || '').trim(),
     }
 
-    console.log(`✅ Login exitoso: ${userEmail} (${user.empresa_nombre})`)
+    console.log(`✅ Login exitoso: ${user.email} (rol: ${user.rol})`)
 
     return NextResponse.json({
       message: 'Login exitoso',

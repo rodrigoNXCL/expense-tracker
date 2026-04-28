@@ -65,3 +65,10 @@ export function isAuthenticated(): boolean {
   const session = getSession()
   return !!session?.activo
 }
+
+/**
+ * Verificar si el usuario puede acceder a rutas de admin
+ */
+export const isAdmin = (session: ReturnType<typeof getSession> | null): boolean => {
+  return session?.activo === true && session?.rol === 'admin'
+}

@@ -13,8 +13,16 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => config,
   turbopack: {},
-  // ✅ Permitir acceso desde tu red local en desarrollo
-  allowedDevOrigins: ['192.168.176.140', 'localhost']
+  // ✅ Permitir acceso remoto en desarrollo
+  allowedDevOrigins: [
+    'localhost',
+    '192.168.176.214',
+    '192.168.176.140',
+    '*.loca.lt',
+    '*.serveo.net', 
+    '*.ngrok.io',
+    '*.ngrok-free.app',
+  ]
 }
 
 module.exports = withPWA(nextConfig)

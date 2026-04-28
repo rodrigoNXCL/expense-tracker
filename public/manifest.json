@@ -1,12 +1,12 @@
 {
-  "name": "ExpenseTracker NXChile",
-  "short_name": "ExpenseTracker",
-  "description": "Registra gastos capturando boletas con tu cámara",
-  "start_url": "/",
+  "name": "GastosSII - Registro de Gastos",
+  "short_name": "GastosSII",
+  "description": "Controla tus gastos y boletas con OCR. Compatible con el SII.",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#F2F2F7",
-  "theme_color": "#007AFF",
-  "orientation": "portrait",
+  "theme_color": "#10B981",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",
