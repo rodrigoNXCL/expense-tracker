@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
-import { hashPassword, verifyPassword } from '@/lib/auth'
+import { hashPassword } from '@/lib/auth'
 
 // ✅ CONFIGURACIÓN DE LÍMITES POR PLAN
 const PLAN_LIMITS: Record<string, { boletas: number; usuarios: number }> = {
