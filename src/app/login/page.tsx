@@ -2,13 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
-import { Mail, Lock, Sparkles, Check, Loader2 } from 'lucide-react'
+import { Mail, Lock, Sparkles, Check, Loader2, X, MessageCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -16,6 +15,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Estados para modales
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [recoveryForm, setRecoveryForm] = useState({ email: '', empresa: '' })
+  const [contactForm, setContactForm] = useState({ nombre: '', email: '', mensaje: '' })
+  const [formLoading, setFormLoading] = useState(false)
+  const [formSuccess, setFormSuccess] = useState<string | null>(null)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,6 +51,94 @@ export default function LoginPage() {
     }
   }
 
+  // Web3Forms: Recuperación de contraseña
+  const handleRecoverySubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormLoading(true)
+    setFormSuccess(null)
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
+          from_name: 'GastosSII - Recuperación',
+          email: 'gastos@nxchile.com',
+          subject: `🔐 Solicitud recuperación: ${recoveryForm.email}`,
+          message: `
+            Nueva solicitud de recuperación de contraseña:
+            
+            Email del usuario: ${recoveryForm.email}
+            Empresa: ${recoveryForm.empresa}
+            Fecha: ${new Date().toLocaleString('es-CL')}
+            
+            Acción requerida: Verificar usuario y enviar nueva contraseña.
+          `,
+          redirect: 'false',
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setFormSuccess('✅ Solicitud enviada. Te contactaremos a la brevedad.')
+        setRecoveryForm({ email: '', empresa: '' })
+        setTimeout(() => setShowRecoveryModal(false), 3000)
+      } else {
+        throw new Error('Error enviando formulario')
+      }
+    } catch (err) {
+      setError('Error enviando solicitud. Intenta nuevamente.')
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  // Web3Forms: Contacto administrador
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormLoading(true)
+    setFormSuccess(null)
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
+          from_name: contactForm.nombre || 'Usuario GastosSII',
+          replyto: contactForm.email,
+          email: 'gastos@nxchile.com',
+          subject: `📩 Contacto desde landing: ${contactForm.nombre || 'Sin nombre'}`,
+          message: `
+            Nuevo mensaje de contacto:
+            
+            Nombre: ${contactForm.nombre}
+            Email: ${contactForm.email}
+            Mensaje: ${contactForm.mensaje}
+            Fecha: ${new Date().toLocaleString('es-CL')}
+          `,
+          redirect: 'false',
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setFormSuccess('✅ Mensaje enviado. Te responderemos pronto.')
+        setContactForm({ nombre: '', email: '', mensaje: '' })
+        setTimeout(() => setShowContactModal(false), 3000)
+      } else {
+        throw new Error('Error enviando formulario')
+      }
+    } catch (err) {
+      setError('Error enviando mensaje. Intenta nuevamente.')
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       <div className="w-full max-w-md space-y-8">
@@ -68,7 +163,7 @@ export default function LoginPage() {
           </Badge>
         </div>
 
-        {/* ===== FORMULARIO ===== */}
+        {/* ===== FORMULARIO LOGIN ===== */}
         <Card className="p-8 space-y-6 shadow-xl">
           {/* Error Message */}
           {error && (
@@ -121,6 +216,7 @@ export default function LoginPage() {
               </label>
               <button
                 type="button"
+                onClick={() => setShowRecoveryModal(true)}
                 className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
               >
                 ¿Olvidaste tu contraseña?
@@ -159,20 +255,26 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* CTA Registro */}
-          <Link href="/">
-            <Button variant="outline" size="lg" className="w-full">
-              Crear cuenta gratis →
-            </Button>
-          </Link>
+          {/* CTA Registro - ACTUALIZADO */}
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={() => router.push('/registro/free')}
+          >
+            Crear cuenta Gratis →
+          </Button>
         </Card>
 
         {/* ===== FOOTER ===== */}
         <div className="text-center space-y-2">
           <p className="text-sm text-gray-600">
             ¿Necesitas ayuda?{' '}
-            <button className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">
-              Contacta al administrador
+            <button
+              onClick={() => setShowContactModal(true)}
+              className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2"
+            >
+              Contacta al Administrador
             </button>
           </p>
           <p className="text-xs text-gray-400">
@@ -180,6 +282,144 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+
+      {/* ===== MODAL RECUPERACIÓN CONTRASEÑA ===== */}
+      {showRecoveryModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full bg-white">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-900">Recuperar contraseña</h3>
+                <button
+                  onClick={() => { setShowRecoveryModal(false); setError(null); setFormSuccess(null); }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {formSuccess && (
+                <Alert variant="success">
+                  <span>{formSuccess}</span>
+                </Alert>
+              )}
+              
+              <form onSubmit={handleRecoverySubmit} className="space-y-4">
+                <Input
+                  label="Tu correo electrónico"
+                  type="email"
+                  placeholder="tu@empresa.cl"
+                  value={recoveryForm.email}
+                  onChange={(e) => setRecoveryForm({ ...recoveryForm, email: e.target.value })}
+                  required
+                  disabled={formLoading}
+                />
+                <Input
+                  label="Nombre de tu empresa"
+                  placeholder="Ej: Mi Empresa SpA"
+                  value={recoveryForm.empresa}
+                  onChange={(e) => setRecoveryForm({ ...recoveryForm, empresa: e.target.value })}
+                  required
+                  disabled={formLoading}
+                />
+                <p className="text-xs text-gray-500">
+                  Te enviaremos una nueva contraseña a tu correo registrado.
+                </p>
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={formLoading}
+                  className="w-full"
+                >
+                  {formLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Solicitar recuperación
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* ===== MODAL CONTACTO ADMINISTRADOR ===== */}
+      {showContactModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full bg-white">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-900">Contactar administrador</h3>
+                <button
+                  onClick={() => { setShowContactModal(false); setError(null); setFormSuccess(null); }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {formSuccess && (
+                <Alert variant="success">
+                  <span>{formSuccess}</span>
+                </Alert>
+              )}
+              
+              <form onSubmit={handleContactSubmit} className="space-y-4">
+                <Input
+                  label="Tu nombre"
+                  placeholder="Ej: Juan Pérez"
+                  value={contactForm.nombre}
+                  onChange={(e) => setContactForm({ ...contactForm, nombre: e.target.value })}
+                  required
+                  disabled={formLoading}
+                />
+                <Input
+                  label="Tu correo"
+                  type="email"
+                  placeholder="tu@email.cl"
+                  value={contactForm.email}
+                  onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                  required
+                  disabled={formLoading}
+                />
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none"
+                  placeholder="¿En qué podemos ayudarte?"
+                  rows={4}
+                  value={contactForm.mensaje}
+                  onChange={(e) => setContactForm({ ...contactForm, mensaje: e.target.value })}
+                  required
+                  disabled={formLoading}
+                />
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={formLoading}
+                  className="w-full"
+                >
+                  {formLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Enviar mensaje
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

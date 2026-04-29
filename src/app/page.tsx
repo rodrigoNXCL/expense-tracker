@@ -1,15 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Check, Sparkles, X, Camera, Database, Shield, FileText } from 'lucide-react'
+import { Check, Sparkles, Camera, Database, Shield, FileText, ArrowRight } from 'lucide-react'
 
 export default function LandingPage() {
   const router = useRouter()
-  const [showModal, setShowModal] = useState(false)
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
@@ -46,7 +43,7 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ===== HERO SECTION ===== */}
+      {/* ===== HERO PRINCIPAL ===== */}
       <section className="relative pt-20 pb-32 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Badge */}
@@ -57,40 +54,29 @@ export default function LandingPage() {
 
           {/* Título Principal */}
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Controla tus gastos
+            Controla tus gastos antes que tus gastos
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
-              de forma inteligente
+              controlen tu negocio
             </span>
           </h1>
 
           {/* Subtítulo */}
           <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Captura boletas con tu cámara, extrae datos automáticamente con OCR
-            y gestiona tus gastos empresariales de manera simple y segura.
+            Digitaliza, organiza y encuentra cada respaldo en segundos.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <button
-              onClick={() => router.push('/registro/free')}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-lg font-bold rounded-2xl shadow-2xl hover:shadow-emerald-500/25 hover:scale-105 transition-all flex items-center justify-center gap-2"
-            >
-              🎁 Prueba Gratis Ahora
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setShowModal(true)}
-              className="w-full sm:w-auto px-8 py-4 bg-white text-emerald-600 text-lg font-semibold rounded-2xl border-2 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all"
-            >
-              ℹ️ Conocer Más
-            </button>
-          </div>
+          {/* CTA Button */}
+          <button
+            onClick={() => router.push('/registro/free')}
+            className="px-10 py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-lg font-bold rounded-2xl shadow-2xl hover:shadow-emerald-500/25 hover:scale-105 transition-all inline-flex items-center gap-2"
+          >
+            Comenzar ahora
+            <ArrowRight className="w-5 h-5" />
+          </button>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t border-gray-200">
+          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-16 border-t border-gray-200">
             <div>
               <p className="text-3xl font-bold text-gray-900">100%</p>
               <p className="text-sm text-gray-500 mt-1">Compatible SII</p>
@@ -111,102 +97,141 @@ export default function LandingPage() {
         <div className="absolute top-1/2 right-0 -translate-y-1/2 w-96 h-96 bg-teal-200 rounded-full blur-3xl opacity-20 -z-10" />
       </section>
 
-      {/* ===== CARACTERÍSTICAS ===== */}
+      {/* ===== SECCIÓN 1 — PROBLEMA ===== */}
       <section className="py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            El desorden financiero cuesta más de lo que parece.
+          </h2>
+          <p className="text-xl text-gray-600 leading-relaxed">
+            Boletas extraviadas, registros incompletos y gastos sin control generan
+            <span className="text-emerald-600 font-semibold"> pérdidas silenciosas </span>
+            todos los meses.
+          </p>
+        </div>
+      </section>
+
+      {/* ===== SECCIÓN 2 — SOLUCIÓN ===== */}
+      <section className="py-24 bg-gradient-to-br from-emerald-50 to-teal-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Todo lo que necesitas para gestionar tus gastos
+              Registra un gasto en segundos.
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Herramientas poderosas diseñadas para simplificar tu trabajo
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Captura boletas desde tu celular y mantén toda tu información organizada
+              y disponible cuando la necesites.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="group p-8 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl hover:shadow-2xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-white mb-6">
                 <Camera className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Captura con Cámara
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Toma fotos de tus boletas y comprobantes. Nuestro sistema las procesa automáticamente.
-              </p>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Captura rápida</h3>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3 text-gray-600">
+                  <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <span>Captura rápida desde el celular</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-600">
+                  <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <span>Registro centralizado</span>
+                </li>
+              </ul>
             </div>
 
-            {/* Feature 2 */}
-            <div className="group p-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl hover:shadow-2xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                <Sparkles className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                OCR Inteligente
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Tecnología Azure AI Vision extrae datos con alta precisión automáticamente.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="group p-8 bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl hover:shadow-2xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6">
                 <Database className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Dashboard en Tiempo Real
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Visualiza tus gastos, categorías y límites de uso en un solo lugar.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="group p-8 bg-gradient-to-br from-orange-50 to-red-50 rounded-3xl hover:shadow-2xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                📱
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Multi-Dispositivo
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Accede desde tu celular, tablet o computador. Sincronización en la nube.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="group p-8 bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl hover:shadow-2xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                <Shield className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Seguro y Privado
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Tus datos están protegidos. Cada empresa tiene su espacio aislado.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="group p-8 bg-gradient-to-br from-cyan-50 to-teal-50 rounded-3xl hover:shadow-2xl transition-all hover:-translate-y-1">
-              <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                <FileText className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Exportación CSV
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Descarga tus gastos en formato CSV para tu contabilidad o informes.
-              </p>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Siempre disponible</h3>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3 text-gray-600">
+                  <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <span>Información siempre disponible</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-600">
+                  <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <span>Menos tiempo buscando respaldos</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== PLANES Y PRECIOS ===== */}
+      {/* ===== SECCIÓN 3 — VALOR ===== */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Todo respaldado. Todo centralizado.
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Mantén el control operativo y financiero de tu empresa desde un solo lugar.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
+              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-gray-900">Historial ordenado</h4>
+                <p className="text-sm text-gray-600 mt-1">Todos tus gastos en un solo lugar</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
+              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-gray-900">Clasificación automática</h4>
+                <p className="text-sm text-gray-600 mt-1">Categorías inteligentes</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
+              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-gray-900">Exportación de información</h4>
+                <p className="text-sm text-gray-600 mt-1">CSV y Excel para contabilidad</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
+              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-gray-900">Acceso rápido</h4>
+                <p className="text-sm text-gray-600 mt-1">Encuentra documentos al instante</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
+              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-gray-900">Respaldo digital seguro</h4>
+                <p className="text-sm text-gray-600 mt-1">Tus datos protegidos siempre</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== SECCIÓN 4 — BENEFICIO OPERATIVO ===== */}
       <section className="py-24 bg-gradient-to-br from-gray-50 to-emerald-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            Menos tiempo administrando. Más tiempo haciendo crecer tu negocio.
+          </h2>
+          <p className="text-xl text-gray-600 leading-relaxed">
+            Reduce el caos administrativo y encuentra cada documento cuando realmente lo necesites.
+          </p>
+        </div>
+      </section>
+
+      {/* ===== PLANES Y PRECIOS ===== */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -219,7 +244,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Plan Free */}
-            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all">
+            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all border border-gray-200">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
                 <p className="text-gray-600">Para probar el sistema</p>
@@ -230,28 +255,30 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  1 usuario
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>1 usuario</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  10 boletas/mes
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>10 boletas/mes</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  OCR Azure AI
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>OCR Azure AI</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  Dashboard básico
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>Dashboard básico</span>
                 </li>
               </ul>
-              <button
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
                 onClick={() => router.push('/registro/free')}
-                className="w-full py-3 border-2 border-emerald-500 text-emerald-600 font-semibold rounded-xl hover:bg-emerald-50 transition-colors"
               >
-                Prueba Gratis
-              </button>
+                Comenzar Gratis
+              </Button>
             </div>
 
             {/* Plan Pro (Destacado) */}
@@ -270,36 +297,38 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-3 text-white">
-                  <Check className="w-5 h-5" />
-                  Hasta 3 usuarios
+                  <Check className="w-5 h-5 flex-shrink-0" />
+                  <span>Hasta 2 usuarios</span>
                 </li>
                 <li className="flex items-center gap-3 text-white">
-                  <Check className="w-5 h-5" />
-                  500 boletas/mes
+                  <Check className="w-5 h-5 flex-shrink-0" />
+                  <span>500 boletas/mes</span>
                 </li>
                 <li className="flex items-center gap-3 text-white">
-                  <Check className="w-5 h-5" />
-                  OCR Azure AI
+                  <Check className="w-5 h-5 flex-shrink-0" />
+                  <span>OCR Azure AI</span>
                 </li>
                 <li className="flex items-center gap-3 text-white">
-                  <Check className="w-5 h-5" />
-                  Dashboard avanzado
+                  <Check className="w-5 h-5 flex-shrink-0" />
+                  <span>Dashboard avanzado</span>
                 </li>
                 <li className="flex items-center gap-3 text-white">
-                  <Check className="w-5 h-5" />
-                  Soporte prioritario
+                  <Check className="w-5 h-5 flex-shrink-0" />
+                  <span>Export CSV + Excel</span>
                 </li>
               </ul>
-              <button
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full bg-white text-emerald-600 hover:bg-emerald-50 font-bold"
                 onClick={() => router.push('/registro/pago?plan=pro')}
-                className="w-full py-3 bg-white text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-colors shadow-lg"
               >
                 Elegir Pro
-              </button>
+              </Button>
             </div>
 
             {/* Plan Enterprise */}
-            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all">
+            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all border border-gray-200">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
                 <p className="text-gray-600">Para grandes empresas</p>
@@ -311,51 +340,55 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  Hasta 10 usuarios
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>Hasta 5 usuarios</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  Boletas ilimitadas
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>Boletas ilimitadas</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  OCR Azure AI
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>OCR Azure AI</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  API access
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>API access</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  Soporte 24/7
+                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>Soporte 24/7</span>
                 </li>
               </ul>
-              <button
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
                 onClick={() => router.push('/registro/pago?plan=enterprise')}
-                className="w-full py-3 border-2 border-emerald-500 text-emerald-600 font-semibold rounded-xl hover:bg-emerald-50 transition-colors"
               >
                 Elegir Enterprise
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== CTA FINAL ===== */}
+      {/* ===== SECCIÓN 5 — CIERRE ===== */}
       <section className="py-24 bg-gradient-to-r from-emerald-500 to-teal-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            ¿Listo para simplificar tus gastos?
+            Diseñado para empresas que necesitan orden financiero real.
           </h2>
           <p className="text-xl text-emerald-100 mb-10">
-            Únete a empresas que ya confían en GastosSII para su gestión diaria
+            Gastos NXChile simplifica la gestión de gastos y respaldos para que tu
+            operación funcione con mayor control y claridad.
           </p>
           <button
-            onClick={() => router.push('/registro/free')}
-            className="px-10 py-5 bg-white text-emerald-600 text-lg font-bold rounded-2xl shadow-2xl hover:shadow-white/25 hover:scale-105 transition-all"
+            onClick={() => router.push('/registro/pago')}
+            className="px-10 py-5 bg-white text-emerald-600 text-lg font-bold rounded-2xl shadow-2xl hover:shadow-white/25 hover:scale-105 transition-all inline-flex items-center gap-2"
           >
-            Comenzar Ahora - Es Gratis
+            Solicitar acceso
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </section>
@@ -397,105 +430,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
-      {/* ===== MODAL "CONOCER MÁS" ===== */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-white">
-            <div className="sticky top-0 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100 p-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">¿Cómo funciona GastosSII?</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-emerald-100 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <CardContent className="p-6 space-y-6">
-              {/* Objetivo */}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-lg text-gray-900">🎯 Objetivo</h3>
-                <p className="text-gray-600">
-                  Registrar tus gastos empresariales de forma simple, respaldar cada comprobante 
-                  y cumplir con el SII de Chile sin complicaciones.
-                </p>
-              </div>
-
-              {/* Flujo */}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-lg text-gray-900">🔄 Flujo del Sistema</h3>
-                <div className="grid gap-4">
-                  <div className="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg">
-                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">1</div>
-                    <div>
-                      <p className="font-medium text-gray-900">Captura</p>
-                      <p className="text-sm text-gray-600">Toma una foto de tu boleta con tu celular o cámara</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">2</div>
-                    <div>
-                      <p className="font-medium text-gray-900">OCR Inteligente</p>
-                      <p className="text-sm text-gray-600">Azure AI extrae automáticamente: fecha, monto, RUT, proveedor</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">3</div>
-                    <div>
-                      <p className="font-medium text-gray-900">Revisión</p>
-                      <p className="text-sm text-gray-600">Verifica y corrige los datos si es necesario</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">4</div>
-                    <div>
-                      <p className="font-medium text-gray-900">Guardado</p>
-                      <p className="text-sm text-gray-600">Se guarda en tu Google Sheet privado automáticamente</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Características Clave */}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-lg text-gray-900">✨ Características Clave</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span><strong>OCR con Azure AI:</strong> Misma tecnología en todos los planes</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span><strong>Google Sheets:</strong> Cada empresa tiene su propia hoja privada</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span><strong>Multi-usuario:</strong> Planes Pro y Enterprise permiten varios usuarios</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span><strong>Exportación:</strong> Descarga tus datos en CSV para tu contabilidad</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span><strong>100% Compatible SII:</strong> Cumple con la normativa chilena</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Planes */}
-              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                <h3 className="font-semibold text-gray-900">📦 Planes Disponibles</h3>
-                <div className="space-y-2 text-sm">
-                  <p><strong>Free:</strong> 1 usuario, 10 boletas/mes - Gratis</p>
-                  <p><strong>Pro:</strong> Hasta 3 usuarios, 500 boletas/mes - $9.900/mes (anual)</p>
-                  <p><strong>Enterprise:</strong> Hasta 10 usuarios, ilimitadas - $19.990/mes (anual)</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </main>
   )
 }

@@ -130,7 +130,7 @@ export default function ConfirmacionPage() {
               </div>
             </div>
 
-            {/* Info de contacto */}
+            {/* Info de contacto - ✅ CORREGIDO: gastos@nxchile.com */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <Mail className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -138,8 +138,8 @@ export default function ConfirmacionPage() {
                   <p className="font-medium">¿Tienes dudas?</p>
                   <p className="text-blue-700 mt-1">
                     Escríbenos a{' '}
-                    <a href="mailto:gastossii@nxchile.com" className="underline font-medium">
-                      gastossii@nxchile.com
+                    <a href="mailto:gastos@nxchile.com" className="underline font-medium">
+                      gastos@nxchile.com
                     </a>
                   </p>
                 </div>

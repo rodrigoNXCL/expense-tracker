@@ -188,8 +188,8 @@ export default function RegistroPage() {
           <h3 className="text-lg font-semibold text-gray-900">¿Tienes dudas?</h3>
           <p className="text-gray-600">
             Contáctanos en{' '}
-            <a href="mailto:gastossii@nxchile.com" className="text-emerald-600 hover:underline font-medium">
-              gastossii@nxchile.com
+            <a href="mailto:gastos@nxchile.com" className="text-emerald-600 hover:underline font-medium">
+              gastos@nxchile.com
             </a>
           </p>
         </div>

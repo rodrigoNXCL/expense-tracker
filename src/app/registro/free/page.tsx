@@ -25,7 +25,30 @@ export default function RegistroFreePage() {
     setError(null)
 
     try {
-      // Enviar solicitud de registro al admin
+      // ✅ 1. Enviar email de notificación (Web3Forms desde cliente)
+      await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
+          from_name: 'GastosSII Registro',
+          email: 'gastos@nxchile.com',
+          subject: `🆕 Nuevo registro: FREE - ${formData.empresa_nombre}`,
+          message: `
+            Nuevo registro recibido:
+            
+            Email: ${formData.email}
+            Empresa: ${formData.empresa_nombre}
+            Plan: Free
+            Fecha: ${new Date().toLocaleString('es-CL')}
+            
+            Revisa la Sheet "Usuarios" para aprobar.
+          `,
+          redirect: 'false',
+        }),
+      })
+
+      // ✅ 2. Guardar en base de datos (API)
       const response = await fetch('/api/registro/free', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -38,7 +61,7 @@ export default function RegistroFreePage() {
         throw new Error(result.error || 'Error en registro')
       }
 
-      // Redirigir a confirmación
+      // ✅ 3. Redirigir
       router.push('/registro/confirmacion?plan=free')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')
@@ -49,7 +72,6 @@ export default function RegistroFreePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      {/* ===== NAVBAR ===== */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-emerald-100/50 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -71,21 +93,15 @@ export default function RegistroFreePage() {
       </nav>
 
       <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* ===== HEADER ===== */}
         <div className="text-center space-y-4 mb-8">
           <Badge variant="success" className="mb-2">
             <Check className="w-3 h-3 mr-1" />
             Plan Gratuito
           </Badge>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Comienza gratis con GastosSII
-          </h1>
-          <p className="text-gray-600">
-            Perfecto para probar el sistema antes de comprometerte
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">Comienza gratis con GastosSII</h1>
+          <p className="text-gray-600">Perfecto para probar el sistema antes de comprometerte</p>
         </div>
 
-        {/* ===== CARD DE PLAN ===== */}
         <Card className="mb-8 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/50">
           <CardContent className="p-6">
             <h3 className="font-semibold text-gray-900 mb-4">📦 Lo que incluye:</h3>
@@ -111,62 +127,20 @@ export default function RegistroFreePage() {
                 <span><strong>Export CSV</strong> - Descarga tus datos</span>
               </li>
             </ul>
-            <p className="text-xs text-gray-500 mt-4 text-center">
-              ⏱️ Recibirás tus accesos en máximo 24 hrs hábiles
-            </p>
+            <p className="text-xs text-gray-500 mt-4 text-center">⏱️ Recibirás tus accesos en máximo 24 hrs hábiles</p>
           </CardContent>
         </Card>
 
-        {/* ===== FORMULARIO ===== */}
         <Card className="border-emerald-100 shadow-lg shadow-emerald-500/5">
           <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100">
             <CardTitle className="text-xl text-gray-900">Completa tus datos</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-5">
-            {error && (
-              <Alert variant="error">
-                <span>{error}</span>
-              </Alert>
-            )}
-
+            {error && <Alert variant="error"><span>{error}</span></Alert>}
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
-              <Input
-                id="email"
-                type="email"
-                label="Correo electrónico"
-                placeholder="tu@empresa.cl"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                disabled={isLoading}
-              />
-
-              {/* Contraseña */}
-              <Input
-                id="password"
-                type="password"
-                label="Contraseña"
-                placeholder="Mínimo 6 caracteres"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                minLength={6}
-                disabled={isLoading}
-              />
-
-              {/* Nombre Empresa */}
-              <Input
-                id="empresa_nombre"
-                label="Nombre de tu empresa"
-                placeholder="Ej: Mi Empresa SpA"
-                value={formData.empresa_nombre}
-                onChange={(e) => setFormData({ ...formData, empresa_nombre: e.target.value })}
-                required
-                disabled={isLoading}
-              />
-
-              {/* Info importante */}
+              <Input id="email" type="email" label="Correo electrónico" placeholder="tu@empresa.cl" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required disabled={isLoading} />
+              <Input id="password" type="password" label="Contraseña" placeholder="Mínimo 6 caracteres" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required minLength={6} disabled={isLoading} />
+              <Input id="empresa_nombre" label="Nombre de tu empresa" placeholder="Ej: Mi Empresa SpA" value={formData.empresa_nombre} onChange={(e) => setFormData({ ...formData, empresa_nombre: e.target.value })} required disabled={isLoading} />
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
                 <div className="flex items-start gap-2">
                   <Mail className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -181,48 +155,17 @@ export default function RegistroFreePage() {
                   </div>
                 </div>
               </div>
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-lg shadow-emerald-500/30"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Enviando solicitud...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-5 w-5 mr-2" />
-                    Solicitar Plan Free
-                  </>
-                )}
+              <Button type="submit" size="lg" disabled={isLoading} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-lg shadow-emerald-500/30">
+                {isLoading ? (<><Loader2 className="h-5 w-5 mr-2 animate-spin" />Enviando solicitud...</>) : (<><Check className="h-5 w-5 mr-2" />Solicitar Plan Free</>)}
               </Button>
             </form>
-
-            {/* Términos */}
-            <p className="text-xs text-gray-500 text-center">
-              Al registrarte, aceptas nuestros{' '}
-              <a href="#" className="text-emerald-600 hover:underline">términos de servicio</a>
-            </p>
+            <p className="text-xs text-gray-500 text-center">Al registrarte, aceptas nuestros <a href="#" className="text-emerald-600 hover:underline">términos de servicio</a></p>
           </CardContent>
         </Card>
 
-        {/* ===== CTA UPGRADE ===== */}
         <div className="mt-8 text-center space-y-3">
-          <p className="text-gray-600">
-            ¿Necesitas más usuarios o boletas ilimitadas?
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/registro/pago')}
-            className="border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-          >
-            Ver planes Pro y Enterprise →
-          </Button>
+          <p className="text-gray-600">¿Necesitas más usuarios o boletas ilimitadas?</p>
+          <Button variant="outline" onClick={() => router.push('/registro/pago')} className="border-emerald-500 text-emerald-600 hover:bg-emerald-50">Ver planes Pro y Enterprise →</Button>
         </div>
       </div>
     </div>
