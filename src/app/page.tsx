@@ -1,22 +1,20 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { Check, Sparkles, Camera, Database, Shield, FileText, ArrowRight } from 'lucide-react'
+import { Check, Shield, FileCheck, Database, AlertTriangle, ArrowRight, Lock, Clock, Camera } from 'lucide-react'
 
 export default function LandingPage() {
   const router = useRouter()
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <main className="min-h-screen bg-white">
       {/* ===== NAVBAR ===== */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-emerald-100">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+              <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center text-white text-xl font-bold">
                 🧾
               </div>
               <div>
@@ -24,214 +22,299 @@ export default function LandingPage() {
                 <p className="text-xs text-gray-500">by NXChile</p>
               </div>
             </div>
-            {/* Botones */}
+            
+            {/* Botones - CORREGIDOS */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => router.push('/login')}
-                className="px-4 py-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
               >
                 Iniciar Sesión
               </button>
               <button
-                onClick={() => router.push('/registro/pago')}
-                className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                onClick={() => router.push('/registro')}
+                className="px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
               >
-                Comenzar Ahora
+                Ver Planes
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* ===== HERO PRINCIPAL ===== */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
+      {/* ===== HERO PRINCIPAL - COPY CTO ===== */}
+      <section className="relative pt-24 pb-32 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-8 animate-fade-in">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            Compatible con el SII de Chile
+          {/* Badge de confianza */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-sm font-medium mb-8">
+            <Shield className="w-4 h-4" />
+            Respaldo documental empresarial • Compatible con el SII
           </div>
 
-          {/* Título Principal */}
+          {/* Título Principal - ENFOQUE EN RIESGO (CTO) */}
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Controla tus gastos antes que tus gastos
+            ¿Y si el SII te pide un respaldo
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
-              controlen tu negocio
-            </span>
+            <span className="text-emerald-600">hoy mismo?</span>
           </h1>
 
-          {/* Subtítulo */}
+          {/* Subtítulo - DOLOR REAL (CTO) */}
           <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Digitaliza, organiza y encuentra cada respaldo en segundos.
+            Tu operación depende de documentos que hoy están dispersos en correos, 
+            WhatsApp y carpetas. GastosSII centraliza, respalda y mantiene disponible 
+            toda tu evidencia tributaria — para que nunca pierdas tiempo, multas ni tranquilidad.
           </p>
 
-          {/* CTA Button */}
-          <button
-            onClick={() => router.push('/registro/free')}
-            className="px-10 py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-lg font-bold rounded-2xl shadow-2xl hover:shadow-emerald-500/25 hover:scale-105 transition-all inline-flex items-center gap-2"
-          >
-            Comenzar ahora
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          {/* CTA Buttons - CORREGIDOS */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            <button
+              onClick={() => router.push('/registro/free')}
+              className="px-10 py-5 bg-emerald-600 text-white text-lg font-bold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center gap-2 shadow-lg"
+            >
+              Prueba Gratis
+              <ArrowRight className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-10 py-5 bg-white text-gray-700 text-lg font-bold rounded-xl border-2 border-gray-300 hover:border-gray-400 transition-all"
+            >
+              Cómo Funciona
+            </button>
+          </div>
 
-          {/* Stats */}
+          {/* Stats de confianza */}
           <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-16 border-t border-gray-200">
             <div>
               <p className="text-3xl font-bold text-gray-900">100%</p>
-              <p className="text-sm text-gray-500 mt-1">Compatible SII</p>
+              <p className="text-sm text-gray-500 mt-1">Trazabilidad documental</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-gray-900">&lt;5s</p>
-              <p className="text-sm text-gray-500 mt-1">Por boleta</p>
+              <p className="text-3xl font-bold text-gray-900">&lt;10s</p>
+              <p className="text-sm text-gray-500 mt-1">Búsqueda de evidencia</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-gray-900">OCR</p>
-              <p className="text-sm text-gray-500 mt-1">Azure AI</p>
+              <p className="text-sm text-gray-500 mt-1">Azure AI validado</p>
             </div>
           </div>
         </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-emerald-200 rounded-full blur-3xl opacity-20 -z-10" />
-        <div className="absolute top-1/2 right-0 -translate-y-1/2 w-96 h-96 bg-teal-200 rounded-full blur-3xl opacity-20 -z-10" />
       </section>
 
-      {/* ===== SECCIÓN 1 — PROBLEMA ===== */}
-      <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            El desorden financiero cuesta más de lo que parece.
-          </h2>
-          <p className="text-xl text-gray-600 leading-relaxed">
-            Boletas extraviadas, registros incompletos y gastos sin control generan
-            <span className="text-emerald-600 font-semibold"> pérdidas silenciosas </span>
-            todos los meses.
-          </p>
-        </div>
-      </section>
-
-      {/* ===== SECCIÓN 2 — SOLUCIÓN ===== */}
-      <section className="py-24 bg-gradient-to-br from-emerald-50 to-teal-50">
+      {/* ===== CÓMO FUNCIONA - NUEVA SECCIÓN ===== */}
+      <section id="como-funciona" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Registra un gasto en segundos.
+              Respaldo centralizado. Evidencia disponible. Control empresarial.
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Captura boletas desde tu celular y mantén toda tu información organizada
-              y disponible cuando la necesites.
+              GastosSII no es una app para "ordenar gastos". Es tu capa de protección documental.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl p-8 shadow-lg">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-white mb-6">
-                <Camera className="w-7 h-7" />
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Paso 1 */}
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
+              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
+                <Camera className="w-7 h-7 text-emerald-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Captura rápida</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span>Captura rápida desde el celular</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span>Registro centralizado</span>
-                </li>
-              </ul>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">1. Captura tu boleta</h3>
+              <p className="text-gray-600">
+                Toma una foto o sube el documento. Nuestro OCR con Azure AI extrae todos los datos automáticamente.
+              </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-lg">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6">
-                <Database className="w-7 h-7" />
+            {/* Paso 2 */}
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
+              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
+                <Database className="w-7 h-7 text-emerald-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Siempre disponible</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span>Información siempre disponible</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-600">
-                  <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span>Menos tiempo buscando respaldos</span>
-                </li>
-              </ul>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">2. Se respalda automáticamente</h3>
+              <p className="text-gray-600">
+                Cada documento se guarda en la nube con trazabilidad completa. Sin depender de personas o archivos locales.
+              </p>
+            </div>
+
+            {/* Paso 3 */}
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
+              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
+                <FileCheck className="w-7 h-7 text-emerald-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">3. Disponible cuando lo necesites</h3>
+              <p className="text-gray-600">
+                Encuentra cualquier respaldo en segundos. Listo para el SII, auditores o tu contador.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== SECCIÓN 3 — VALOR ===== */}
+      {/* ===== SECCIÓN PROBLEMA - COPY CTO ===== */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-2xl mb-6">
+            <AlertTriangle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            El riesgo no es perder una boleta.
+            <br />
+            Es no encontrarla cuando realmente importa.
+          </h2>
+          <p className="text-xl text-gray-600 leading-relaxed mb-8">
+            Cuando llega una revisión tributaria, una auditoría interna o tu contador 
+            pide evidencia urgente:
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto text-left">
+            <div className="flex items-start gap-3 p-4 bg-white rounded-xl">
+              <span className="text-2xl">❌</span>
+              <div>
+                <p className="font-semibold text-gray-900">Documentos dispersos</p>
+                <p className="text-sm text-gray-600 mt-1">Correos, WhatsApp, carpetas sin orden</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-4 bg-white rounded-xl">
+              <span className="text-2xl">❌</span>
+              <div>
+                <p className="font-semibold text-gray-900">Dependencia humana</p>
+                <p className="text-sm text-gray-600 mt-1">Si esa persona falta, la evidencia se pierde</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-4 bg-white rounded-xl">
+              <span className="text-2xl">❌</span>
+              <div>
+                <p className="font-semibold text-gray-900">Tiempo perdido</p>
+                <p className="text-sm text-gray-600 mt-1">Horas buscando respaldos que deberías tener en segundos</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-4 bg-white rounded-xl">
+              <span className="text-2xl">❌</span>
+              <div>
+                <p className="font-semibold text-gray-900">Exposición tributaria</p>
+                <p className="text-sm text-gray-600 mt-1">Sin respaldo, el gasto no es deducible</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== SECCIÓN SOLUCIÓN - COPY CTO ===== */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-2xl mb-6">
+              <Shield className="w-8 h-8 text-emerald-600" />
+            </div>
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Todo respaldado. Todo centralizado.
+              Tu capa de protección documental
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Mantén el control operativo y financiero de tu empresa desde un solo lugar.
+              Cada gasto capturado queda respaldado, centralizado y disponible para quien lo necesite.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
-              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <div className="bg-gray-50 rounded-xl p-6">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+                <FileCheck className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Evidencia inmediata</h3>
+              <p className="text-gray-600 text-sm">Encuentra cualquier respaldo en segundos, no en horas.</p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-6">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+                <Lock className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Trazabilidad completa</h3>
+              <p className="text-gray-600 text-sm">Sabes quién capturó, cuándo y dónde está cada documento.</p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-6">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+                <Database className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Disponibilidad garantizada</h3>
+              <p className="text-gray-600 text-sm">Acceso desde cualquier dispositivo, sin depender de personas.</p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-6">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+                <Shield className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Respaldo tributario</h3>
+              <p className="text-gray-600 text-sm">Documentación lista para el SII, auditores o contadores.</p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-6">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+                <Clock className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Control operacional</h3>
+              <p className="text-gray-600 text-sm">Visibilidad total de tus gastos, con aprobación y categorías.</p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-6">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+                <Check className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Export contable</h3>
+              <p className="text-gray-600 text-sm">CSV y Excel listos para tu contador.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== SECCIÓN BENEFICIOS - COPY CTO ===== */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Menos exposición. Más tranquilidad. Control real.
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Los beneficios de tener tu respaldo documental bajo control.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="flex items-start gap-4 p-6 bg-white rounded-xl shadow-sm">
+              <div className="text-3xl">🛡️</div>
               <div>
-                <h4 className="font-semibold text-gray-900">Historial ordenado</h4>
-                <p className="text-sm text-gray-600 mt-1">Todos tus gastos en un solo lugar</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Protección tributaria</h3>
+                <p className="text-gray-600">Reduce tu exposición frente al SII con respaldos centralizados y trazables.</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
-              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-4 p-6 bg-white rounded-xl shadow-sm">
+              <div className="text-3xl">⚡</div>
               <div>
-                <h4 className="font-semibold text-gray-900">Clasificación automática</h4>
-                <p className="text-sm text-gray-600 mt-1">Categorías inteligentes</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Respuesta inmediata</h3>
+                <p className="text-gray-600">Encuentra cualquier documento en segundos. No pierdas horas buscando.</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
-              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-4 p-6 bg-white rounded-xl shadow-sm">
+              <div className="text-3xl">🔐</div>
               <div>
-                <h4 className="font-semibold text-gray-900">Exportación de información</h4>
-                <p className="text-sm text-gray-600 mt-1">CSV y Excel para contabilidad</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Independencia operacional</h3>
+                <p className="text-gray-600">No dependas de personas específicas. Tu evidencia está siempre disponible.</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
-              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-4 p-6 bg-white rounded-xl shadow-sm">
+              <div className="text-3xl">📊</div>
               <div>
-                <h4 className="font-semibold text-gray-900">Acceso rápido</h4>
-                <p className="text-sm text-gray-600 mt-1">Encuentra documentos al instante</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-xl">
-              <Check className="w-6 h-6 text-emerald-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <h4 className="font-semibold text-gray-900">Respaldo digital seguro</h4>
-                <p className="text-sm text-gray-600 mt-1">Tus datos protegidos siempre</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Control empresarial</h3>
+                <p className="text-gray-600">Visibilidad total de tus gastos, con trazabilidad y respaldo documental.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== SECCIÓN 4 — BENEFICIO OPERATIVO ===== */}
-      <section className="py-24 bg-gradient-to-br from-gray-50 to-emerald-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Menos tiempo administrando. Más tiempo haciendo crecer tu negocio.
-          </h2>
-          <p className="text-xl text-gray-600 leading-relaxed">
-            Reduce el caos administrativo y encuentra cada documento cuando realmente lo necesites.
-          </p>
-        </div>
-      </section>
-
       {/* ===== PLANES Y PRECIOS ===== */}
-      <section className="py-24 bg-white">
+      <section id="precios" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -244,7 +327,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Plan Free */}
-            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all border border-gray-200">
+            <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
                 <p className="text-gray-600">Para probar el sistema</p>
@@ -271,14 +354,12 @@ export default function LandingPage() {
                   <span>Dashboard básico</span>
                 </li>
               </ul>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+              <button
                 onClick={() => router.push('/registro/free')}
+                className="w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
               >
-                Comenzar Gratis
-              </Button>
+                Prueba Gratis
+              </button>
             </div>
 
             {/* Plan Pro (Destacado) */}
@@ -317,18 +398,16 @@ export default function LandingPage() {
                   <span>Export CSV + Excel</span>
                 </li>
               </ul>
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full bg-white text-emerald-600 hover:bg-emerald-50 font-bold"
+              <button
                 onClick={() => router.push('/registro/pago?plan=pro')}
+                className="w-full px-6 py-3 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition-colors"
               >
                 Elegir Pro
-              </Button>
+              </button>
             </div>
 
             {/* Plan Enterprise */}
-            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all border border-gray-200">
+            <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
                 <p className="text-gray-600">Para grandes empresas</p>
@@ -360,68 +439,83 @@ export default function LandingPage() {
                   <span>Soporte 24/7</span>
                 </li>
               </ul>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+              <button
                 onClick={() => router.push('/registro/pago?plan=enterprise')}
+                className="w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
               >
                 Elegir Enterprise
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== SECCIÓN 5 — CIERRE ===== */}
-      <section className="py-24 bg-gradient-to-r from-emerald-500 to-teal-600">
+      {/* ===== CIERRE - COPY CTO ===== */}
+      <section className="py-24 bg-gray-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Diseñado para empresas que necesitan orden financiero real.
+            Tu operación merece respaldo serio.
+            <br />
+            No más improvisación documental.
           </h2>
-          <p className="text-xl text-emerald-100 mb-10">
-            Gastos NXChile simplifica la gestión de gastos y respaldos para que tu
-            operación funcione con mayor control y claridad.
+          <p className="text-xl text-gray-300 mb-10 leading-relaxed">
+            GastosSII está diseñado para empresas que entienden que el respaldo documental 
+            no es un "extra administrativo" — es protección operacional.
+            <br /><br />
+            Cuando el SII, un auditor o tu contador piden evidencia, tú ya la tienes. 
+            Centralizada. Disponible. Bajo tu control.
           </p>
-          <button
-            onClick={() => router.push('/registro/pago')}
-            className="px-10 py-5 bg-white text-emerald-600 text-lg font-bold rounded-2xl shadow-2xl hover:shadow-white/25 hover:scale-105 transition-all inline-flex items-center gap-2"
-          >
-            Solicitar acceso
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button
+              onClick={() => router.push('/registro/free')}
+              className="px-10 py-5 bg-emerald-600 text-white text-lg font-bold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center gap-2"
+            >
+              Prueba Gratis
+              <ArrowRight className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => router.push('/registro')}
+              className="px-10 py-5 bg-white text-gray-900 text-lg font-bold rounded-xl hover:bg-gray-100 transition-all"
+            >
+              Ver Planes
+            </button>
+          </div>
+
+          <p className="text-sm text-gray-400 mt-8">
+            ⏱️ Recibirás tus accesos en máximo 24 hrs hábiles
+          </p>
         </div>
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
+      <footer className="bg-gray-900 text-gray-300 py-12 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white font-bold">
+                <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">
                   🧾
                 </div>
                 <h3 className="text-lg font-bold text-white">GastosSII</h3>
               </div>
               <p className="text-sm text-gray-400">
-                La forma más simple de gestionar tus gastos empresariales en Chile.
+                Respaldo documental empresarial para compañías que requieren control y trazabilidad.
               </p>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Producto</h4>
               <ul className="space-y-2 text-sm">
-                <li><button className="hover:text-white transition-colors">Características</button></li>
-                <li><button className="hover:text-white transition-colors">Precios</button></li>
-                <li><button className="hover:text-white transition-colors">Seguridad</button></li>
+                <li><button onClick={() => router.push('/registro')} className="hover:text-white transition-colors">Planes y precios</button></li>
+                <li><button onClick={() => router.push('/registro/free')} className="hover:text-white transition-colors">Prueba gratuita</button></li>
+                <li><button onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white transition-colors">Cómo funciona</button></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Empresa</h4>
               <ul className="space-y-2 text-sm">
-                <li><button className="hover:text-white transition-colors">Sobre Nosotros</button></li>
-                <li><button className="hover:text-white transition-colors">Contacto</button></li>
-                <li><button className="hover:text-white transition-colors">Privacidad</button></li>
+                <li><a href="mailto:gastos@nxchile.com" className="hover:text-white transition-colors">gastos@nxchile.com</a></li>
+                <li><button onClick={() => router.push('/login')} className="hover:text-white transition-colors">Iniciar Sesión</button></li>
               </ul>
             </div>
           </div>
