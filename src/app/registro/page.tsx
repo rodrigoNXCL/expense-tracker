@@ -102,10 +102,17 @@ export default function RegistroPage() {
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-2xl font-bold text-gray-900">Pro</CardTitle>
               <div className="mt-4">
-                <span className="text-5xl font-bold text-gray-900">$9.900</span>
-                <p className="text-gray-500 mt-1">por mes (anual)</p>
-                <p className="text-xs text-gray-400">~$3.300/usuario/mes</p>
-              </div>
+  <div className="flex items-baseline gap-2 mb-1">
+    <span className="text-5xl font-bold text-gray-900">$9.900</span>
+    <span className="text-gray-600">/mes</span>
+  </div>
+  <p className="text-xs text-gray-500 mb-2">Facturación anual ($118.800 total)</p>
+  <div className="bg-emerald-50 rounded-lg p-2">
+    <p className="text-xs text-emerald-700">
+      <span className="font-semibold">También disponible:</span> $12.900/mes sin contrato
+    </p>
+  </div>
+</div>
               <p className="text-sm text-gray-600 mt-2">Para empresas en crecimiento</p>
             </CardHeader>
             <CardContent className="pt-6">
@@ -154,10 +161,17 @@ export default function RegistroPage() {
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-2xl font-bold text-gray-900">Enterprise</CardTitle>
               <div className="mt-4">
-                <span className="text-5xl font-bold text-gray-900">$19.990</span>
-                <p className="text-gray-500 mt-1">por mes (anual)</p>
-                <p className="text-xs text-gray-400">~$1.999/usuario/mes</p>
-              </div>
+  <div className="flex items-baseline gap-2 mb-1">
+    <span className="text-5xl font-bold text-gray-900">$19.990</span>
+    <span className="text-gray-600">/mes</span>
+  </div>
+  <p className="text-xs text-gray-500 mb-2">Facturación anual ($239.880 total)</p>
+  <div className="bg-gray-100 rounded-lg p-2">
+    <p className="text-xs text-gray-600">
+      <span className="font-semibold">También disponible:</span> $24.990/mes sin contrato
+    </p>
+  </div>
+</div>
               <p className="text-sm text-gray-600 mt-2">Para grandes empresas</p>
             </CardHeader>
             <CardContent className="pt-6">
