@@ -9,7 +9,6 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  // ✅ SEO OPTIMIZADO
   title: 'GastosNX | Registra gastos deducibles para tu empresa en Chile',
   description: 'Captura, respalda y organiza los gastos menores de tu empresa. Descuéntalos en tu Declaración de Renta ante el SII. Hecho para pymes y contadores en Chile.',
   keywords: ['gastos deducibles', 'pymes Chile', 'SII', 'declaración de renta', 'gastos operacionales', 'contadores Chile', 'respaldo boletas', 'gastos menores'],

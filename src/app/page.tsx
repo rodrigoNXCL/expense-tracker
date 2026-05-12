@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Check, Shield, ArrowRight, Lock, Clock, Camera, FileText } from 'lucide-react'
+import { Check, Shield, FileCheck, Database, ArrowRight, Lock, Clock, Camera, FileText, Users, Download, CreditCard } from 'lucide-react'
 import Image from 'next/image'
 
 export default function LandingPage() {
@@ -46,12 +46,9 @@ export default function LandingPage() {
       {/* ===== HERO PRINCIPAL ===== */}
       <section className="relative pt-24 pb-32 bg-gradient-to-br from-gray-50 to-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* GRID LAYOUT: Columna Izquierda (Texto) | Columna Derecha (Imagen) */}
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-            
-            {/* COLUMNA IZQUIERDA: Todo el texto */}
-            <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-              
+            {/* Columna Izquierda - Texto */}
+            <div className="text-center lg:text-left">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-sm font-medium mb-8">
                 <Shield className="w-4 h-4" />
@@ -59,37 +56,37 @@ export default function LandingPage() {
               </div>
 
               {/* Título Principal */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight tracking-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 Estás pagando más impuestos
                 <br />
                 <span className="text-emerald-600">de los que te corresponden.</span>
               </h1>
 
               {/* Subtítulo */}
-              <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
+              <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                 Cada gasto menor de tu empresa sin respaldo es dinero que le estás 
                 regalando al SII. GastosNX lo detiene.
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-16 justify-center lg:justify-start">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-16">
                 <button
                   onClick={() => router.push('/registro/free')}
-                  className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-emerald-600 text-white text-lg font-bold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full sm:w-auto px-8 py-4 bg-emerald-600 text-white text-lg font-bold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center justify-center gap-2 shadow-lg"
                 >
                   Probar Gratis
                   <ArrowRight className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-white text-gray-700 text-lg font-bold rounded-xl border-2 border-gray-300 hover:border-gray-400 transition-all"
+                  className="w-full sm:w-auto px-8 py-4 bg-white text-gray-700 text-lg font-bold rounded-xl border-2 border-gray-300 hover:border-gray-400 transition-all"
                 >
                   Cómo Funciona
                 </button>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-8 pt-8 border-t border-gray-200 w-full max-w-lg mx-auto lg:mx-0">
+              <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl mx-auto lg:mx-0 pt-8 border-t border-gray-200">
                 <div className="text-center">
                   <p className="text-2xl sm:text-3xl font-bold text-gray-900">100%</p>
                   <p className="text-xs sm:text-sm text-gray-500 mt-1">Gastos respaldados ante el SII</p>
@@ -105,9 +102,9 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* COLUMNA DERECHA: Imagen (Solo Desktop) */}
-            <div className="hidden lg:block relative">
-              <div className="relative w-full h-[600px] rounded-2xl overflow-hidden shadow-2xl transform rotate-1 hover:rotate-0 transition-all duration-500">
+            {/* Columna Derecha - Imagen */}
+            <div className="relative hidden lg:block">
+              <div className="relative w-full h-[600px] rounded-2xl overflow-hidden shadow-2xl">
                 <Image
                   src="/images/hero_principal.webp"
                   alt="Empresario registrando gasto operacional con GastosNX desde su celular"
@@ -195,7 +192,6 @@ export default function LandingPage() {
 
       {/* ===== SECCIÓN PROBLEMA ===== */}
       <section className="py-24 bg-gray-50 relative overflow-hidden">
-        {/* Imagen de fondo semitransparente */}
         <div className="absolute inset-0 opacity-5">
           <Image
             src="/images/problema_boletas.webp"
@@ -414,6 +410,95 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ===== PLAN CONTADOR - NUEVO BLOQUE ===== */}
+      <section id="contadores" className="py-24 bg-emerald-900/85 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Badge superior */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white text-emerald-900 rounded-full text-sm font-bold">
+              Para contadores
+            </div>
+          </div>
+
+          {/* Título principal */}
+          <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-6">
+            Tú cobras por ordenar. Nosotros lo ordenamos por ti.
+          </h2>
+
+          {/* Subtítulo */}
+          <p className="text-lg text-white/85 text-center max-w-3xl mx-auto mb-12 leading-relaxed">
+            Si manejas varias empresas, el Plan Contador de GastosNX está hecho para ti.
+            Tus clientes registran sus gastos. Tú recibes todo ordenado para trabajar.
+            Sin bolsas de boletas. Sin fotos por WhatsApp. Sin horas perdidas antes del cierre.
+          </p>
+
+          {/* Cards de beneficios */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
+            {/* Card 1: Panel centralizado */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Panel centralizado</h3>
+              <p className="text-white/85 text-sm">
+                Administra todos tus clientes desde una sola cuenta. Sin entrar y salir de sesiones distintas.
+              </p>
+            </div>
+
+            {/* Card 2: Todo listo para exportar */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+                <Download className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Todo listo para exportar</h3>
+              <p className="text-white/85 text-sm">
+                Cada empresa con sus gastos ordenados por fecha y categoría. Un clic y tienes el CSV para trabajar.
+              </p>
+            </div>
+
+            {/* Card 3: Precio por usuario */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Precio por usuario</h3>
+              <p className="text-white/85 text-sm">
+                Pagas solo por los clientes que activas. Sin paquetes fijos. Sin pagar por lo que no usas.
+              </p>
+            </div>
+          </div>
+
+          {/* Bloque de precio */}
+          <div className="text-center mb-12">
+            <p className="text-white/70 text-sm mb-2">Plan Contador</p>
+            <div className="text-5xl md:text-6xl font-bold text-white mb-2">
+              $2.500 <span className="text-2xl md:text-3xl font-normal text-white/70">por usuario / mes</span>
+            </div>
+            <p className="text-white/70 text-sm mb-1">Facturación anual. Mínimo 5 usuarios.</p>
+            <p className="text-white/50 text-xs">Cada usuario incluye 100 registros al mes. Para clientes con mayor volumen, escalar a plan Pro o Enterprise.</p>
+          </div>
+
+          {/* CTA principal */}
+          <div className="text-center mb-6">
+            <a
+              href="https://wa.me/56977412178?text=Hola%2C+soy+contador+y+me+interesa+el+Plan+Contador+de+GastosNX.+Quiero+saber+c%C3%B3mo+funciona+para+mis+clientes."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-emerald-900 text-lg font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-lg"
+            >
+              Quiero el Plan Contador
+              <ArrowRight className="w-5 h-5" />
+            </a>
+          </div>
+
+          {/* Texto de confianza */}
+          <p className="text-white/70 text-sm text-center">
+            Sin contrato de permanencia para comenzar. Únete a los contadores que ya confían en GastosNX.
+          </p>
+        </div>
+      </section>
+
       {/* ===== PLANES Y PRECIOS ===== */}
       <section id="precios" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -576,7 +661,6 @@ export default function LandingPage() {
 
       {/* ===== CIERRE ===== */}
       <section className="py-24 bg-gray-900 relative overflow-hidden">
-        {/* Imagen de fondo semitransparente */}
         <div className="absolute inset-0 opacity-10">
           <Image
             src="/images/cierre_cta.webp"
@@ -588,7 +672,7 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Imagen Izquierda (Solo Desktop) */}
+            {/* Imagen Izquierda */}
             <div className="relative hidden lg:block">
               <div className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-2xl">
                 <Image
