@@ -9,21 +9,27 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'GastosSII - Control Inteligente de Gastos',
-  description: 'Registra boletas con OCR, gestiona gastos empresariales y cumple con el SII. Simple, rápido y seguro.',
-  keywords: ['gastos', 'boletas', 'SII', 'Chile', 'OCR', 'contabilidad', 'empresas'],
+  // ✅ SEO OPTIMIZADO
+  title: 'GastosNX | Registra gastos deducibles para tu empresa en Chile',
+  description: 'Captura, respalda y organiza los gastos menores de tu empresa. Descuéntalos en tu Declaración de Renta ante el SII. Hecho para pymes y contadores en Chile.',
+  keywords: ['gastos deducibles', 'pymes Chile', 'SII', 'declaración de renta', 'gastos operacionales', 'contadores Chile', 'respaldo boletas', 'gastos menores'],
   authors: [{ name: 'NXChile' }],
   openGraph: {
-    title: 'GastosSII - Control Inteligente de Gastos',
-    description: 'Registra boletas con OCR, gestiona gastos empresariales y cumple con el SII.',
+    title: 'GastosNX | Registra gastos deducibles para tu empresa en Chile',
+    description: 'Captura, respalda y organiza los gastos menores de tu empresa. Descuéntalos en tu Declaración de Renta ante el SII.',
     type: 'website',
     locale: 'es_CL',
+    siteName: 'GastosNX',
   },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'GastosSII'
+    title: 'GastosNX'
+  },
+  robots: {
+    index: true,
+    follow: true,
   }
 }
 
@@ -47,7 +53,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="GastosSII" />
+        <meta name="apple-mobile-web-app-title" content="GastosNX" />
       </head>
       <body className="font-sans antialiased min-h-screen">
         {children}

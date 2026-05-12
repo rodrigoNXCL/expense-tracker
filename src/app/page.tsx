@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Check, Shield, FileCheck, Database, ArrowRight, Lock, Clock, Camera, FileText } from 'lucide-react'
+import { Check, Shield, ArrowRight, Lock, Clock, Camera, FileText } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LandingPage() {
   const router = useRouter()
@@ -18,7 +19,7 @@ export default function LandingPage() {
                 🧾
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">GastosSII</h1>
+                <h1 className="text-xl font-bold text-gray-900">GastosNX</h1>
                 <p className="text-xs text-gray-500">by NXChile</p>
               </div>
             </div>
@@ -42,58 +43,79 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ===== HERO PRINCIPAL - NUEVO COPY ===== */}
-      <section className="relative pt-24 pb-32 bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Badge de confianza */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-sm font-medium mb-8">
-            <Shield className="w-4 h-4" />
-            Respaldo documental empresarial • Compatible con el SII
-          </div>
+      {/* ===== HERO PRINCIPAL ===== */}
+      <section className="relative pt-24 pb-32 bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* GRID LAYOUT: Columna Izquierda (Texto) | Columna Derecha (Imagen) */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+            
+            {/* COLUMNA IZQUIERDA: Todo el texto */}
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+              
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-sm font-medium mb-8">
+                <Shield className="w-4 h-4" />
+                Para pymes y contadores en Chile • Compatible con el SII
+              </div>
 
-          {/* Título Principal - NUEVO COPY */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Muchos gastos reales nunca llegan
-            <br />
-            <span className="text-emerald-600">respaldados a la renta.</span>
-          </h1>
+              {/* Título Principal */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight tracking-tight">
+                Estás pagando más impuestos
+                <br />
+                <span className="text-emerald-600">de los que te corresponden.</span>
+              </h1>
 
-          {/* Subtítulo - NUEVO COPY */}
-          <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Registra y respalda peajes, estacionamientos, vouchers y gastos operacionales 
-            antes de que se pierdan.
-          </p>
+              {/* Subtítulo */}
+              <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
+                Cada gasto menor de tu empresa sin respaldo es dinero que le estás 
+                regalando al SII. GastosNX lo detiene.
+              </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <button
-              onClick={() => router.push('/registro/free')}
-              className="px-10 py-5 bg-emerald-600 text-white text-lg font-bold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center gap-2 shadow-lg"
-            >
-              Probar Gratis
-              <ArrowRight className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-10 py-5 bg-white text-gray-700 text-lg font-bold rounded-xl border-2 border-gray-300 hover:border-gray-400 transition-all"
-            >
-              Cómo Funciona
-            </button>
-          </div>
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-16 justify-center lg:justify-start">
+                <button
+                  onClick={() => router.push('/registro/free')}
+                  className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-emerald-600 text-white text-lg font-bold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center justify-center gap-2 shadow-lg"
+                >
+                  Probar Gratis
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-white text-gray-700 text-lg font-bold rounded-xl border-2 border-gray-300 hover:border-gray-400 transition-all"
+                >
+                  Cómo Funciona
+                </button>
+              </div>
 
-          {/* Stats de confianza */}
-          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-16 border-t border-gray-200">
-            <div>
-              <p className="text-3xl font-bold text-gray-900">100%</p>
-              <p className="text-sm text-gray-500 mt-1">Trazabilidad documental</p>
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 sm:gap-8 pt-8 border-t border-gray-200 w-full max-w-lg mx-auto lg:mx-0">
+                <div className="text-center">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">100%</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">Gastos respaldados ante el SII</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">&lt;10s</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">Encuentra cualquier boleta</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">OCR</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">Tecnología bancaria - Azure AI</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-3xl font-bold text-gray-900">&lt;10s</p>
-              <p className="text-sm text-gray-500 mt-1">Búsqueda de evidencia</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-gray-900">OCR</p>
-              <p className="text-sm text-gray-500 mt-1">Azure AI validado</p>
+
+            {/* COLUMNA DERECHA: Imagen (Solo Desktop) */}
+            <div className="hidden lg:block relative">
+              <div className="relative w-full h-[600px] rounded-2xl overflow-hidden shadow-2xl transform rotate-1 hover:rotate-0 transition-all duration-500">
+                <Image
+                  src="/images/hero_principal.webp"
+                  alt="Empresario registrando gasto operacional con GastosNX desde su celular"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -104,63 +126,103 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Respaldo centralizado. Evidencia disponible. Control empresarial.
+              El eslabón que faltaba entre tu operación y tu contador.
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              GastosSII no es una app para "ordenar gastos". Es tu capa de protección documental.
+              GastosNX no reemplaza a tu contador. Le da todo lo que necesita para descontar 
+              cada gasto real en tu Declaración de Renta anual. Sin boletas perdidas. 
+              Sin gastos que quedaron fuera.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Paso 1 */}
             <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
-              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-                <Camera className="w-7 h-7 text-emerald-600" />
+              <div className="relative w-full h-48 mb-6 rounded-lg overflow-hidden">
+                <Image
+                  src="/images/paso1_captura.webp"
+                  alt="Captura de boleta con OCR en GastosNX"
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">1. Captura tu boleta</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">1. Fotografía el gasto donde ocurre</h3>
               <p className="text-gray-600">
-                Toma una foto o sube el documento. Nuestro OCR con Azure AI extrae todos los datos automáticamente.
+                En el estacionamiento, en el restaurant, en la ferretería. Saca la foto 
+                en el momento. GastosNX lee la boleta con inteligencia artificial y la 
+                registra sola. Sin escribir nada.
               </p>
             </div>
 
+            {/* Paso 2 */}
             <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
-              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-                <Database className="w-7 h-7 text-emerald-600" />
+              <div className="relative w-full h-48 mb-6 rounded-lg overflow-hidden">
+                <Image
+                  src="/images/paso2_respaldo.webp"
+                  alt="Respaldo automático de gastos operacionales en la nube"
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">2. Se respalda automáticamente</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">2. Queda respaldado y categorizado</h3>
               <p className="text-gray-600">
-                Cada documento se guarda en la nube con trazabilidad completa. Sin depender de personas o archivos locales.
+                El sistema lo clasifica por tipo de gasto, lo guarda en la nube con 
+                trazabilidad completa y lo deja disponible para cuando lo necesites. 
+                Sin carpetas. Sin Excel manual.
               </p>
             </div>
 
+            {/* Paso 3 */}
             <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
-              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-                <FileCheck className="w-7 h-7 text-emerald-600" />
+              <div className="relative w-full h-48 mb-6 rounded-lg overflow-hidden">
+                <Image
+                  src="/images/paso3_contador.webp"
+                  alt="Gastos exportados y listos para el contador en GastosNX"
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">3. Disponible cuando lo necesites</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">3. Tu contador lo descuenta en renta</h3>
               <p className="text-gray-600">
-                Encuentra cualquier respaldo en segundos. Listo para el SII, auditores o tu contador.
+                Exporta todos los gastos del período con un clic. Llega a tu contador 
+                con todo ordenado por categoría y fecha. Ningún gasto deducible queda 
+                fuera de tu Declaración de Renta.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== SECCIÓN PROBLEMA - NUEVO COPY ===== */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* ===== SECCIÓN PROBLEMA ===== */}
+      <section className="py-24 bg-gray-50 relative overflow-hidden">
+        {/* Imagen de fondo semitransparente */}
+        <div className="absolute inset-0 opacity-5">
+          <Image
+            src="/images/problema_boletas.webp"
+            alt="Boletas y vouchers sin respaldo en escritorio de empresa"
+            fill
+            className="object-cover"
+          />
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Los gastos pequeños también importan.
+            Un gasto sin respaldo no existe para el SII.
           </h2>
-          <p className="text-xl text-gray-600 leading-relaxed">
-            En muchas empresas, los gastos operacionales menores terminan perdiéndose entre papeles, 
-            boletas borradas o registros incompletos.
+          <p className="text-xl text-gray-600 leading-relaxed mb-8">
+            El peaje, el estacionamiento, la colación de trabajo, los materiales del día: 
+            todos son gastos reales. Todos son deducibles. Pero sin respaldo, el SII no los reconoce.
             <br /><br />
-            <span className="text-emerald-600 font-semibold">Y cuando llega el cierre tributario, simplemente no están.</span>
+            <span className="text-emerald-600 font-semibold">
+              Cuando llega la Declaración de Renta, esos gastos no existen. Y tu empresa 
+              paga impuestos sobre una base que debería ser menor. Eso no es mala suerte — 
+              es falta de sistema.
+            </span>
           </p>
         </div>
       </section>
 
-      {/* ===== SECCIÓN SOLUCIÓN - NUEVO COPY ===== */}
+      {/* ===== SECCIÓN SOLUCIÓN ===== */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -168,67 +230,88 @@ export default function LandingPage() {
               <Shield className="w-8 h-8 text-emerald-600" />
             </div>
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Respalda gastos reales antes de que se pierdan.
+              Hecho para los que mueven Chile todos los días.
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Gastos.nxchile te ayuda a mantener registro y respaldo digital de gastos operacionales 
-              del día a día, sin depender del papel físico ni carpetas improvisadas.
+              GastosNX está diseñado para pymes y contadores chilenos que necesitan 
+              registrar gastos menores operacionales y descontarlos legalmente en renta. 
+              Sin depender de papel. Sin carpetas improvisadas. Sin perder un peso 
+              que te corresponde recuperar.
             </p>
           </div>
 
+          {/* 6 Features */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
-                <FileCheck className="w-6 h-6 text-emerald-600" />
+                <Camera className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Registro rápido</h3>
-              <p className="text-gray-600 text-sm">Captura gastos en segundos desde cualquier dispositivo.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Captura en segundos, donde estés</h3>
+              <p className="text-gray-600 text-sm">
+                Fotografía la boleta en el momento. Sin esperar llegar a la oficina. 
+                Sin perder el respaldo.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
-                <Database className="w-6 h-6 text-emerald-600" />
+                <Shield className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Respaldo digital</h3>
-              <p className="text-gray-600 text-sm">Tus documentos seguros en la nube, siempre disponibles.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Respaldo legal ante el SII</h3>
+              <p className="text-gray-600 text-sm">
+                Cada documento guardado en la nube con trazabilidad completa. 
+                Válido ante fiscalización o auditoría.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
                 <Lock className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Información disponible</h3>
-              <p className="text-gray-600 text-sm">Accede a tus gastos cuando los necesites, sin depender de nadie.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Acceso inmediato para ti y tu contador</h3>
+              <p className="text-gray-600 text-sm">
+                Cualquier boleta en menos de 10 segundos. Sin llamar a nadie. 
+                Sin buscar en carpetas.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
                 <FileText className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Historial organizado</h3>
-              <p className="text-gray-600 text-sm">Todos tus gastos en un solo lugar, ordenados por fecha y categoría.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Historial listo para declaración de renta</h3>
+              <p className="text-gray-600 text-sm">
+                Todos tus gastos ordenados por tipo, monto y fecha. 
+                Exactamente como lo necesita tu contador.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
                 <Check className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Gastos listos para revisión</h3>
-              <p className="text-gray-600 text-sm">Documentación lista para el SII, auditores o tu contador.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Exportación directa para tu contador</h3>
+              <p className="text-gray-600 text-sm">
+                Un clic y tienes todos los gastos del período en Excel o CSV. 
+                Tu contador llega con todo listo.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
                 <Clock className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Ahorra tiempo</h3>
-              <p className="text-gray-600 text-sm">Menos búsqueda de papeles, más tiempo para tu negocio.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Menos papeles. Más gastos deducibles.</h3>
+              <p className="text-gray-600 text-sm">
+                Cada boleta que antes se perdía, ahora está respaldada. 
+                Y eso se traduce en menos impuestos al cierre del año.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== SECCIÓN DIFERENCIAL - NUEVA ===== */}
+      {/* ===== SECCIÓN DIFERENCIAL ===== */}
       <section className="py-24 bg-gradient-to-br from-emerald-50 to-teal-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-2xl mb-6">
@@ -238,86 +321,109 @@ export default function LandingPage() {
             Si el gasto existe, debería quedar respaldado.
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed">
-            La plataforma está diseñada para ayudar a empresas y contribuyentes de primera categoría 
-            a mantener respaldo real de gastos operacionales que muchas veces quedan fuera del registro tributario.
+            GastosNX está diseñado para empresas y contribuyentes de primera categoría 
+            que necesitan registrar gastos operacionales menores y descontarlos de su 
+            base imponible en la Declaración de Renta anual. Si el gasto ocurrió y 
+            tienes el respaldo, el SII lo acepta. Nosotros nos encargamos de que 
+            siempre tengas ese respaldo.
           </p>
         </div>
       </section>
 
-      {/* ===== SECCIÓN BENEFICIOS - NUEVO COPY ===== */}
+      {/* ===== TIPOS DE GASTO ===== */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Menos papeles perdidos. Más respaldo para tu operación.
+              ¿Qué gastos puedes descontar en tu renta?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Centraliza boletas, vouchers y gastos menores en un solo lugar y mantén 
-              tu información disponible cuando realmente la necesites.
+              En Chile, los gastos operacionales menores son deducibles si cuentas 
+              con el respaldo correspondiente. GastosNX te ayuda a capturarlos todos, 
+              sin que ninguno quede fuera de tu declaración.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <div className="flex items-start gap-4 p-6 bg-emerald-50 rounded-xl">
-              <div className="text-3xl"></div>
+              <div className="text-4xl">🛣️</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Peajes</h3>
-                <p className="text-gray-600 text-sm">Registra todos tus gastos de peaje sin perder los vouchers.</p>
+                <p className="text-gray-600 text-sm">
+                  Gastos de peaje deducibles. Fotografía el voucher en el momento 
+                  y nunca más pierdas ese respaldo.
+                </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 p-6 bg-emerald-50 rounded-xl">
-              <div className="text-3xl">🅿️</div>
+              <div className="text-4xl">🅿️</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Estacionamientos</h3>
-                <p className="text-gray-600 text-sm">Respalda gastos de estacionamiento operacional.</p>
+                <p className="text-gray-600 text-sm">
+                  Estacionamientos de trabajo, 100% deducibles. 
+                  Respalda cada ticket antes de que se borre.
+                </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 p-6 bg-emerald-50 rounded-xl">
-              <div className="text-3xl">🛒</div>
+              <div className="text-4xl">🛒</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Compras menores</h3>
-                <p className="text-gray-600 text-sm">Gastos pequeños que suman al final del mes.</p>
+                <p className="text-gray-600 text-sm">
+                  Materiales, insumos y compras menores suman más de lo que 
+                  crees al cierre tributario.
+                </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 p-6 bg-emerald-50 rounded-xl">
-              <div className="text-3xl">📄</div>
+              <div className="text-4xl">📄</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Vouchers</h3>
-                <p className="text-gray-600 text-sm">Todos tus vouchers en un solo lugar, siempre disponibles.</p>
+                <p className="text-gray-600 text-sm">
+                  Vouchers digitalizados y con trazabilidad. 
+                  Válidos ante cualquier revisión del SII.
+                </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 p-6 bg-emerald-50 rounded-xl">
-              <div className="text-3xl">☕</div>
+              <div className="text-4xl">☕</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Colaciones</h3>
-                <p className="text-gray-600 text-sm">Gastos de alimentación operacional respaldados.</p>
+                <p className="text-gray-600 text-sm">
+                  Colaciones de trabajo son gasto deducible. 
+                  GastosNX las respalda antes de que se pierdan.
+                </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 p-6 bg-emerald-50 rounded-xl">
-              <div className="text-3xl">📦</div>
+              <div className="text-4xl">📦</div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Gastos operacionales diarios</h3>
-                <p className="text-gray-600 text-sm">Todo lo que tu empresa gasta día a día, bajo control.</p>
+                <p className="text-gray-600 text-sm">
+                  Cada gasto operacional del día, respaldado y listo 
+                  para descontarlo en tu Declaración de Renta.
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== PLANES Y PRECIOS - CON OPCIONES MENSUAL/ANUAL ===== */}
+      {/* ===== PLANES Y PRECIOS ===== */}
       <section id="precios" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Planes para cada necesidad
+              Elige tu plan. Empieza a recuperar lo que estabas perdiendo.
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Elige el plan que mejor se adapte a tu empresa
+              El costo mensual de GastosNX es menor que el primer gasto deducible 
+              que rescates. Así de directo.
             </p>
           </div>
 
@@ -326,7 +432,7 @@ export default function LandingPage() {
             <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
-                <p className="text-gray-600">Comienza sin costo</p>
+                <p className="text-gray-600">Pruébalo con tus propios gastos reales. Sin tarjeta.</p>
               </div>
               <div className="mb-6">
                 <span className="text-5xl font-bold text-gray-900">$0</span>
@@ -358,17 +464,15 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Plan Pro (Destacado) */}
+            {/* Plan Pro */}
             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 shadow-2xl transform scale-105 relative">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold">
                 MÁS POPULAR
               </div>
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
-                <p className="text-emerald-100">Para empresas en crecimiento</p>
+                <p className="text-emerald-100">Para pymes que quieren cerrar el año pagando menos.</p>
               </div>
-              
-              {/* PRECIOS DUALES - MENSUAL Y ANUAL */}
               <div className="mb-6">
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-4xl font-bold text-white">$9.900</span>
@@ -381,7 +485,6 @@ export default function LandingPage() {
                   </p>
                 </div>
               </div>
-
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-3 text-white">
                   <Check className="w-5 h-5 flex-shrink-0" />
@@ -416,10 +519,8 @@ export default function LandingPage() {
             <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
-                <p className="text-gray-600">Para grandes empresas</p>
+                <p className="text-gray-600">Para empresas con múltiples centros de costo y equipos que generan gastos en terreno.</p>
               </div>
-              
-              {/* PRECIOS DUALES - MENSUAL Y ANUAL */}
               <div className="mb-6">
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-4xl font-bold text-gray-900">$19.990</span>
@@ -432,7 +533,6 @@ export default function LandingPage() {
                   </p>
                 </div>
               </div>
-
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-3 text-gray-600">
                   <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
@@ -463,40 +563,76 @@ export default function LandingPage() {
               </button>
             </div>
           </div>
+
+          {/* Nota de urgencia */}
+          <div className="text-center mt-12 p-6 bg-amber-50 border border-amber-200 rounded-xl">
+            <p className="text-amber-800 font-medium">
+              ⚠️ La Declaración de Renta es una vez al año. Los gastos ocurren todos los días. 
+              Cada semana sin GastosNX es una semana de respaldos que ya no puedes recuperar.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* ===== CIERRE - NUEVO COPY ===== */}
-      <section className="py-24 bg-gray-900">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Respaldo digital para gastos reales.
-          </h2>
-          <p className="text-xl text-gray-300 mb-10 leading-relaxed">
-            Porque muchos gastos sí existen.
-            <br />
-            El problema es que normalmente no quedan respaldados correctamente.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={() => router.push('/registro/free')}
-              className="px-10 py-5 bg-emerald-600 text-white text-lg font-bold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center gap-2"
-            >
-              Comenzar ahora
-              <ArrowRight className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => router.push('/registro')}
-              className="px-10 py-5 bg-white text-gray-900 text-lg font-bold rounded-xl hover:bg-gray-100 transition-all"
-            >
-              Ver Planes
-            </button>
-          </div>
+      {/* ===== CIERRE ===== */}
+      <section className="py-24 bg-gray-900 relative overflow-hidden">
+        {/* Imagen de fondo semitransparente */}
+        <div className="absolute inset-0 opacity-10">
+          <Image
+            src="/images/cierre_cta.webp"
+            alt="Boleta respaldada digitalmente con GastosNX"
+            fill
+            className="object-cover"
+          />
+        </div>
 
-          <p className="text-sm text-gray-400 mt-8">
-            ⏱️ Recibirás tus accesos en máximo 24 hrs hábiles
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Imagen Izquierda (Solo Desktop) */}
+            <div className="relative hidden lg:block">
+              <div className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src="/images/para_pymes.webp"
+                  alt="Dueño de pyme chilena con control de gastos en su celular"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Copy Cierre */}
+            <div className="text-center lg:text-left">
+              <h2 className="text-4xl font-bold text-white mb-6">
+                Llega a tu contador con todo. Paga solo lo que te corresponde.
+              </h2>
+              <p className="text-xl text-gray-300 mb-10 leading-relaxed">
+                Cada gasto que registras hoy puede volver mañana como ahorro real 
+                en tu declaración. GastosNX es la herramienta que conecta tu 
+                operación con tu contador — para que ningún gasto válido quede 
+                fuera de tu renta.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+                <button
+                  onClick={() => router.push('/registro/free')}
+                  className="px-10 py-5 bg-emerald-600 text-white text-lg font-bold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center gap-2"
+                >
+                  Comenzar ahora
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => router.push('/registro')}
+                  className="px-10 py-5 bg-white text-gray-900 text-lg font-bold rounded-xl hover:bg-gray-100 transition-all"
+                >
+                  Ver Planes
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-400 mt-8">
+                ⏱️ Recibirás tus accesos en máximo 24 hrs hábiles
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -509,10 +645,13 @@ export default function LandingPage() {
                 <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">
                   🧾
                 </div>
-                <h3 className="text-lg font-bold text-white">GastosSII</h3>
+                <h3 className="text-lg font-bold text-white">GastosNX</h3>
               </div>
               <p className="text-sm text-gray-400">
-                Respaldo documental empresarial para compañías que requieren control y trazabilidad.
+                GastosNX es el sistema que usan pymes y contadores en Chile para 
+                registrar, respaldar y descontar gastos operacionales menores en 
+                la Declaración de Renta anual. Compatible con los requisitos del 
+                SII. Desarrollado en Chile para la realidad tributaria chilena.
               </p>
             </div>
             <div>
@@ -533,7 +672,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
-            <p>© 2026 GastosSII by NXChile. Todos los derechos reservados.</p>
+            <p>© 2026 GastosNX by NXChile. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
