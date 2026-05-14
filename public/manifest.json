@@ -1,7 +1,7 @@
 {
-  "name": "GastosSII - Registro de Gastos",
-  "short_name": "GastosSII",
-  "description": "Controla tus gastos y boletas con OCR. Compatible con el SII.",
+  "name": "GastosNX - Registro de Gastos",
+  "short_name": "GastosNX",
+  "description": "Guarda y organiza gastos desde el celular antes de que se pierdan. Pensado para pymes y contadores en Chile.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#F2F2F7",

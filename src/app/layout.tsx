@@ -9,17 +9,34 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'GastosNX | Registra gastos deducibles para tu empresa en Chile',
-  description: 'Captura, respalda y organiza los gastos menores de tu empresa. Descuéntalos en tu Declaración de Renta ante el SII. Hecho para pymes y contadores en Chile.',
-  keywords: ['gastos deducibles', 'pymes Chile', 'SII', 'declaración de renta', 'gastos operacionales', 'contadores Chile', 'respaldo boletas', 'gastos menores'],
+  title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
+  description: 'Guarda y organiza gastos desde el celular antes de que se pierdan. Pensado para pymes y contadores en Chile. Prueba gratis.',
+  keywords: ['gastos operacionales', 'pymes Chile', 'contadores Chile', 'respaldo gastos', 'ordenar boletas', 'control de gastos'],
   authors: [{ name: 'NXChile' }],
+  
   openGraph: {
-    title: 'GastosNX | Registra gastos deducibles para tu empresa en Chile',
-    description: 'Captura, respalda y organiza los gastos menores de tu empresa. Descuéntalos en tu Declaración de Renta ante el SII.',
+    title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
+    description: 'Guarda y organiza gastos desde el celular antes de que se pierdan. Para pymes y contadores en Chile.',
     type: 'website',
     locale: 'es_CL',
     siteName: 'GastosNX',
+    url: 'https://gastos.nxchile.com',
+    images: [
+      {
+        url: 'https://gastos.nxchile.com/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'GastosNX - Guarda y organiza gastos',
+      },
+    ],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
+    description: 'Guarda y organiza gastos desde el celular antes de que se pierdan. Para pymes y contadores en Chile.',
+    images: ['https://gastos.nxchile.com/images/og-image.jpg'],
+  },
+  
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -29,6 +46,10 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icon-192.png',
   }
 }
 
@@ -48,6 +69,7 @@ export default function RootLayout({
   return (
     <html lang="es-CL" className={inter.variable}>
       <head>
+        <link rel="canonical" href="https://gastos.nxchile.com" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
