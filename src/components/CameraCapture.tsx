@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useRef, useEffect } from 'react'
 
 interface CameraCaptureProps {
@@ -16,23 +17,24 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
   const handleCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    
+
     if (!file.type.startsWith('image/')) {
       onError?.('Por favor selecciona una imagen válida')
       return
     }
-    
+
     setIsCapturing(true)
     
     const url = URL.createObjectURL(file)
     setPreviewUrl(url)
     setCapturedFile(file)
     onPreview?.(url)
-    
+
+    // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
-    
+
     setIsCapturing(false)
   }
 
@@ -44,19 +46,31 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
-      setCapturedFile(null)
     }
+    setCapturedFile(null)
     triggerCamera()
   }
 
   const confirmPhoto = () => {
+    console.log(' Confirmando foto...', capturedFile)
+    
     if (capturedFile) {
-      onCapture(capturedFile)
+      // Crear blob desde el file
+      const blob = new Blob([capturedFile], { type: capturedFile.type })
+      console.log('✅ Enviando blob:', blob)
+      onCapture(blob)
+    } else {
+      console.error('❌ No hay archivo capturado')
+      onError?.('No hay imagen para confirmar')
     }
   }
 
-  useEffect(() => () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
   }, [previewUrl])
 
   return (
@@ -104,7 +118,6 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
         <button
           type="button"
           onClick={triggerCamera}
-          onTouchStart={(e) => e.preventDefault()}
           disabled={isCapturing}
           className="w-full btn btn-primary shadow-lg disabled:opacity-50 active:scale-95 transition-transform"
         >
@@ -131,7 +144,7 @@ export default function CameraCapture({ onCapture, onPreview, onError }: CameraC
         </ul>
       </div>
 
-      <p className="text-xs text-text-muted text-center">
+      <p className="text-xs text-text muted text-center">
         {previewUrl ? 'Confirma o retoma la foto' : 'Usa la cámara trasera • Foto nítida = mejor OCR'}
       </p>
     </div>

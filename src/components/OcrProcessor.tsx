@@ -1,7 +1,7 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { extractTextFromImage, OcrResult } from '@/lib/ocr'
+import { Loader2 } from 'lucide-react'
 
 interface OcrProcessorProps {
   imageBlob: Blob | null
@@ -21,10 +21,8 @@ export default function OcrProcessor({ imageBlob, onExtracted, onError }: OcrPro
 
   const processImage = async () => {
     if (!imageBlob) return
-
     setIsProcessing(true)
     setProgress(0)
-
     try {
       const result = await extractTextFromImage(imageBlob, setProgress)
       onExtracted(result)
@@ -41,17 +39,16 @@ export default function OcrProcessor({ imageBlob, onExtracted, onError }: OcrPro
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="card max-w-sm w-full space-y-4">
         <div className="text-center space-y-2">
-          <div className="text-4xl">🤖</div>
+          <div className="text-4xl"></div>
           <h3 className="text-lg font-semibold">Procesando con OCR</h3>
           <p className="text-sm text-text-muted">
             Extrayendo texto de la boleta...
           </p>
         </div>
-
         {/* Barra de progreso */}
         <div className="space-y-2">
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-primary transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
             />
@@ -60,7 +57,6 @@ export default function OcrProcessor({ imageBlob, onExtracted, onError }: OcrPro
             {progress}%
           </p>
         </div>
-
         <p className="text-xs text-text-muted text-center">
           Esto puede tomar unos segundos
         </p>

@@ -2,157 +2,90 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 API OCR: Usando Azure AI Vision...')
-
+    console.log('🚀 API OCR: Usando Google Cloud Vision...')
+    
     const formData = await request.formData()
     const file = formData.get('file') as File
-
+    
     if (!file) {
+      console.error('❌ No file provided in FormData')
       return NextResponse.json({ error: 'No se proporcionó imagen' }, { status: 400 })
     }
 
     console.log('📄 Imagen recibida:', file.size, 'bytes')
 
-    // Convertir a ArrayBuffer (bytes crudos)
-    const bytes = await file.arrayBuffer()
-
-    // Obtener credenciales
-    const endpoint = process.env.AZURE_VISION_ENDPOINT
-    const apiKey = process.env.AZURE_VISION_KEY
-
-    if (!endpoint || !apiKey) {
-      throw new Error('Faltan credenciales de Azure (revisa .env.local)')
+    // Validar que es una imagen
+    if (!file.type.startsWith('image/')) {
+      return NextResponse.json({ error: 'El archivo debe ser una imagen' }, { status: 400 })
     }
 
-    console.log('🔑 Endpoint:', endpoint)
+    // Convertir a base64 para Google Vision
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const base64Image = buffer.toString('base64')
 
-    // Llamar a Azure AI Vision - Read API
-    const analyzeResponse = await fetch(
-      `${endpoint}/vision/v3.2/read/analyze?language=es`,
+    // Obtener API Key de Google desde variables de entorno
+    const apiKey = process.env.GOOGLE_VISION_API_KEY
+    
+    if (!apiKey) {
+      console.error('❌ Falta GOOGLE_VISION_API_KEY en variables de entorno')
+      return NextResponse.json({ error: 'Configuración de OCR incompleta' }, { status: 500 })
+    }
+
+    // Llamar a Google Cloud Vision API
+    const response = await fetch(
+      `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
       {
         method: 'POST',
         headers: {
-          'Ocp-Apim-Subscription-Key': apiKey,
-          'Content-Type': 'application/octet-stream',
+          'Content-Type': 'application/json',
         },
-        body: bytes,
+        body: JSON.stringify({
+          requests: [
+            {
+              image: {
+                content: base64Image,
+              },
+              features: [
+                {
+                  type: 'TEXT_DETECTION',
+                  maxResults: 1,
+                },
+              ],
+            },
+          ],
+        }),
       }
     )
 
-    if (!analyzeResponse.ok) {
-      const errorText = await analyzeResponse.text()
-      console.error('❌ Azure API Error:', analyzeResponse.status, errorText)
-      throw new Error(`Azure API Error: ${analyzeResponse.status}`)
+    const data = await response.json()
+
+    if (!response.ok) {
+      console.error('❌ Google Vision API Error:', data)
+      throw new Error(data.error?.message || 'Error en Google Vision API')
     }
 
-    // Obtener operation-location para poll results
-    const operationLocation = analyzeResponse.headers.get('operation-location')
-    if (!operationLocation) {
-      throw new Error('No se obtuvo operation-location')
+    if (!data.responses || !data.responses[0].textAnnotations) {
+      console.warn('⚠️ Google no extrajo texto de la imagen')
+      return NextResponse.json({ error: 'No se detectó texto en la imagen' }, { status: 400 })
     }
 
-    // Esperar y obtener resultados (polling)
-    let result: any = { status: 'running' }
-    let attempts = 0
-    const maxAttempts = 15
+    // Extraer texto completo
+    const fullText = data.responses[0].textAnnotations[0].description
+    const confidence = 95 // Google Vision no retorna confidence en TEXT_DETECTION
 
-    while (
-      (result.status?.toLowerCase() === 'running' || 
-       result.status?.toLowerCase() === 'notstarted') && 
-      attempts < maxAttempts
-    ) {
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      attempts++
+    console.log(`✅ Google Cloud Vision: ${confidence}% confianza`)
+    console.log(`📄 Texto extraído:`, fullText.substring(0, 300))
 
-      const resultResponse = await fetch(operationLocation, {
-        headers: {
-          'Ocp-Apim-Subscription-Key': apiKey,
-        },
-      })
+    return NextResponse.json({ 
+      text: fullText, 
+      confidence 
+    })
 
-      result = await resultResponse.json()
-      console.log(`🔄 Polling OCR: intento ${attempts}, status: ${result.status}`)
-    }
-
-    // Validar status (case-insensitive)
-    if (result.status?.toLowerCase() !== 'succeeded') {
-      throw new Error(`OCR no completado: ${result.status}`)
-    }
-
-    // ===== EXTRAER TEXTO CORRECTAMENTE =====
-    let text = ''
-    let confidence = 85
-
-    const analyzeResult = result.analyzeResult
-
-    // Opción 1: Usar content (texto completo - más confiable)
-    if (analyzeResult?.content && analyzeResult.content.trim().length > 0) {
-      text = analyzeResult.content.trim()
-    }
-
-    // Opción 2: Extraer desde pages[].lines[].text
-    if (!text && analyzeResult?.pages) {
-      const allLines: string[] = []
-      
-      for (const page of analyzeResult.pages) {
-        if (page.lines && Array.isArray(page.lines)) {
-          for (const line of page.lines) {
-            if (line.text) {
-              allLines.push(line.text)
-              // Calcular confianza desde palabras
-              if (line.words && Array.isArray(line.words)) {
-                for (const word of line.words) {
-                  if (typeof word.confidence === 'number') {
-                    confidence = Math.round(word.confidence * 100)
-                    break
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      
-      text = allLines.join('\n').trim()
-    }
-
-    // Opción 3: Fallback a readResults (versión anterior de API)
-    if (!text && analyzeResult?.readResults) {
-      const allLines: string[] = []
-      
-      for (const readResult of analyzeResult.readResults) {
-        if (readResult.lines && Array.isArray(readResult.lines)) {
-          for (const line of readResult.lines) {
-            if (line.text) {
-              allLines.push(line.text)
-            }
-          }
-        }
-      }
-      
-      text = allLines.join('\n').trim()
-    }
-
-    // Debug si texto está vacío
-    if (!text) {
-      console.warn('⚠️ Azure no extrajo texto. Respuesta:', JSON.stringify({
-        status: result.status,
-        hasAnalyzeResult: !!analyzeResult,
-        hasContent: !!analyzeResult?.content,
-        hasPages: !!analyzeResult?.pages,
-        pageCount: analyzeResult?.pages?.length,
-      }, null, 2))
-      throw new Error('No se pudo extraer texto de la imagen')
-    }
-
-    console.log(`✅ Azure AI Vision: ${confidence}% confianza`)
-    console.log(`📄 Texto extraído:`, text.substring(0, 300))
-
-    return NextResponse.json({ text, confidence })
   } catch (error) {
-    console.error('❌ Error API OCR:', error instanceof Error ? error.message : error)
+    console.error(' Error en API OCR:', error instanceof Error ? error.message : error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Error en OCR' },
+      { error: error instanceof Error ? error.message : 'Error interno del servidor' },
       { status: 500 }
     )
   }

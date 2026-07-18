@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import CameraCapture from '@/components/CameraCapture'
@@ -55,6 +54,7 @@ export default function CapturaPage() {
     setStep('review')
   }
 
+  // ✅ AGREGADO: Función que faltaba
   const handleError = (errorMessage: string) => {
     setError(errorMessage)
   }
@@ -62,14 +62,14 @@ export default function CapturaPage() {
   const handleSaveExpense = async (data: ParsedExpense) => {
     setIsSubmitting(true)
     setError(null)
-
+    
     const session = getSession()
     if (!session) {
       setError('No hay sesión activa')
       setIsSubmitting(false)
       return
     }
-
+    
     try {
       const formData = new FormData()
       if (capturedImage) {
@@ -93,18 +93,17 @@ export default function CapturaPage() {
         userRol: session.rol,
         userSheetId: session.sheet_id_asociado,
       }))
-
+      
       const response = await fetch('/api/save-expense', {
         method: 'POST',
         body: formData,
       })
-
+      
       const result = await response.json()
-
       if (!response.ok) {
         throw new Error(result.error || 'Error al guardar el gasto')
       }
-
+      
       const updatedSession = { ...session, boletas_usadas: result.boletas_usadas }
       saveSession(updatedSession)
       setUser(updatedSession)
@@ -157,7 +156,6 @@ export default function CapturaPage() {
                 <p className="text-xs text-gray-500">Nueva Boleta</p>
               </div>
             </div>
-
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -165,7 +163,7 @@ export default function CapturaPage() {
                 onClick={() => router.push('/dashboard')}
                 className="text-gray-600 hover:text-emerald-600"
               >
-                <span className="hidden sm:inline">📋 Dashboard</span>
+                <span className="hidden sm:inline"> Dashboard</span>
                 <span className="sm:hidden">Dashboard</span>
               </Button>
               <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -178,20 +176,19 @@ export default function CapturaPage() {
       </nav>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        
         {user && limiteAlcanzado && (
           <Alert variant="error">
             <XCircle className="h-5 w-5" />
             <div>
               <p className="font-semibold">Límite Alcanzado</p>
               <p className="text-sm mt-1">
-                Has usado {user.boletas_usadas} de {user.limite_boletas} boletas. 
+                Has usado {user.boletas_usadas} de {user.limite_boletas} boletas.
                 Contacta a tu administrador.
               </p>
             </div>
           </Alert>
         )}
-
+        
         {user && porcentajeUsado >= 80 && !limiteAlcanzado && (
           <Alert variant={porcentajeUsado >= 90 ? 'warning' : 'info'}>
             <AlertCircle className="h-5 w-5" />
@@ -205,7 +202,7 @@ export default function CapturaPage() {
             </div>
           </Alert>
         )}
-
+        
         {error && (
           <Alert variant="error">
             <XCircle className="h-5 w-5" />
@@ -252,12 +249,12 @@ export default function CapturaPage() {
                     OCR Inteligente
                   </Badge>
                 </div>
-
-                <CameraCapture 
-                  onCapture={handleImageCapture} 
-                  onError={handleError} 
+                
+                <CameraCapture
+                  onCapture={handleImageCapture}
+                  onError={handleError}
                 />
-
+                
                 <Card className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
                   <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-emerald-600" />
@@ -288,10 +285,10 @@ export default function CapturaPage() {
         )}
 
         {capturedImage && !ocrResult && (
-          <OcrProcessor 
-            imageBlob={capturedImage} 
-            onExtracted={handleOcrExtracted} 
-            onError={handleError} 
+          <OcrProcessor
+            imageBlob={capturedImage}
+            onExtracted={handleOcrExtracted}
+            onError={handleError}
           />
         )}
 
@@ -308,9 +305,8 @@ export default function CapturaPage() {
                 </p>
               </div>
             </div>
-
-            <ExpenseForm 
-              initialData={parsedData} 
+            <ExpenseForm
+              initialData={parsedData}
               onSave={handleSaveExpense}
               onCancel={handleReset}
               isSubmitting={isSubmitting}
@@ -323,7 +319,6 @@ export default function CapturaPage() {
             <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
               <CheckCircle className="h-10 w-10 text-emerald-600" />
             </div>
-            
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 ¡Boleta Guardada!
@@ -332,7 +327,6 @@ export default function CapturaPage() {
                 Los datos fueron registrados exitosamente en Google Sheets
               </p>
             </div>
-
             <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
               <Card className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
                 <p className="text-2xl font-bold text-emerald-600">
@@ -347,7 +341,6 @@ export default function CapturaPage() {
                 <p className="text-xs text-gray-600 mt-1">Restantes</p>
               </Card>
             </div>
-
             <div className="space-y-3 max-w-sm mx-auto">
               <Button
                 onClick={handleReset}
