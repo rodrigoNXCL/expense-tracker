@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import {
   User, Shield, BarChart3, DollarSign, Camera, Download,
   LogOut, Building, CheckCircle, AlertTriangle, XCircle,
-  Eye, Receipt, TrendingUp, Wallet, Loader2
+  Eye, Receipt, TrendingUp, Wallet, Loader2, X
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(false)
 
   useEffect(() => {
     ;(async () => {
@@ -101,6 +102,18 @@ export default function DashboardPage() {
   const totalMonto = expenses.reduce((sum, exp) => sum + exp.monto, 0)
   const boletasRestantes = user.limite_boletas - user.boletas_usadas
   const porcentajeUsado = (user.boletas_usadas / user.limite_boletas) * 100
+
+  // Desglose de gastos por categoría (para el modal del Total Acumulado)
+  const categoriasBreakdown = (() => {
+    const map = new Map<string, number>()
+    for (const exp of expenses) {
+      const cat = exp.categoria || 'Sin categoría'
+      map.set(cat, (map.get(cat) || 0) + exp.monto)
+    }
+    return Array.from(map.entries())
+      .map(([categoria, monto]) => ({ categoria, monto }))
+      .sort((a, b) => b.monto - a.monto)
+  })()
 
   const getAlertConfig = () => {
     if (porcentajeUsado >= 100) {
@@ -272,7 +285,10 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="group hover:shadow-xl transition-all duration-300 border-emerald-100 bg-gradient-to-br from-white to-emerald-50/50">
+          <Card 
+            onClick={() => expenses.length > 0 && setShowBreakdown(true)}
+            className={`group hover:shadow-xl transition-all duration-300 border-emerald-100 bg-gradient-to-br from-white to-emerald-50/50 ${expenses.length > 0 ? 'cursor-pointer' : 'cursor-default'}`}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white shadow-md">
@@ -291,6 +307,12 @@ export default function DashboardPage() {
               <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
                 <DollarSign className="h-3 w-3" />
                 <span>CLP</span>
+                {expenses.length > 0 && (
+                  <span className="ml-auto inline-flex items-center gap-1 text-emerald-600 font-medium">
+                    Ver detalle
+                    <TrendingUp className="h-3 w-3" />
+                  </span>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -397,7 +419,7 @@ export default function DashboardPage() {
                         <td className="py-4 px-6 whitespace-nowrap">
                           <Badge 
                             variant="success" 
-                            className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border-emerald-200 font-medium whitespace-nowrap"
+                            className="bg-white text-emerald-800 border-emerald-300 font-semibold whitespace-nowrap"
                           >
                             {exp.categoria}
                           </Badge>
@@ -495,6 +517,67 @@ export default function DashboardPage() {
       </nav>
 
       <div className="h-24 sm:hidden" />
+
+      {/* ===== MODAL: DESGLOSE POR CATEGORÍA ===== */}
+      {showBreakdown && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowBreakdown(false)}
+        >
+          <Card
+            className="w-full max-w-md bg-white shadow-2xl overflow-hidden border-emerald-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-white">Total Acumulado</h3>
+                <p className="text-emerald-50 text-sm">Desglose por categoría</p>
+              </div>
+              <button
+                onClick={() => setShowBreakdown(false)}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
+                aria-label="Cerrar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <CardContent className="p-6">
+              <p className="text-3xl font-bold text-gray-900 mb-6">
+                ${totalMonto.toLocaleString('es-CL')}
+                <span className="text-sm font-medium text-gray-500 ml-2">total</span>
+              </p>
+              {categoriasBreakdown.length === 0 ? (
+                <p className="text-sm text-gray-500">Aún no hay gastos registrados.</p>
+              ) : (
+                <ul className="space-y-4">
+                  {categoriasBreakdown.map(({ categoria, monto }) => {
+                    const porcentaje = totalMonto > 0 ? (monto / totalMonto) * 100 : 0
+                    return (
+                      <li key={categoria}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-sm font-semibold text-gray-800">{categoria}</span>
+                          <span className="text-sm font-bold text-emerald-700">
+                            ${monto.toLocaleString('es-CL')}
+                            <span className="text-xs font-medium text-gray-400 ml-1">
+                              ({porcentaje.toFixed(0)}%)
+                            </span>
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                            style={{ width: `${Math.min(porcentaje, 100)}%` }}
+                          />
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
