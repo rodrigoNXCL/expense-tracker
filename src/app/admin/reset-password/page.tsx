@@ -53,13 +53,13 @@ export default function ResetPasswordPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
-          from_name: 'GastosSII - Nueva Contraseña',
+          from_name: 'GastosNX - Nueva Contraseña',
           email: email,
-          subject: '🔐 Tu nueva contraseña de GastosSII',
+          subject: '🔐 Tu nueva contraseña de GastosNX',
           message: `
             Hola,
             
-            Tu nueva contraseña de GastosSII ha sido generada:
+            Tu nueva contraseña de GastosNX ha sido generada:
             
             Email: ${email}
             Nueva Contraseña: ${generatedPassword}
@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
             Si no solicitaste esto, contacta a gastos@nxchile.com
             
             Saludos,
-            Equipo GastosSII
+            Equipo GastosNX
           `,
           redirect: 'false',
         }),

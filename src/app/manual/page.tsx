@@ -41,7 +41,7 @@ export default function ManualPage() {
             Tutorial interactivo paso a paso
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Manual de Uso de GastosSII
+            Manual de Uso de GastosNX
           </h1>
           <p className="text-lg text-gray-600 leading-relaxed">
             Aprende a registrar tus boletas, gestionar gastos y exportar información 
@@ -59,7 +59,7 @@ export default function ManualPage() {
               <iframe
                 src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autohide=1`}
                 className="absolute top-0 left-0 w-full h-full"
-                title="Manual de Uso GastosSII"
+                title="Manual de Uso GastosNX"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
@@ -80,7 +80,7 @@ export default function ManualPage() {
       <footer className="bg-gray-900 text-gray-300 py-8 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm text-gray-400">
-            © 2026 GastosSII by NXChile. Todos los derechos reservados.
+            © 2026 GastosNX by NXChile. Todos los derechos reservados.
           </p>
         </div>
       </footer>

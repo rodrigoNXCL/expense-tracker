@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
-import { Check, Sparkles, ArrowLeft, Loader2, CreditCard, Clock, Mail } from 'lucide-react'
+import { Check, ArrowLeft, Loader2, CreditCard, Clock, Mail } from 'lucide-react'
+import Image from 'next/image'
 
 export default function RegistroPagoPage() {
   const router = useRouter()
@@ -60,7 +61,7 @@ export default function RegistroPagoPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
-          from_name: `GastosSII Registro - ${formData.nombre_completo}`,
+          from_name: `GastosNX Registro - ${formData.nombre_completo}`,
           replyto: formData.email,
           email: 'gastos@nxchile.com',
           subject: `💳 Nuevo registro PAGO: ${formData.plan.toUpperCase()} - ${formData.empresa_nombre}`,
@@ -112,13 +113,15 @@ Acción requerida:
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">GastosSII</h1>
-                <p className="text-xs text-gray-500">Registro {planActual.nombre}</p>
-              </div>
+              <Image
+                src="/images/LogogastosNX.png"
+                alt="GastosNX"
+                width={693}
+                height={138}
+                priority
+                loading="eager"
+                className="h-10 w-auto object-contain"
+              />
             </div>
             <Button variant="ghost" size="sm" onClick={() => router.push('/registro')}>
               <ArrowLeft className="h-4 w-4 mr-2" />

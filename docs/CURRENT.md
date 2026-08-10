@@ -3,7 +3,7 @@
 > **Fuente de verdad del estado actual del proyecto.**
 > Este documento debe mantenerse sincronizado con cualquier cambio estructural. Léelo antes de modificar código.
 
-**Última actualización:** 2026-08-09
+**Última actualización:** 2026-08-10
 
 ---
 
@@ -77,7 +77,7 @@ src/
     login/page.tsx                Login + modales recuperación/contacto
     manual/page.tsx               Manual de uso con video YouTube
     registro/
-      page.tsx                    Selección de plan (Free/Pro/Enterprise)
+      page.tsx                    Selección de plan (Free/Pro)
       free/page.tsx               Registro plan Free
       pago/page.tsx               Registro plan de pago (Pro/Enterprise)
       confirmacion/{loading,page}.tsx
@@ -86,8 +86,10 @@ src/
       generador-hash/page.tsx     Generador de hash de contraseñas
       reset-password/page.tsx     Reset de contraseña manual
     api/
-      auth/route.ts               POST login (valida contra Usuarios sheets)
-      expenses/route.ts           GET gastos (filtra por rol)
+      auth/route.ts            POST login (valida contra Usuarios sheets)
+      auth/me/route.ts         GET sesión validada desde cookie httpOnly (ADR-002)
+      auth/logout/route.ts     POST logout (borra cookie de sesión)
+      expenses/route.ts        GET gastos (filtra por rol)
       save-expense/route.ts       POST guarda gasto + sube imagen + actualiza contador
       export/route.ts             GET CSV de gastos
       ocr/route.ts                POST Google Cloud Vision OCR
@@ -109,7 +111,8 @@ src/
     SupportButton.tsx             Botón flotante de soporte
     ui/                           Button, Card, Input, Badge, Alert
   lib/
-    auth.ts                       Sesión localStorage + hashPassword (SHA-256)
+    auth.ts                       Cliente sesión (loadSession/getSession) + hashPassword (SHA-256)
+    session.ts                    Sesión JWT HS256 + cookie httpOnly (ADR-002)
     storage.ts                    Subida/borrado imagen a Supabase Storage
     ocr.ts                        Cliente OCR → /api/ocr
     parser.ts                     Parser de boleta chilena (texto OCR → datos)
@@ -125,10 +128,11 @@ src/
 
 - El login delega en `/api/auth` (POST con `{ email, password }`).
 - La contraseña se valida contra Google Sheets (comparando el hash SHA-256 almacenado).
-- El tipo de sesión se guarda en **localStorage** bajo la clave `expense_tracker_session` (ver `lib/auth.ts`, tipo `UserSession`).
-- Cualquier página protegida (dashboard, captura, admin) consulta `getSession()` y redirige a `/login` si no hay sesión activa.
-- Las API Routes reciben la sesión en el **header** `x-session` (el JSON serializado de la sesión). **No hay JWT ni tokens** — la seguridad se basa en la sesión enviada por el cliente.
-- Control de acceso admin: campo `rol === 'admin'` (normalizado con `.trim().toLowerCase()`).
+- **Sesión (ADR-002, resuelto):** al validar, el servidor **firma un JWT HS256** (con `AUTH_SECRET`) y lo envía como **cookie httpOnly** (`gx_session`). La sesión ya **no** se guarda en `localStorage` ni viaja por el header `x-session`.
+- El cliente (`lib/auth.ts`) usa `loadSession()` para consultar `/api/auth/me` (lee la cookie) y cachea en memoria con `getSession()`. `logout()` llama a `/api/auth/logout`.
+- Cualquier página protegida (dashboard, captura, admin) llama a `loadSession()` al montar y redirige a `/login` si no hay sesión activa.
+- Las API Routes protegidas obtienen la sesión validada con `readSession(request)` (leen y verifican la cookie). **No confían en datos enviados por el cliente** (rol, sheet_id, límites).
+- Control de acceso admin: campo `rol === 'admin'` (normalizado con `.trim().toLowerCase()` en el token).
 
 Campos de la sesión (`UserSession`):
 `email`, `empresa_nombre`, `plan`, `limite_boletas`, `boletas_usadas`, `activo`, `rol`, `sheet_id_asociado`.
@@ -174,14 +178,15 @@ Campos de la sesión (`UserSession`):
 
 ## 7. Planes y límites
 
-### Límites por plan
+### Límites por plan — **Oferta pública vigente (2026-08-10)**
 | Plan | Boletas/mes | Usuarios | Precio |
 |------|-------------|----------|--------|
 | `free` | 10 | 1 (self-registro) | $0 |
-| `pro` | 500 | 2 | $9.900/mes (anual) o $12.900/mes |
-| `enterprise` | 9999 (ilicamento) | 5 | $19.990/mes (anual) o $24.990/mes |
+| `pro` | 500 | **3** | **$9.900/mes IVA incl. (pago anual inmediato, $118.800/año)** o **$12.500/mes** (mes a mes) |
 
-> Nota: en `api/admin/users/route.ts` los límites de usuarios por plan para creación son `free:1, pro:3, enterprise:10`, mientras el registro `pago` define `pro:2, enterprise:5`. **Existe una inconsistencia** entre estos valores que debe validarse con el negocio.
+> ℹ️ **Cambios recientes (2026-08-10):** el plan **Enterprise fue eliminado de la oferta pública** (no existían clientes) y la sección **"Plan Contador" fue retirada** de la landing (no existía en el backend). Permanece `enterprise` en el schema interno/validación por si fuera necesario, pero ya no se ofrece.
+>
+> ⚠️ **ADR-003 (pendiente):** aún hay inconsistencia de límites de usuarios por plan según el origen: `api/admin/users` → `free:1, pro:3, enterprise:10`; mientras `registro/pago/page.tsx` sigue con valores antiguos (`usuarios: 2`, precios `$12.900`). Alinear `registro/pago` con `pro: 3 usuarios`, `$9.900 IVA incl./anual` y `$12.500/mensual`.
 
 ### Jerarquía de planes (admin)
 `free (1) < pro (2) < enterprise (3)` — un admin solo puede crear/editar usuarios con planes iguales o inferiores al suyo (`PLAN_HIERARCHY`).
@@ -207,7 +212,9 @@ Campos de la sesión (`UserSession`):
 
 | Ruta | Método | Función |
 |------|--------|---------|
-| `/api/auth` | POST | Login, valida usuario y sesión |
+| `/api/auth` | POST | Login, valida usuario y setea cookie httpOnly (ADR-002) |
+| `/api/auth/me` | GET | Devuelve la sesión validada desde la cookie |
+| `/api/auth/logout` | POST | Borra la cookie de sesión |
 | `/api/expenses` | GET | Lista gastos del usuario/empresa (filtra por rol admin/user) |
 | `/api/save-expense` | POST | Guarda gasto + imagen + incrementa contador |
 | `/api/export` | GET | Descarga CSV de gastos (filtra por rol) |
@@ -231,9 +238,12 @@ Las variables indicadas se leen vía `process.env` en API Routes y cliente (`NEX
 # Google Sheets (Service Account)
 GOOGLE_SERVICE_ACCOUNT_EMAIL
 GOOGLE_PRIVATE_KEY
-GOOGLE_CREDENTIALS        (JSON completo, <-- usado por algunos endpoints)
+GOOGLE_CREDENTIALS        (JSON completo; `src/lib/sheets.ts` lo prioriza)
 GOOGLE_CONFIG_SHEET_ID
 GOOGLE_SHEET_ID_USERS
+
+# Sesión JWT (ADR-002, OBLIGATORIA)
+AUTH_SECRET              (mín 16 caracteres; firma de la cookie de sesión)
 
 # OCR
 GOOGLE_VISION_API_KEY
@@ -246,24 +256,26 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 NEXT_PUBLIC_WEB3FORMS_KEY
 ```
 
-> **⚠️ Inconsistencia de credenciales:** algunos endpoints usan `GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY` (auth, expenses, save-expense, export, companyConfig), mientras otros usan `GOOGLE_CREDENTIALS` (admin/users, registro/free, registro/pago). Almacenar ambos en `.env.local`.
+> ✅ **Nota de credenciales (ADR-004, resuelto):** `src/lib/sheets.ts` (`getSheets(readOnly?)`) soporta **ambos** formatos: prioriza `GOOGLE_CREDENTIALS` (JSON completo) y, si no está, usa `GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY`. Ya no es necesario mantener lógica duplicada en cada ruta; basta con que exista al menos uno de los dos formatos.
 
 ---
 
 ## 11. Observaciones / temas pendientes conocidos
 
-> Las siguientes inconsistencias se encuentran **registradas como ADR en `docs/DECISIONS.md`**, ordenadas de mayor a menor importancia, cada una con sus pasos a corregir. Referencia cruzada del seguimiento: `DECISIONS.md` (ADR-001 a ADR-006).
+> Las siguientes inconsistencias se encuentran **registradas como ADR en `docs/DECISIONS.md`**, ordenadas de mayor a menor importancia, cada una con sus pasos a corregir. Referencia cruzada del seguimiento: `DECISIONS.md`.
+> **Estado 2026-08-10:** ADR-002 y ADR-004 **resueltos**. Quedan pendientes ADR-001, ADR-003, ADR-005, ADR-006.
 
 | # | ADR | Tema pendiente | Urgencia |
 |---|-----|----------------|----------|
 | 1 | **ADR-001** | Estrategia de hashing de contraseñas inconsistente e insegura (SHA-256 plano vs. `algo:salt:hash`; password en texto plano vía email; admin default `admin123`) | 🔴 Crítica (seguridad) |
-| 2 | **ADR-002** | Autenticación de sesión débil: header `x-session` + localStorage sin token/JWT (riesgo de escalada de privilegios) | 🔴 Alta (seguridad) |
-| 3 | **ADR-003** | Límites de usuarios por plan inconsistentes entre `api/admin/users` y `registro/pago`, y vs. pricing público | 🟠 Media (negocio) |
-| 4 | **ADR-004** | Doble sistema de credenciales de Google Sheets (`GOOGLE_SERVICE_ACCOUNT_EMAIL`/`GOOGLE_PRIVATE_KEY` vs `GOOGLE_CREDENTIALS`) y `getSheetsClient()` duplicado | 🟢 Media (mantenibilidad) |
-| 5 | **ADR-005** | Confianza de OCR fija en 95 (Google Vision no entrega confianza en TEXT_DETECTION) — valor no fiable | 🟢 Baja (UX) |
-| 6 | **ADR-006** | Código muerto / no usado: `api/user` (501), `lib/sheets-users.ts` vacío, `deleteReceiptImage` sin uso, assets de `layout.tsx` faltantes | 🟡 Baja (deuda técnica) |
+| 2 | **ADR-003** | Límites de usuarios por plan inconsistentes entre `api/admin/users` y `registro/pago`, y vs. la nueva oferta pública (Pro ahora dice "hasta 3 usuarios") | 🟠 Media (negocio) |
+| 3 | **ADR-005** | Confianza de OCR fija en 95 (Google Vision no entrega confianza en TEXT_DETECTION) — valor no fiable | 🟢 Baja (UX) |
+| 4 | **ADR-006** | Código muerto / no usado: `api/user` (501), `lib/sheets-users.ts` vacío, `deleteReceiptImage` sin uso, assets de `layout.tsx` faltantes | 🟡 Baja (deuda técnica) |
 
-Cada ADR en `DECISIONS.md` incluye el **contexto, la decisión pendiente, las alternativas y los pasos a corregir** detallados.
+✅ **ADR-002 (2026-08-10):** Sesión migrada a **JWT HS256 en cookie httpOnly** (`src/lib/session.ts`), endpoints `/api/auth/me` y `/api/auth/logout`, API routes leen `readSession`, cliente usa `loadSession()`. Eliminada la sesión manipulable de localStorage + `x-session`.
+✅ **ADR-004 (2026-08-10):** Centralizado el cliente de Google Sheets en `src/lib/sheets.ts` (`getSheets(readOnly?)`), con soporte de ambos formatos de credenciales.
+
+Cada ADR en `DECISIONS.md` incluye el **contexto, la decisión, las alternativas y la resolución** detallados.
 
 ---
 
@@ -274,7 +286,8 @@ Cada ADR en `DECISIONS.md` incluye el **contexto, la decisión pendiente, las al
 - UI basada en componentes `ui/` (Button, Card, Input, Badge, Alert) con gradientes verdes/esmeralda (`emerald`/`teal`).
 - Prefijos de `console.log` con emojis para debugging (`🔍`, `✅`, `❌`, `⚠️`).
 - Alias de importación: `@/*` → `./src/*`.
-- Sin librería de estado global; el estado se maneja con `useState`/`useEffect` y la sesión en localStorage.
+- Sin librería de estado global; el estado se maneja con `useState`/`useEffect`.
+- **Sesión (ADR-002):** cookie httpOnly + JWT firmado. El cliente usa `loadSession()`/`getSession()` de `lib/auth.ts` (caché en memoria). No se persiste sesión en `localStorage`.
 
 ---
 

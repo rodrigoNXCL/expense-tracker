@@ -6,7 +6,8 @@ import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Check, Sparkles, ArrowLeft, Mail, Clock, CreditCard } from 'lucide-react'
+import { Check, ArrowLeft, Mail, Clock, CreditCard } from 'lucide-react'
+import Image from 'next/image'
 
 export default function ConfirmacionPage() {
   const searchParams = useSearchParams()
@@ -42,13 +43,15 @@ export default function ConfirmacionPage() {
         {/* ===== NAVBAR ===== */}
         <nav className="flex items-center justify-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">GastosSII</h1>
-              <p className="text-xs text-gray-500">Registro completado</p>
-            </div>
+            <Image
+              src="/images/LogogastosNX.png"
+              alt="GastosNX"
+              width={693}
+              height={138}
+              priority
+              loading="eager"
+              className="h-12 w-auto object-contain"
+            />
           </div>
         </nav>
 
@@ -170,7 +173,7 @@ export default function ConfirmacionPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-500">
-          v0.8.0 • GastosSII by NXChile
+          v0.8.0 • GastosNX by NXChile
         </p>
       </div>
     </div>

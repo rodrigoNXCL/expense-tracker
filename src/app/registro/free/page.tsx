@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
-import { Check, Sparkles, ArrowLeft, Loader2, Mail } from 'lucide-react'
+import { Check, ArrowLeft, Loader2, Mail } from 'lucide-react'
+import Image from 'next/image'
 
 export default function RegistroFreePage() {
   const router = useRouter()
@@ -31,7 +32,7 @@ export default function RegistroFreePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
-          from_name: 'GastosSII Registro',
+          from_name: 'GastosNX Registro',
           email: 'gastos@nxchile.com',
           subject: `🆕 Nuevo registro: FREE - ${formData.empresa_nombre}`,
           message: `
@@ -76,13 +77,15 @@ export default function RegistroFreePage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">GastosSII</h1>
-                <p className="text-xs text-gray-500">Registro Free</p>
-              </div>
+              <Image
+                src="/images/LogogastosNX.png"
+                alt="GastosNX"
+                width={693}
+                height={138}
+                priority
+                loading="eager"
+                className="h-10 w-auto object-contain"
+              />
             </div>
             <Button variant="ghost" size="sm" onClick={() => router.push('/registro')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -98,7 +101,7 @@ export default function RegistroFreePage() {
             <Check className="w-3 h-3 mr-1" />
             Plan Gratuito
           </Badge>
-          <h1 className="text-3xl font-bold text-gray-900">Comienza gratis con GastosSII</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Comienza gratis con GastosNX</h1>
           <p className="text-gray-600">Perfecto para probar el sistema antes de comprometerte</p>
         </div>
 

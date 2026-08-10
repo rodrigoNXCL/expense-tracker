@@ -52,54 +52,57 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 
 ### ADR-002 — Estrategia de autenticación de sesión débil (header `x-session` + localStorage)
 - **Fecha:** 2026-08-09
-- **Estado:** Propuesta (pendiente de corrección)
+- **Estado:** ✅ **Resuelto** (implementado 2026-08-10) — ver resolución al final.
 - **Contexto:** No hay token/JWT. La sesión completa (`email`, `rol`, `plan`, `sheet_id_asociado`, etc.) se guarda en **localStorage** y se envía por el **header `x-session`** en cada llamada a API. Las API Routes confían en el `rol` y `empresa_nombre` que envía el cliente para filtrar datos. Esto permite, en teoría, modificar el `rol` a `admin` o el `sheet_id_asociado` desde el cliente.
-- **Decisión (pendiente):** Implementar una sesión verificable del lado servidor (token firmado/JWT con expiración, o sesión en cookie httpOnly), manteniendo el flujo actual de Google Sheets como backend de datos. Mientras tanto, endurecer la validación en las API Routes.
+- **Decisión (implementada):** Sesión **verificable del servidor** con **JWT HS256 firmado** con `AUTH_SECRET`, transmitido en **cookie httpOnly** (`sameSite=lax`, `secure` en prod). El cliente ya no posee datos de sesión manipulables.
 - **Alternativas consideradas:** JWT firmado con secreto; Sessión cookie httpOnly + middleware Next.js.
-- **Consecuencias:** Reduce el riesgo de escalada de privilegios y acceso a datos ajenos. Requiere cambios en todas las rutas que leen `x-session` y en el cliente (`lib/auth.ts`, páginas).
-- **Pasos a corregir:**
-  1. Definir el mecanismo de sesión (recomendado: cookie httpOnly + middleware o JWT firmado).
-  2. Crear la información de sesión (rol, empresa, sheet_id) solo desde el servidor tras validar contra Google Sheets.
-  3. Reemplazar la lectura de `x-session` por la sesión autenticada en todas las API Routes.
-  4. Migrar el cliente de `localStorage` a la nueva sesión.
-- **Referencias:** `src/lib/auth.ts`, `src/app/api/*/route.ts` (auth, expenses, export, save-expense, admin/users, admin/stats).
+- **Consecuencias:** Elimina el riesgo de escalada de privilegios y acceso a datos ajenos. Requirió cambios en todas las rutas que leían `x-session` y en el cliente.
+- **Resolución implementada (2026-08-10):**
+  - Nuevo `src/lib/session.ts`: `signSession`, `verifySessionToken`, `readSession(request)`, `setSessionCookie`, `clearSessionCookie`. Implementa HS256 con `crypto` de Node (sin dependencias).
+  - `api/auth` firma y setea la cookie httpOnly al validar contra Sheets.
+  - Nuevos endpoints: `GET /api/auth/me` (devuelve sesión validada) y `POST /api/auth/logout` (borra cookie).
+  - Migradas a `readSession(request)` (sin confiar en `x-session`): `api/expenses`, `api/export`, `api/admin/users`, `api/admin/stats`, `api/save-expense`. Este último resuelve `sheet_id`, rol y límite desde el servidor (el cliente ya no envía `userSheetId`/`userUsadas`).
+  - Cliente `lib/auth.ts`: `getSession()` = caché en memoria (síncrono), `loadSession()` consulta `/api/auth/me`, `logout()` borra la cookie. Se eliminó el uso de `localStorage` para la sesión.
+  - Páginas migradas a `loadSession()` al montar: `login`, `dashboard`, `admin`, `captura`.
+  - **Requisito de entorno:** agregar `AUTH_SECRET` (mín 16 caracteres) en producción. En local ya existe en `.env.local`.
+- **Referencias:** `src/lib/session.ts`, `src/lib/auth.ts`, `src/app/api/auth/{route,me,logout}` , `src/app/api/*` (expenses, export, save-expense, admin/*).
 
 ---
 
 ### ADR-003 — Inconsistencia de límites de usuarios por plan según origen
 - **Fecha:** 2026-08-09
 - **Estado:** Propuesta (pendiente de corrección)
-- **Contexto:** Los límites de usuarios por plan difieren según el endpoint:
+- **Contexto:** Los límites de usuarios por plan difieren según el endpoint, y cambiaron la oferta pública (2026-08-10, elimina Enterprise y Plan Contador, Pro pasa a 3 usuarios):
   - `api/admin/users` → `PLAN_LIMITS`: `free:1`, `pro:3`, `enterprise:10`.
-  - `registro/pago` → `planLimits`: `pro:2`, `enterprise:5`.
-  - Además, el pricing público en la landing/page.tsx establece: Pro `hasta 2 usuarios`, Enterprise `hasta 5 usuarios` y `$2.500/usuario` en el Plan Contador.
-  - También hay una inconsistencia de boletas: en `admin/users` `enterprise` usa `9999`, mientras la landing dice "boletas ilimitadas".
-- **Decisión (pendiente):** Definir una **única fuente de verdad** para límites por plan (constante central compartida) y alinearla con el pricing público y el Plan Contador.
+  - `registro/pago` → `planLimits`: `pro:2`, `enterprise:5` (valores antiguos aún presentes).
+  - La oferta pública vigente: Free (10 boletas, 1 usuario), Pro (**3 usuarios**, 500 boletas, **$9.900 IVA incl./anual** o **$12.500/mes**). Enterprise y Plan Contador eliminados de la oferta.
+  - Inconsistencia de boletas: en `admin/users` `enterprise` usa `9999`, la landing decía "boletas ilimitadas".
+- **Decisión (pendiente):** Definir una **única fuente de verdad** para límites por plan (constante central compartida) y alinearla con el pricing público vigente.
 - **Alternativas consideradas:** mantener valores por endpoint (descartado, genera comportamiento divergente).
 - **Consecuencias:** Evita que un admin pueda crear más usuarios de los que corresponde a su plan, o que el registro permita límites distintos a los publicados.
 - **Pasos a corregir:**
   1. Crear una constante central (ej. `src/lib/planLimits.ts`) con `{ free, pro, enterprise }` que contenga boletas y usuarios.
-  2. Usarla en `api/admin/users` y `registro/pago`.
-  3. Revisar/alinear con el texto de pricing en `src/app/page.tsx` (usuarios y "ilimitadas").
+  2. Usarla en `api/admin/users` y alinear `registro/pago` (**pro: 3 usuarios**, `$9.900`/`$12.500`).
+  3. Revisar/alinear con el texto de pricing en `src/app/page.tsx` y `registro/page.tsx` (usuarios y "ilimitadas").
   4. Reflejar el resultado en `CURRENT.md` sección 7.
-- **Referencias:** `src/app/api/admin/users/route.ts`, `src/app/api/registro/pago/route.ts`, `src/app/page.tsx`.
+- **Referencias:** `src/app/api/admin/users/route.ts`, `src/app/api/registro/pago/route.ts`, `src/app/registro/pago/page.tsx`, `src/app/page.tsx`, `src/app/registro/page.tsx`.
 
 ---
 
 ### ADR-004 — Doble sistema de credenciales de Google Sheets
 - **Fecha:** 2026-08-09
-- **Estado:** Propuesta (pendiente de corrección)
+- **Estado:** ✅ **Resuelto** (implementado 2026-08-10) — ver resolución al final.
 - **Contexto:** No hay una única forma de autenticarse con Google:
   - `api/auth`, `api/expenses`, `api/save-expense`, `api/export`, `lib/companyConfig.ts` usan `GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY`.
   - `api/admin/users`, `api/registro/free`, `api/registro/pago` usan `GOOGLE_CREDENTIALS` (JSON completo). Además, cada archivo re-implementa `getSheetsClient()`.
-- **Decisión (pendiente):** Centralizar la obtención del cliente de Google Sheets en una única utilidad reutilizable (con fallback a ambos formatos de variables de entorno), eliminando la duplicación en cada ruta.
+- **Decisión (implementada):** Centralizar la obtención del cliente de Google Sheets en una única utilidad reutilizable con soporte de ambos formatos de variables de entorno.
 - **Alternativas consideradas:** unificar a solo `GOOGLE_CREDENTIALS`; unificar a `EMAIL+KEY`.
 - **Consecuencias:** Mayor mantenibilidad y menos riesgo de configuraciones incompletas.
-- **Pasos a corregir:**
-  1. Crear `src/lib/sheets.ts` con `getSheetsClient(sprints...)/getSheets()` reutilizable.
-  2. Reemplazar las implementaciones duplicadas en todas las API Routes y `companyConfig.ts`.
-  3. Documentar la variable de entorno estándar en `CURRENT.md` sección 10.
-- **Referencias:** todas las rutas `/api/*` que usan googleapis; `src/lib/companyConfig.ts`.
+- **Resolución implementada (2026-08-10):**
+  - Creado `src/lib/sheets.ts` con `getSheets(readOnly?)`. Prioriza `GOOGLE_CREDENTIALS`; si no, usa `GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY`. Scopes configurables (`SCOPES_READONLY`/`SCOPES_FULL`).
+  - `readOnly=true` aplica `spreadsheets.readonly` (lectura); `false` aplica `spreadsheets` (escritura).
+  - Reemplazadas todas las implementaciones duplicadas: `api/auth`, `api/expenses`, `api/export`, `api/save-expense`, `api/admin/users`, `api/admin/stats`, `api/admin/create-user-sheet`, `api/registro/free`, `api/registro/pago` y `lib/companyConfig.ts`.
+- **Referencias:** `src/lib/sheets.ts`, todas las rutas `/api/*` que usan googleapis; `src/lib/companyConfig.ts`.
 
 ---
 

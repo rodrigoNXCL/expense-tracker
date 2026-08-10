@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { saveSession } from '@/lib/auth'
-import { Mail, Lock, Sparkles, Check, Loader2, X, MessageCircle } from 'lucide-react'
+import { Mail, Lock, Check, Loader2, X, MessageCircle } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -66,7 +67,7 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
-          from_name: 'GastosSII - Recuperación',
+          from_name: 'GastosNX - Recuperación',
           email: 'gastos@nxchile.com',
           subject: `🔐 Solicitud recuperación: ${recoveryForm.email}`,
           message: `
@@ -110,7 +111,7 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
-          from_name: contactForm.nombre || 'Usuario GastosSII',
+          from_name: contactForm.nombre || 'Usuario GastosNX',
           replyto: contactForm.email,
           email: 'gastos@nxchile.com',
           subject: `📩 Contacto desde landing: ${contactForm.nombre || 'Sin nombre'}`,
@@ -149,13 +150,21 @@ export default function LoginPage() {
         {/* ===== HEADER ===== */}
         <div className="text-center space-y-4 animate-fade-in">
           {/* Logo */}
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl shadow-2xl shadow-emerald-500/30 mb-2">
-            <Sparkles className="w-10 h-10 text-white" />
+          <div className="mb-3">
+            <Image
+              src="/images/LogogastosNX.png"
+              alt="GastosNX"
+              width={693}
+              height={138}
+              priority
+              loading="eager"
+              className="h-16 w-auto object-contain mx-auto"
+            />
           </div>
-          
+
           {/* Título */}
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-1">GastosSII</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Inicia sesión</h1>
             <p className="text-gray-600">Controla tus gastos de forma inteligente</p>
           </div>
 
@@ -254,7 +263,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">¿Nuevo en GastosSII?</span>
+              <span className="px-4 bg-white text-gray-500">¿Nuevo en GastosNX?</span>
             </div>
           </div>
 
@@ -281,7 +290,7 @@ export default function LoginPage() {
             </button>
           </p>
           <p className="text-xs text-gray-400">
-            v0.8.0 • GastosSII by NXChile
+            v0.8.0 • GastosNX by NXChile
           </p>
         </div>
       </div>

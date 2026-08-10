@@ -4,7 +4,7 @@ import { MessageCircle } from 'lucide-react'
 
 export function SupportButton() {
   const whatsappNumber = '56977412178' // ← CAMBIA POR TU NÚMERO REAL
-  const whatsappMessage = 'Hola, necesito información sobre GastosSII'
+  const whatsappMessage = 'Hola, necesito información sobre GastosNX'
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
 
   return (

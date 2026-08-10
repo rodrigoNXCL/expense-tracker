@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
-          from_name: `GastosSII Registro - ${nombre_completo}`,
+          from_name: `GastosNX Registro - ${nombre_completo}`,
           replyto: email,
           email: 'gastos@nxchile.com',
           subject: `💳 Nuevo registro PAGO: ${plan.toUpperCase()} - ${empresa_nombre}`,
