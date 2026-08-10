@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 import { getSheets } from '@/lib/sheets'
+import { signSession, setSessionCookie } from '@/lib/session'
 
 // Hash con SHA256 (compatible con auth.ts del cliente)
 function hashPassword(password: string): string {
@@ -114,10 +115,10 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Login exitoso: ${user.email} (rol: ${user.rol})`)
 
-    return NextResponse.json({
-      message: 'Login exitoso',
-      user,
-    })
+    // ADR-002: firmar sesión y setear cookie httpOnly (el cliente ya no manipula rol/sheet)
+    const token = signSession(user)
+    const loginResponse = NextResponse.json({ message: 'Login exitoso', user })
+    return setSessionCookie(loginResponse, token)
   } catch (error) {
     console.error('❌ Error en login API:', error instanceof Error ? error.message : error)
     return NextResponse.json(

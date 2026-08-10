@@ -7,7 +7,7 @@ import OcrProcessor from '@/components/OcrProcessor'
 import ExpenseForm from '@/components/ExpenseForm'
 import { OcrResult } from '@/lib/ocr'
 import { ParsedExpense } from '@/lib/parser'
-import { getSession, logout, saveSession } from '@/lib/auth'
+import { getSession, loadSession, logout, saveSession } from '@/lib/auth'
 import { parseBoletaChilena } from '@/lib/parser'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -64,30 +64,32 @@ export default function CapturaPage() {
 
   // Restaurar borrador al montar (para que no se pierda la captura al recargar)
   useEffect(() => {
-    const session = getSession()
-    if (!session || !session.activo) {
-      router.replace('/login')
-      return
-    }
-    setUser(session)
-
-    try {
-      const raw = sessionStorage.getItem(DRAFT_KEY)
-      if (raw) {
-        const draft: DraftData = JSON.parse(raw)
-        if (draft.step === 'review' && draft.parsedData && draft.ocrResult) {
-          setParsedData(draft.parsedData)
-          setOcrResult(draft.ocrResult)
-          setCapturedImage(draft.imageDataUrl ? dataUrlToBlob(draft.imageDataUrl, draft.imageMime) : null)
-          setStep('review')
-        }
+    ;(async () => {
+      const session = await loadSession()
+      if (!session || !session.activo) {
+        router.replace('/login')
+        return
       }
-    } catch (e) {
-      // Borrador corrupto: se ignora
-      sessionStorage.removeItem(DRAFT_KEY)
-    }
+      setUser(session)
 
-    setIsCheckingAuth(false)
+      try {
+        const raw = sessionStorage.getItem(DRAFT_KEY)
+        if (raw) {
+          const draft: DraftData = JSON.parse(raw)
+          if (draft.step === 'review' && draft.parsedData && draft.ocrResult) {
+            setParsedData(draft.parsedData)
+            setOcrResult(draft.ocrResult)
+            setCapturedImage(draft.imageDataUrl ? dataUrlToBlob(draft.imageDataUrl, draft.imageMime) : null)
+            setStep('review')
+          }
+        }
+      } catch (e) {
+        // Borrador corrupto: se ignora
+        sessionStorage.removeItem(DRAFT_KEY)
+      }
+
+      setIsCheckingAuth(false)
+    })()
   }, [router])
 
   // Persistir borrador cuando el usuario llega al paso de revisión
@@ -154,6 +156,7 @@ export default function CapturaPage() {
       if (capturedImage) {
         formData.append('image', capturedImage, 'receipt.jpg')
       }
+      // ADR-002: la sesión (email/sheet/rol/límite) la resuelve el servidor desde la cookie
       formData.append('data', JSON.stringify({
         fecha: data.fecha,
         rut: data.rut,
@@ -164,13 +167,6 @@ export default function CapturaPage() {
         giro: data.giro,
         notas: data.notas,
         ocr_confidence: data.confidence,
-        userEmail: session.email,
-        userEmpresa: session.empresa_nombre,
-        userPlan: session.plan,
-        userLimite: session.limite_boletas,
-        userUsadas: session.boletas_usadas,
-        userRol: session.rol,
-        userSheetId: session.sheet_id_asociado,
       }))
 
       const response = await fetch('/api/save-expense', {
@@ -218,9 +214,9 @@ export default function CapturaPage() {
     setStep('capture')
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     clearDraft()
-    logout()
+    await logout()
     router.replace('/login')
   }
 

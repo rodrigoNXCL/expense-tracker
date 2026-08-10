@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSheets } from '@/lib/sheets'
+import { readSession } from '@/lib/session'
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. Verificar sesión y rol admin
-    const sessionHeader = request.headers.get('x-session')
-    if (!sessionHeader) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-    
-    let session
-    try { session = JSON.parse(sessionHeader) } 
-    catch { return NextResponse.json({ error: 'Sesión inválida' }, { status: 401 }) }
+    // 1. Verificar sesión y rol admin desde cookie httpOnly (ADR-002)
+    const session = readSession(request)
+    if (!session || !session.activo) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+    }
     
     if (session.rol !== 'admin') {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })

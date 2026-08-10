@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadReceiptImage } from '@/lib/storage'
 import { getSheets } from '@/lib/sheets'
+import { readSession } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
   try {
+    // ADR-002: la sesión sale del servidor (cookie httpOnly), no del cliente
+    const session = readSession(request)
+    if (!session || !session.activo) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const imageFile = formData.get('image') as File
     const dataString = formData.get('data') as string
@@ -12,10 +19,9 @@ export async function POST(request: NextRequest) {
     const {
       fecha, rut, proveedor, monto, categoria,
       boleta_numero, giro, notas, ocr_confidence,
-      userEmail, userEmpresa, userPlan, userLimite, userUsadas, userRol, userSheetId
     } = expenseData
 
-    const requiredFields = ['fecha', 'monto', 'proveedor', 'categoria', 'userEmail', 'userSheetId']
+    const requiredFields = ['fecha', 'monto', 'proveedor', 'categoria']
     const missingFields = requiredFields.filter(field => !expenseData[field])
 
     if (missingFields.length > 0) {
@@ -32,8 +38,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const boletasUsadas = Number(userUsadas) || 0
-    const limiteBoletas = Number(userLimite) || 100
+    // Datos de sesión provenientes del servidor (no confiables del cliente)
+    const userEmail = session.email
+    const userSheetId = session.sheet_id_asociado
+    const boletasUsadas = Number(session.boletas_usadas) || 0
+    const limiteBoletas = Number(session.limite_boletas) || 100
 
     if (boletasUsadas >= limiteBoletas) {
       return NextResponse.json(

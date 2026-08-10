@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { hashPassword } from '@/lib/auth'
 import { getSheets } from '@/lib/sheets'
+import { readSession } from '@/lib/session'
 
 // ✅ CONFIGURACIÓN DE LÍMITES POR PLAN
 const PLAN_LIMITS: Record<string, { boletas: number; usuarios: number }> = {
@@ -25,12 +26,10 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔍 GET /api/admin/users - Iniciando...')
 
-    const sessionHeader = request.headers.get('x-session')
-    if (!sessionHeader) {
+    const session = readSession(request)
+    if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
-
-    const session = JSON.parse(sessionHeader)
     if (!session.activo || session.rol !== 'admin') {
       return NextResponse.json({ error: 'No tienes permisos de administrador' }, { status: 403 })
     }
@@ -83,12 +82,10 @@ export async function POST(request: NextRequest) {
   try {
     console.log('📝 POST /api/admin/users - Creando usuario...')
 
-    const sessionHeader = request.headers.get('x-session')
-    if (!sessionHeader) {
+    const session = readSession(request)
+    if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
-
-    const session = JSON.parse(sessionHeader)
     if (!session.activo || session.rol !== 'admin') {
       return NextResponse.json({ error: 'No tienes permisos de administrador' }, { status: 403 })
     }
@@ -212,12 +209,10 @@ export async function POST(request: NextRequest) {
 // PUT: Actualizar usuario
 export async function PUT(request: NextRequest) {
   try {
-    const sessionHeader = request.headers.get('x-session')
-    if (!sessionHeader) {
+    const session = readSession(request)
+    if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
-
-    const session = JSON.parse(sessionHeader)
     if (!session.activo || session.rol !== 'admin') {
       return NextResponse.json({ error: 'No tienes permisos de administrador' }, { status: 403 })
     }
@@ -294,12 +289,10 @@ export async function PUT(request: NextRequest) {
 // DELETE: Eliminar usuario
 export async function DELETE(request: NextRequest) {
   try {
-    const sessionHeader = request.headers.get('x-session')
-    if (!sessionHeader) {
+    const session = readSession(request)
+    if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
-
-    const session = JSON.parse(sessionHeader)
     if (!session.activo || session.rol !== 'admin') {
       return NextResponse.json({ error: 'No tienes permisos de administrador' }, { status: 403 })
     }

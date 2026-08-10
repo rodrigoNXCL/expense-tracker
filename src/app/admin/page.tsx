@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getSession, logout } from '@/lib/auth'
+import { getSession, loadSession, logout } from '@/lib/auth'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -53,24 +53,21 @@ export default function AdminPage() {
   })
 
   useEffect(() => {
-    const session = getSession()
-    if (!session || !session.activo || session.rol !== 'admin') {
-      router.replace('/login')
-      return
-    }
-    setCurrentUser(session)
-    loadUsers()
-    setLoading(false)
+    ;(async () => {
+      const session = await loadSession()
+      if (!session || !session.activo || session.rol !== 'admin') {
+        router.replace('/login')
+        return
+      }
+      setCurrentUser(session)
+      await loadUsers()
+      setLoading(false)
+    })()
   }, [router])
 
   const loadUsers = async () => {
     try {
-      const session = getSession()
-      if (!session) return
-      
-      const response = await fetch('/api/admin/users', {
-        headers: { 'x-session': JSON.stringify(session) },
-      })
+      const response = await fetch('/api/admin/users', { credentials: 'same-origin' })
       
       const result = await response.json()
       if (response.ok) {
@@ -100,9 +97,6 @@ export default function AdminPage() {
     setSuccess(null)
 
     try {
-      const session = getSession()
-      if (!session) throw new Error('No hay sesión')
-
       // ✅ Validar que el plan no supere el del admin
       const availablePlans = getAvailablePlans()
       if (!availablePlans.includes(formData.plan)) {
@@ -111,10 +105,7 @@ export default function AdminPage() {
 
       const response = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-session': JSON.stringify(session),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
@@ -140,15 +131,9 @@ export default function AdminPage() {
     setSuccess(null)
 
     try {
-      const session = getSession()
-      if (!session) throw new Error('No hay sesión')
-
       const response = await fetch(`/api/admin/users?email=${encodeURIComponent(email)}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-session': JSON.stringify(session),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       })
 
@@ -173,12 +158,8 @@ export default function AdminPage() {
     setError(null)
 
     try {
-      const session = getSession()
-      if (!session) throw new Error('No hay sesión')
-
       const response = await fetch(`/api/admin/users?email=${encodeURIComponent(email)}`, {
         method: 'DELETE',
-        headers: { 'x-session': JSON.stringify(session) },
       })
 
       const result = await response.json()
@@ -216,8 +197,8 @@ export default function AdminPage() {
     })
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     router.replace('/login')
   }
 

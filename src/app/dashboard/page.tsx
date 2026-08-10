@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getSession, logout } from '@/lib/auth'
+import { getSession, loadSession, logout } from '@/lib/auth'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -35,23 +35,21 @@ export default function DashboardPage() {
   const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
-    const session = getSession()
-    if (!session || !session.activo) {
-      router.replace('/login')
-      return
-    }
-    setUser(session)
-    loadExpenses()
-    setLoading(false)
+    ;(async () => {
+      const session = await loadSession()
+      if (!session || !session.activo) {
+        router.replace('/login')
+        return
+      }
+      setUser(session)
+      await loadExpenses()
+      setLoading(false)
+    })()
   }, [router])
 
   const loadExpenses = async () => {
     try {
-      const session = getSession()
-      if (!session) return
-      const response = await fetch('/api/expenses', {
-        headers: { 'x-session': JSON.stringify(session) },
-      })
+      const response = await fetch('/api/expenses', { credentials: 'same-origin' })
       const result = await response.json()
       if (response.ok) setExpenses(result.expenses || [])
     } catch (error) {
@@ -62,11 +60,7 @@ export default function DashboardPage() {
   const handleExport = async () => {
     setExporting(true)
     try {
-      const session = getSession()
-      if (!session) return
-      const response = await fetch('/api/export', {
-        headers: { 'x-session': JSON.stringify(session) },
-      })
+      const response = await fetch('/api/export', { credentials: 'same-origin' })
       if (response.ok) {
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
@@ -85,8 +79,8 @@ export default function DashboardPage() {
     }
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     router.replace('/login')
   }
 

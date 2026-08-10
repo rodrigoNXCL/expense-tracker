@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
+import { saveSession } from '@/lib/auth'
 import { Mail, Lock, Sparkles, Check, Loader2, X, MessageCircle } from 'lucide-react'
 
 export default function LoginPage() {
@@ -42,7 +43,9 @@ export default function LoginPage() {
         throw new Error(result.error || 'Error en login')
       }
 
-      localStorage.setItem('expense_tracker_session', JSON.stringify(result.user))
+      // ADR-002: la cookie httpOnly ya fue seteada por el servidor.
+      // Guardamos solo para el caché en memoria del cliente.
+      saveSession(result.user)
       router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')

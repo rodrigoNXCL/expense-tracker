@@ -39,25 +39,57 @@ export async function validateUser(email: string, password: string): Promise<Use
   }
 }
 
-// Guardar sesión en localStorage
-export function saveSession(user: UserSession): void {
-  localStorage.setItem('expense_tracker_session', JSON.stringify(user))
+// ---------------------------------------------------------------
+// Sesión verificable del servidor (ADR-002)
+// La cookie httpOnly es la fuente de verdad. El cliente solo cachea
+// en memoria lo que el servidor devuelve via /api/auth/me.
+// ---------------------------------------------------------------
+
+let sessionCache: UserSession | null | undefined = undefined
+
+// Obtener sesión desde caché en memoria (síncrono, para compatibilidad)
+export function getSession(): UserSession | null {
+  return sessionCache ?? null
 }
 
-// Obtener sesión actual
-export function getSession(): UserSession | null {
-  const session = localStorage.getItem('expense_tracker_session')
-  if (!session) return null
+/**
+ * Consulta la sesión al servidor (leer cookie httpOnly) y actualiza el caché.
+ * Devuelve true si hay sesión activa.
+ */
+export async function loadSession(): Promise<UserSession | null> {
   try {
-    return JSON.parse(session) as UserSession
-  } catch {
+    const response = await fetch('/api/auth/me', {
+      method: 'GET',
+      credentials: 'same-origin',
+    })
+    if (!response.ok) {
+      sessionCache = null
+      return null
+    }
+    const result = await response.json()
+    sessionCache = result.user ?? null
+    return sessionCache ?? null
+  } catch (error) {
+    console.error('❌ Error cargando sesión:', error)
+    sessionCache = null
     return null
   }
 }
 
-// Cerrar sesión
-export function logout(): void {
-  localStorage.removeItem('expense_tracker_session')
+// Actualizar solo el contador local mientras la cookie principal sigue siendo la fuente real
+export function saveSession(user: UserSession): void {
+  sessionCache = user
+}
+
+// Cerrar sesión: borra cookie httpOnly y limpia caché
+export async function logout(): Promise<void> {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
+  } catch {
+    // aún limpiar local
+  } finally {
+    sessionCache = null
+  }
 }
 
 // Verificar si usuario está autenticado
