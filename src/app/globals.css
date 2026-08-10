@@ -1,13 +1,57 @@
 @import "tailwindcss";
 
-/* Variables simples */
+/* ============================================================
+   NX · Sistema de diseño (elegancia minimalista estilo Apple)
+   ============================================================
+   Princípios:
+   - Tipografía del sistema (SF Pro) con tracking ajustado.
+   - Fondos neutros (blancos/grises suaves) y negro profundo.
+   - Acento esmeralda usado con moderación (estado, foco, CTA).
+   - Bordes finos, radios generosos, sombras sutiles y difusas.
+   ============================================================ */
+
 :root {
-  --primary: #10B981;
+  --primary: #10B981;      /* esmeralda – acento reservado */
   --primary-hover: #059669;
+  --ink: #0A0A0A;          /* negro profundo tipo Apple */
+  --surface: #F5F5F7;      /* gris claro Apple */
+  --line: rgba(0, 0, 0, 0.08);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-  background: #F2F2F7;
-  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+    'SF Pro Text', 'Segoe UI', 'Inter', sans-serif;
+  background: #FFFFFF;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* Encabezados de gran escala con tracking más cerrado (estilo Apple) */
+h1, h2, h3 {
+  letter-spacing: -0.03em;
+}
+
+/* Selección de texto sutil */
+::selection {
+  background: rgba(16, 185, 129, 0.18);
+}
+
+/* Scrollbar discreta, coherente con el minimalismo */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.18); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Animación suave de aparición para tarjetas/hero (Apple-like) */
+@keyframes nx-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.nx-fade-up {
+  animation: nx-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { google } from 'googleapis'
+import { getSheets } from '@/lib/sheets'
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,15 +15,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    })
-
-    const sheets = google.sheets({ version: 'v4', auth })
+    const sheets = await getSheets(true)
     const configSheetId = process.env.GOOGLE_CONFIG_SHEET_ID
 
     // 2. Filtrar usuarios por empresa del admin

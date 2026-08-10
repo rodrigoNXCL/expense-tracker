@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import CameraCapture from '@/components/CameraCapture'
 import OcrProcessor from '@/components/OcrProcessor'
 import ExpenseForm from '@/components/ExpenseForm'
@@ -9,13 +10,44 @@ import { ParsedExpense } from '@/lib/parser'
 import { getSession, logout, saveSession } from '@/lib/auth'
 import { parseBoletaChilena } from '@/lib/parser'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
 import {
-  Receipt, Camera, CheckCircle, AlertCircle, XCircle,
-  ArrowLeft, LogOut, Loader2, Sparkles
+  CheckCircle, AlertCircle, XCircle, Camera,
+  ArrowLeft, LogOut, Loader2, Sparkles, Receipt
 } from 'lucide-react'
+
+// Clave para persistir el borrador en la pestaña (sessionStorage)
+const DRAFT_KEY = 'captura_borrador_v1'
+
+// Helpers para convertir imagen entre Blob y dataURL (persistencia del borrador)
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(blob)
+  })
+}
+
+function dataUrlToBlob(dataUrl: string, mime: string | null): Blob {
+  const byteString = atob(dataUrl.split(',')[1])
+  const mimeType = mime || 'image/jpeg'
+  const bytes = new Uint8Array(byteString.length)
+  for (let i = 0; i < byteString.length; i++) {
+    bytes[i] = byteString.charCodeAt(i)
+  }
+  return new Blob([bytes], { type: mimeType })
+}
+
+interface DraftData {
+  step: 'review'
+  imageDataUrl: string | null
+  imageMime: string | null
+  ocrResult: OcrResult | null
+  parsedData: ParsedExpense | null
+}
 
 export default function CapturaPage() {
   const router = useRouter()
@@ -27,7 +59,10 @@ export default function CapturaPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [showOcr, setShowOcr] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined)
 
+  // Restaurar borrador al montar (para que no se pierda la captura al recargar)
   useEffect(() => {
     const session = getSession()
     if (!session || !session.activo) {
@@ -35,41 +70,85 @@ export default function CapturaPage() {
       return
     }
     setUser(session)
+
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY)
+      if (raw) {
+        const draft: DraftData = JSON.parse(raw)
+        if (draft.step === 'review' && draft.parsedData && draft.ocrResult) {
+          setParsedData(draft.parsedData)
+          setOcrResult(draft.ocrResult)
+          setCapturedImage(draft.imageDataUrl ? dataUrlToBlob(draft.imageDataUrl, draft.imageMime) : null)
+          setStep('review')
+        }
+      }
+    } catch (e) {
+      // Borrador corrupto: se ignora
+      sessionStorage.removeItem(DRAFT_KEY)
+    }
+
     setIsCheckingAuth(false)
   }, [router])
+
+  // Persistir borrador cuando el usuario llega al paso de revisión
+  useEffect(() => {
+    let cancelled = false
+    if (step === 'review' && parsedData && ocrResult) {
+      ;(async () => {
+        let imageDataUrl: string | null = null
+        let imageMime: string | null = null
+        if (capturedImage) {
+          try {
+            imageDataUrl = await blobToDataUrl(capturedImage)
+            imageMime = capturedImage.type
+          } catch { /* noop */ }
+        }
+        if (cancelled) return
+        const draft: DraftData = { step: 'review', imageDataUrl, imageMime, ocrResult, parsedData }
+        try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft)) }
+        catch { /* Quota excedida: se omite */ }
+      })()
+    }
+    return () => { cancelled = true }
+  }, [step, parsedData, ocrResult, capturedImage])
 
   const porcentajeUsado = user ? (user.boletas_usadas / user.limite_boletas) * 100 : 0
   const boletasRestantes = user ? user.limite_boletas - user.boletas_usadas : 0
   const limiteAlcanzado = porcentajeUsado >= 100
 
   const handleImageCapture = (imageBlob: Blob) => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    const url = URL.createObjectURL(imageBlob)
+    setPreviewUrl(url)
     setCapturedImage(imageBlob)
     setError(null)
+    setShowOcr(true)
   }
 
   const handleOcrExtracted = (result: OcrResult) => {
     setOcrResult(result)
     const parsed = parseBoletaChilena(result.text, result.confidence)
     setParsedData(parsed)
+    setShowOcr(false)
     setStep('review')
   }
 
-  // ✅ AGREGADO: Función que faltaba
   const handleError = (errorMessage: string) => {
     setError(errorMessage)
+    setShowOcr(false)
   }
 
   const handleSaveExpense = async (data: ParsedExpense) => {
     setIsSubmitting(true)
     setError(null)
-    
+
     const session = getSession()
     if (!session) {
       setError('No hay sesión activa')
       setIsSubmitting(false)
       return
     }
-    
+
     try {
       const formData = new FormData()
       if (capturedImage) {
@@ -93,20 +172,21 @@ export default function CapturaPage() {
         userRol: session.rol,
         userSheetId: session.sheet_id_asociado,
       }))
-      
+
       const response = await fetch('/api/save-expense', {
         method: 'POST',
         body: formData,
       })
-      
+
       const result = await response.json()
       if (!response.ok) {
         throw new Error(result.error || 'Error al guardar el gasto')
       }
-      
+
       const updatedSession = { ...session, boletas_usadas: result.boletas_usadas }
       saveSession(updatedSession)
       setUser(updatedSession)
+      clearDraft()
       setStep('saved')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar')
@@ -116,16 +196,36 @@ export default function CapturaPage() {
   }
 
   const handleReset = () => {
+    clearDraft()
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setPreviewUrl(undefined)
     setCapturedImage(null)
     setOcrResult(null)
     setParsedData(null)
     setError(null)
+    setShowOcr(false)
+    setStep('capture')
+  }
+
+  // Re-fotografiar conservando el OCR ya extraído (vuelve a capturar nueva imagen)
+  const handleRetake = () => {
+    clearDraft()
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setPreviewUrl(undefined)
+    setCapturedImage(null)
+    setError(null)
+    setShowOcr(false)
     setStep('capture')
   }
 
   const handleLogout = () => {
+    clearDraft()
     logout()
     router.replace('/login')
+  }
+
+  const clearDraft = () => {
+    try { sessionStorage.removeItem(DRAFT_KEY) } catch { /* noop */ }
   }
 
   if (isCheckingAuth) {
@@ -143,19 +243,19 @@ export default function CapturaPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      {/* ===== NAVBAR PREMIUM ===== */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-emerald-100/50 shadow-sm">
+      {/* ===== NAVBAR ===== */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-                <Receipt className="h-5 w-5" />
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-gray-900">GastosSII</h1>
-                <p className="text-xs text-gray-500">Nueva Boleta</p>
-              </div>
-            </div>
+            <Image
+              src="/images/LogogastosNX.png"
+              alt="GastosNX"
+              width={693}
+              height={138}
+              priority
+              loading="eager"
+              className="h-9 w-auto object-contain"
+            />
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -163,7 +263,8 @@ export default function CapturaPage() {
                 onClick={() => router.push('/dashboard')}
                 className="text-gray-600 hover:text-emerald-600"
               >
-                <span className="hidden sm:inline"> Dashboard</span>
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Dashboard</span>
                 <span className="sm:hidden">Dashboard</span>
               </Button>
               <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -188,7 +289,7 @@ export default function CapturaPage() {
             </div>
           </Alert>
         )}
-        
+
         {user && porcentajeUsado >= 80 && !limiteAlcanzado && (
           <Alert variant={porcentajeUsado >= 90 ? 'warning' : 'info'}>
             <AlertCircle className="h-5 w-5" />
@@ -202,7 +303,7 @@ export default function CapturaPage() {
             </div>
           </Alert>
         )}
-        
+
         {error && (
           <Alert variant="error">
             <XCircle className="h-5 w-5" />
@@ -211,7 +312,7 @@ export default function CapturaPage() {
         )}
 
         {step === 'capture' && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {limiteAlcanzado ? (
               <Card className="text-center p-12 space-y-6">
                 <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-red-100 to-rose-100 flex items-center justify-center">
@@ -234,82 +335,48 @@ export default function CapturaPage() {
               </Card>
             ) : (
               <>
-                <div className="text-center space-y-3">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl text-white shadow-lg shadow-emerald-500/30">
-                    <Camera className="h-8 w-8" />
+                <div className="text-center space-y-2">
+                  <div className="inline-flex items-center justify-center w-14 h-14 bg-neutral-900 rounded-2xl text-white shadow-lg">
+                    <Receipt className="h-7 w-7" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Capturar Boleta</h2>
-                    <p className="text-gray-600 mt-1">
-                      Toma una foto o sube una imagen de tu boleta
+                    <h2 className="text-xl font-bold text-gray-900">Nueva Boleta</h2>
+                    <p className="text-sm text-gray-500">
+                      {boletasRestantes} boletas disponibles este mes
                     </p>
                   </div>
-                  <Badge variant="success" className="inline-flex">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    OCR Inteligente
-                  </Badge>
                 </div>
-                
+
                 <CameraCapture
                   onCapture={handleImageCapture}
                   onError={handleError}
                 />
-                
-                <Card className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
-                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-emerald-600" />
-                    Consejos para una mejor captura
-                  </h3>
-                  <ul className="space-y-2 text-sm text-gray-600">
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-600 mt-1">•</span>
-                      <span>Asegúrate de que la boleta esté bien iluminada</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-600 mt-1">•</span>
-                      <span>Mantén la cámara estable y paralela a la boleta</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-600 mt-1">•</span>
-                      <span>Incluye todos los bordes de la boleta en la foto</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-600 mt-1">•</span>
-                      <span>Evita sombras y reflejos</span>
-                    </li>
-                  </ul>
-                </Card>
               </>
             )}
           </div>
         )}
 
-        {capturedImage && !ocrResult && (
-          <OcrProcessor
-            imageBlob={capturedImage}
-            onExtracted={handleOcrExtracted}
-            onError={handleError}
-          />
-        )}
+        {showOcr && <OcrProcessor imageBlob={capturedImage} onExtracted={handleOcrExtracted} onError={handleError} />}
 
         {step === 'review' && parsedData && (
           <div className="space-y-6">
-            <div className="text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl text-white shadow-lg shadow-blue-500/30">
-                <CheckCircle className="h-8 w-8" />
-              </div>
+            <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Revisar Datos</h2>
-                <p className="text-gray-600 mt-1">
-                  Verifica que los datos extraídos sean correctos
-                </p>
+                <h2 className="text-xl font-bold text-gray-900">Revisar Datos</h2>
+                <p className="text-sm text-gray-500">Verifica que los datos sean correctos</p>
               </div>
+              <Badge variant={ocrResult && ocrResult.confidence >= 80 ? 'success' : 'warning'} className="inline-flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                OCR {ocrResult ? `${ocrResult.confidence.toFixed(0)}%` : ''}
+              </Badge>
             </div>
             <ExpenseForm
               initialData={parsedData}
               onSave={handleSaveExpense}
-              onCancel={handleReset}
+              onCancel={handleRetake}
               isSubmitting={isSubmitting}
+              onRetake={handleRetake}
+              imagePreviewUrl={previewUrl}
             />
           </div>
         )}
@@ -324,22 +391,22 @@ export default function CapturaPage() {
                 ¡Boleta Guardada!
               </h3>
               <p className="text-gray-600">
-                Los datos fueron registrados exitosamente en Google Sheets
+                Los datos fueron registrados exitosamente
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
-              <Card className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+              <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl">
                 <p className="text-2xl font-bold text-emerald-600">
                   {user.boletas_usadas}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">Boletas usadas</p>
-              </Card>
-              <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+              </div>
+              <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl">
                 <p className="text-2xl font-bold text-blue-600">
                   {boletasRestantes}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">Restantes</p>
-              </Card>
+              </div>
             </div>
             <div className="space-y-3 max-w-sm mx-auto">
               <Button
@@ -356,7 +423,7 @@ export default function CapturaPage() {
                 onClick={() => router.push('/dashboard')}
                 className="w-full border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-semibold"
               >
-                📋 Ver Dashboard
+                Ver Dashboard
               </Button>
             </div>
           </Card>
@@ -364,7 +431,7 @@ export default function CapturaPage() {
 
         <div className="text-center py-6">
           <p className="text-sm text-gray-500">
-            v0.8.0 • GastosSII by NXChile
+            v0.8.0 • GastosNX by NXChile
           </p>
         </div>
       </div>

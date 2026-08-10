@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Check, Sparkles, ArrowLeft, Star } from 'lucide-react'
+import { Check, Star, ArrowLeft } from 'lucide-react'
+import Image from 'next/image'
 
 export default function RegistroPage() {
   const router = useRouter()
@@ -14,16 +15,16 @@ export default function RegistroPage() {
       {/* ===== NAVBAR ===== */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-emerald-100/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">GastosSII</h1>
-                <p className="text-xs text-gray-500">Selecciona tu plan</p>
-              </div>
-            </div>
+          <div className="flex items-center justify-between h-20">
+            <Image
+              src="/images/LogogastosNX.png"
+              alt="Logotipo GastosNX"
+              width={693}
+              height={138}
+              priority
+              loading="eager"
+              className="h-10 w-auto object-contain"
+            />
             <Button variant="ghost" size="sm" onClick={() => router.push('/')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver
@@ -47,8 +48,8 @@ export default function RegistroPage() {
       </div>
 
       {/* ===== PLANES ===== */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-        <div className="grid md:grid-cols-3 gap-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        <div className="grid md:grid-cols-2 gap-8">
           
           {/* Plan Free */}
           <Card className="border-emerald-200 shadow-lg hover:shadow-xl transition-all">
@@ -106,10 +107,10 @@ export default function RegistroPage() {
     <span className="text-5xl font-bold text-gray-900">$9.900</span>
     <span className="text-gray-600">/mes</span>
   </div>
-  <p className="text-xs text-gray-500 mb-2">Facturación anual ($118.800 total)</p>
+  <p className="text-xs text-gray-500 mb-2">IVA incluido · Facturación anual ($118.800 total)</p>
   <div className="bg-emerald-50 rounded-lg p-2">
     <p className="text-xs text-emerald-700">
-      <span className="font-semibold">También disponible:</span> $12.900/mes sin contrato
+      <span className="font-semibold">También disponible:</span> $12.500/mes sin contrato
     </p>
   </div>
 </div>
@@ -119,7 +120,7 @@ export default function RegistroPage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>Hasta 2 usuarios</strong> ✅</span>
+                  <span><strong>Hasta 3 usuarios</strong> ✅</span>
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
@@ -152,70 +153,6 @@ export default function RegistroPage() {
               <p className="text-xs text-gray-500 text-center mt-4">
                 ⏱️ Recibirás tus accesos en máximo 24 hrs hábiles<br />
                 Total anual: $118.800
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Plan Enterprise */}
-          <Card className="border-emerald-200 shadow-lg hover:shadow-xl transition-all">
-            <CardHeader className="text-center pb-2">
-              <CardTitle className="text-2xl font-bold text-gray-900">Enterprise</CardTitle>
-              <div className="mt-4">
-  <div className="flex items-baseline gap-2 mb-1">
-    <span className="text-5xl font-bold text-gray-900">$19.990</span>
-    <span className="text-gray-600">/mes</span>
-  </div>
-  <p className="text-xs text-gray-500 mb-2">Facturación anual ($239.880 total)</p>
-  <div className="bg-gray-100 rounded-lg p-2">
-    <p className="text-xs text-gray-600">
-      <span className="font-semibold">También disponible:</span> $24.990/mes sin contrato
-    </p>
-  </div>
-</div>
-              <p className="text-sm text-gray-600 mt-2">Para grandes empresas</p>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>Hasta 5 usuarios</strong> ✅</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>Boletas ilimitadas</strong></span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>OCR Azure AI</strong></span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>Dashboard avanzado</strong></span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>Export CSV + Excel</strong></span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>API access</strong></span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>Soporte 24/7</strong></span>
-                </li>
-              </ul>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-                onClick={() => router.push('/registro/pago?plan=enterprise')}
-              >
-                Comenzar Ahora →
-              </Button>
-              <p className="text-xs text-gray-500 text-center mt-4">
-                ⏱️ Recibirás tus accesos en máximo 24 hrs hábiles<br />
-                Total anual: $239.880
               </p>
             </CardContent>
           </Card>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { google } from 'googleapis'
 import { createHash } from 'crypto'
+import { getSheets } from '@/lib/sheets'
 
 // Hash con SHA256 (compatible con auth.ts del cliente)
 function hashPassword(password: string): string {
@@ -20,11 +20,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Credenciales de Google
-    const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
     const spreadsheetId = process.env.GOOGLE_CONFIG_SHEET_ID
 
-    if (!serviceAccountEmail || !privateKey || !spreadsheetId) {
+    if (!spreadsheetId) {
       console.error('❌ Faltan credenciales de Google en .env.local')
       return NextResponse.json(
         { error: 'Configuración del servidor incompleta' },
@@ -33,15 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Autenticar con Google
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: serviceAccountEmail,
-        private_key: privateKey,
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    })
-
-    const sheets = google.sheets({ version: 'v4', auth })
+    const sheets = await getSheets(true)
 
     // Leer hoja "Usuarios" en Config Maestro
     const response = await sheets.spreadsheets.values.get({

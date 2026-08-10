@@ -1,30 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { google } from 'googleapis'
 import { hashPassword } from '@/lib/auth'
-
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+import { getSheets } from '@/lib/sheets'
 
 async function getSheetsClient() {
-  try {
-    const credentialsJson = process.env.GOOGLE_CREDENTIALS
-    if (!credentialsJson) {
-      console.error('❌ GOOGLE_CREDENTIALS no está configurado')
-      throw new Error('GOOGLE_CREDENTIALS no está configurado')
-    }
-
-    const credentials = JSON.parse(credentialsJson)
-    
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: SCOPES,
-    })
-
-    const sheets = google.sheets({ version: 'v4', auth })
-    return sheets
-  } catch (error) {
-    console.error('❌ Error configurando Google Sheets:', error)
-    throw error
-  }
+  return getSheets()
 }
 
 export async function POST(request: NextRequest) {

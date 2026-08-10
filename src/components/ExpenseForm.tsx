@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
-import { AlertCircle, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react'
 
 interface ExpenseFormProps {
   initialData: ParsedExpense
   onSave: (data: ParsedExpense) => Promise<void>
   onCancel: () => void
+  onRetake?: () => void
+  imagePreviewUrl?: string
   isSubmitting?: boolean
 }
 
@@ -31,6 +33,8 @@ export default function ExpenseForm({
   initialData, 
   onSave, 
   onCancel,
+  onRetake,
+  imagePreviewUrl,
   isSubmitting: parentIsSubmitting = false
 }: ExpenseFormProps) {
   const [formData, setFormData] = useState<ParsedExpense>(initialData)
@@ -277,6 +281,32 @@ export default function ExpenseForm({
             )}
           </div>
         </div>
+
+        {/* Preview de imagen (si existe) */}
+        {imagePreviewUrl && (
+          <div className="flex items-center gap-3 bg-neutral-50 border border-black/5 rounded-xl p-3">
+            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+              <img src={imagePreviewUrl} alt="Boleta capturada" className="w-full h-full object-contain" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-neutral-800">Boleta capturada</p>
+              <p className="text-xs text-neutral-500">Imagen adjunta al gasto</p>
+            </div>
+            {onRetake && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onRetake}
+                disabled={parentIsSubmitting || limiteAlcanzado}
+                className="border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+              >
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Re-fotografiar
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Botones de Acción */}
         <div className="flex gap-3 pt-4 border-t border-gray-100">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { google } from 'googleapis'
 import { hashPassword } from '@/lib/auth'
+import { getSheets } from '@/lib/sheets'
 
 // ✅ CONFIGURACIÓN DE LÍMITES POR PLAN
 const PLAN_LIMITS: Record<string, { boletas: number; usuarios: number }> = {
@@ -16,24 +16,8 @@ const PLAN_HIERARCHY: Record<string, number> = {
   'enterprise': 3,
 }
 
-// Configurar Google Sheets
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-
 async function getSheetsClient() {
-  try {
-    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}')
-    
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: SCOPES,
-    })
-
-    const sheets = google.sheets({ version: 'v4', auth })
-    return sheets
-  } catch (error) {
-    console.error('Error configurando Google Sheets:', error)
-    throw new Error('Error de configuración de Google Sheets')
-  }
+  return getSheets()
 }
 
 // GET: Listar usuarios (SOLO de la empresa del admin)
