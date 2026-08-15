@@ -9,11 +9,12 @@
 
 ## 1. Resumen del proyecto
 
-**GastosNX** (nombre interno de interfaz: **GastosSII**, versión `0.8.0`) es una aplicación web chilena para registrar, respaldar y categorizar **gastos operacionales menores** (peajes, estacionamientos, colaciones, combustibles, etc.) destinada a pymes y contadores en Chile.
+**GastosNX** (versión `0.8.0`) es una aplicación web chilena para registrar, respaldar y categorizar **gastos operacionales menores** (peajes, estacionamientos, colaciones, combustibles, etc.) destinada a pymes y contadores en Chile.
 
 Propósito principal: capturar el respaldo de un gasto antes de que se pierda, ordenarlo y dejarlo listo para la Declaración de Renta anual (compatible con requisitos SII). **No determina deducibilidad tributaria** — solo respaldo y orden documental.
 
 **Marca / URL:** gastos.nxchile.com · Autor: NXChile · Contacto: gastos@nxchile.com
+> ℹ️ **Marca (2026-08-10):** la interfaz fue unificada de **"GastosSII"** → **"GastosNX"** (navbar, footers, textos y emails). El logotipo oficial es `public/images/LogogastosNX.png` (693×138, usado con `width={693}`/`height={138}` y clases `h-* w-auto object-contain`).
 
 ---
 
@@ -73,7 +74,7 @@ src/
   app/
     └ (raíz) page.tsx ...         Landing pública (página de marketing)
     captura/page.tsx              Flujo de captura → OCR → revisión → guardado
-    dashboard/page.tsx            Dashboard del usuario / empresa
+    dashboard/page.tsx            Dashboard del usuario / empresa (stats + lista gastos + desglose por categoría)
     login/page.tsx                Login + modales recuperación/contacto
     manual/page.tsx               Manual de uso con video YouTube
     registro/
