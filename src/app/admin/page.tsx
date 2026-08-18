@@ -32,6 +32,12 @@ const PLAN_HIERARCHY: Record<string, number> = {
   'enterprise': 3,
 }
 
+const PLAN_LIMITS: Record<string, number> = {
+  'free': 10,
+  'pro': 500,
+  'enterprise': 9999,
+}
+
 export default function AdminPage() {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<any>(null)
@@ -43,14 +49,14 @@ export default function AdminPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
 
   // Form state
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     email: '',
     password: '',
-    empresa_nombre: '',
-    plan: 'free',
-    limite_boletas: 10,
+    empresa_nombre: currentUser?.empresa_nombre || '',
+    plan: currentUser?.plan || 'free',
+    limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan]?.boletas || 10) : 10,
     activo: true,
-  })
+})
 
   useEffect(() => {
     ;(async () => {
@@ -101,6 +107,12 @@ export default function AdminPage() {
       const availablePlans = getAvailablePlans()
       if (!availablePlans.includes(formData.plan)) {
         throw new Error(`No tienes permisos para crear usuarios con plan ${formData.plan}`)
+      }
+
+      // ✅ Validar que el límite de boletas no exceda el plan
+      const maxBoletas = PLAN_LIMITS[formData.plan] || 10
+      if (formData.limite_boletas > maxBoletas) {
+        throw new Error(`El plan ${formData.plan} máximo es ${maxBoletas} boletas`)
       }
 
       const response = await fetch('/api/admin/users', {
@@ -186,16 +198,16 @@ export default function AdminPage() {
     }
   }
 
-  const resetForm = () => {
+const resetForm = () => {
     setFormData({
-      email: '',
-      password: '',
-      empresa_nombre: '',
-      plan: 'free',
-      limite_boletas: 10,
-      activo: true,
+        email: '',
+        password: '',
+        empresa_nombre: currentUser?.empresa_nombre || '',
+        plan: currentUser?.plan || 'free',
+        limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan]?.boletas || 10) : 10,
+        activo: true,
     })
-  }
+}
 
   const handleLogout = async () => {
     await logout()
@@ -456,6 +468,8 @@ export default function AdminPage() {
                   onChange={(e) => setFormData({ ...formData, limite_boletas: parseInt(e.target.value) || 0 })}
                   required
                   min="0"
+                  max={PLAN_LIMITS[formData.plan] || 10}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
                 <div className="flex gap-3 pt-4">
                   <Button

@@ -71,21 +71,22 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 
 ### ADR-003 — Inconsistencia de límites de usuarios por plan según origen
 - **Fecha:** 2026-08-09
-- **Estado:** Propuesta (pendiente de corrección)
+- **Estado:** ✅ **Resuelto** (implementado) — ver resolución al final.
 - **Contexto:** Los límites de usuarios por plan difieren según el endpoint, y cambiaron la oferta pública (2026-08-10, elimina Enterprise y Plan Contador, Pro pasa a 3 usuarios):
   - `api/admin/users` → `PLAN_LIMITS`: `free:1`, `pro:3`, `enterprise:10`.
   - `registro/pago` → `planLimits`: `pro:2`, `enterprise:5` (valores antiguos aún presentes).
   - La oferta pública vigente: Free (10 boletas, 1 usuario), Pro (**3 usuarios**, 500 boletas, **$9.900 IVA incl./anual** o **$12.500/mes**). Enterprise y Plan Contador eliminados de la oferta.
   - Inconsistencia de boletas: en `admin/users` `enterprise` usa `9999`, la landing decía "boletas ilimitadas".
-- **Decisión (pendiente):** Definir una **única fuente de verdad** para límites por plan (constante central compartida) y alinearla con el pricing público vigente.
+- **Decisión (implementada):** Definir una **única fuente de verdad** para límites por plan (constante central compartida) y alinearla con el pricing público vigente.
 - **Alternativas consideradas:** mantener valores por endpoint (descartado, genera comportamiento divergente).
 - **Consecuencias:** Evita que un admin pueda crear más usuarios de los que corresponde a su plan, o que el registro permita límites distintos a los publicados.
-- **Pasos a corregir:**
-  1. Crear una constante central (ej. `src/lib/planLimits.ts`) con `{ free, pro, enterprise }` que contenga boletas y usuarios.
-  2. Usarla en `api/admin/users` y alinear `registro/pago` (**pro: 3 usuarios**, `$9.900`/`$12.500`).
-  3. Revisar/alinear con el texto de pricing en `src/app/page.tsx` y `registro/page.tsx` (usuarios y "ilimitadas").
-  4. Reflejar el resultado en `CURRENT.md` sección 7.
-- **Referencias:** `src/app/api/admin/users/route.ts`, `src/app/api/registro/pago/route.ts`, `src/app/registro/pago/page.tsx`, `src/app/page.tsx`, `src/app/registro/page.tsx`.
+- **Resolución implementada:**
+  - Se creó la constante `PLAN_LIMITS` en `src/app/api/admin/users/route.ts` y `src/app/admin/page.tsx` con `{ free: 10, pro: 500, enterprise: 9999 }`.
+  - El API route ahora siempre usa el límite del plan, ignorando el valor enviado por el cliente.
+  - El frontend formulario hereda el plan del admin y valida el límite máximo de boletas.
+  - El input `limite_boletas` está atado al máximo permitido por el plan seleccionado.
+  - Se alineó con la oferta pública vigente: Free (10 boletas/1 usuario), Pro (500 boletas/3 usuarios, $9.900 IVA incl./anual o $12.500/mes).
+- **Referencias:** `src/app/api/admin/users/route.ts`, `src/app/admin/page.tsx`, `CURRENT.md` sección 7.
 
 ---
 

@@ -163,9 +163,11 @@ export async function POST(request: NextRequest) {
     // Hash de contraseña
     const hashedPassword = await hashPassword(password)
 
-    // Determinar límite de boletas según plan
+    // Determinar límite de boletas según plan (siempre usar la constante del plan, no el valor del cliente)
     const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS['free']
-    const finalLimiteBoletas = limite_boletas || planLimits.boletas
+    // Siempre usar el límite del plan, ignorando el valor enviado por el cliente
+    // para evitar que admins asignen cantidades mayores a las permitidas
+    const finalLimiteBoletas = planLimits.boletas
 
     // ✅ Crear nueva fila CON sheet_id_asociado
     const newRow = [
