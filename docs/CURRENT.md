@@ -187,7 +187,7 @@ Campos de la sesión (`UserSession`):
 
 > ℹ️ **Cambios recientes (2026-08-10):** el plan **Enterprise fue eliminado de la oferta pública** (no existían clientes) y la sección **"Plan Contador" fue retirada** de la landing (no existía en el backend). Permanece `enterprise` en el schema interno/validación por si fuera necesario, pero ya no se ofrece.
 >
-> ⚠️ **ADR-003 (pendiente):** aún hay inconsistencia de límites de usuarios por plan según el origen: `api/admin/users` → `free:1, pro:3, enterprise:10`; mientras `registro/pago/page.tsx` sigue con valores antiguos (`usuarios: 2`, precios `$12.900`). Alinear `registro/pago` con `pro: 3 usuarios`, `$9.900 IVA incl./anual` y `$12.500/mensual`.
+> ⚠️ **ADR-003 (2026-08-18):** **Resuelto** - Se unificaron los límites de boletas por plan utilizando la constante `PLAN_LIMITS` en `src/app/api/admin/users/route.ts` y `src/app/admin/page.tsx`. El admin ahora hereda el plan al crear usuarios y el límite de boletas está atado al plan seleccionado (Free: 10, Pro: 500, Enterprise: 9999). Antes estaba pendiente por inconsistencias entre `api/admin/users` y `registro/pago`.
 
 ### Jerarquía de planes (admin)
 `free (1) < pro (2) < enterprise (3)` — un admin solo puede crear/editar usuarios con planes iguales o inferiores al suyo (`PLAN_HIERARCHY`).
@@ -264,12 +264,11 @@ NEXT_PUBLIC_WEB3FORMS_KEY
 ## 11. Observaciones / temas pendientes conocidos
 
 > Las siguientes inconsistencias se encuentran **registradas como ADR en `docs/DECISIONS.md`**, ordenadas de mayor a menor importancia, cada una con sus pasos a corregir. Referencia cruzada del seguimiento: `DECISIONS.md`.
-> **Estado 2026-08-10:** ADR-002 y ADR-004 **resueltos**. Quedan pendientes ADR-001, ADR-003, ADR-005, ADR-006.
+> **Estado 2026-08-18:** ADR-002 y ADR-004 **resueltos**. ADR-003 **resuelto** (consistencia de límites de plan). Quedan pendientes ADR-001, ADR-005, ADR-006.
 
 | # | ADR | Tema pendiente | Urgencia |
 |---|-----|----------------|----------|
 | 1 | **ADR-001** | Estrategia de hashing de contraseñas inconsistente e insegura (SHA-256 plano vs. `algo:salt:hash`; password en texto plano vía email; admin default `admin123`) | 🔴 Crítica (seguridad) |
-| 2 | **ADR-003** | Límites de usuarios por plan inconsistentes entre `api/admin/users` y `registro/pago`, y vs. la nueva oferta pública (Pro ahora dice "hasta 3 usuarios") | 🟠 Media (negocio) |
 | 3 | **ADR-005** | Confianza de OCR fija en 95 (Google Vision no entrega confianza en TEXT_DETECTION) — valor no fiable | 🟢 Baja (UX) |
 | 4 | **ADR-006** | Código muerto / no usado: `api/user` (501), `lib/sheets-users.ts` vacío, `deleteReceiptImage` sin uso, assets de `layout.tsx` faltantes | 🟡 Baja (deuda técnica) |
 

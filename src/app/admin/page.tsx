@@ -204,7 +204,7 @@ const resetForm = () => {
         password: '',
         empresa_nombre: currentUser?.empresa_nombre || '',
         plan: currentUser?.plan || 'free',
-        limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan]?.boletas || 10) : 10,
+limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan] || 10) : 10,
         activo: true,
     })
 }
