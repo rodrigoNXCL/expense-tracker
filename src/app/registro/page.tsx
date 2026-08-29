@@ -37,13 +37,13 @@ export default function RegistroPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <Badge variant="default" className="mb-4 bg-gradient-to-r from-emerald-500 to-teal-600">
           <Star className="w-3 h-3 mr-1" />
-          Todos los planes incluyen OCR con Azure AI
+          Todos los planes incluyen OCR con Google AI
         </Badge>
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
           Elige el plan perfecto para tu empresa
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Todos los planes incluyen OCR con Azure AI. Los planes pagos se facturan anualmente.
+          Todos los planes incluyen OCR con Google AI. Precio por usuario, con descuento preferencial en plan anual.
         </p>
       </div>
 
@@ -65,7 +65,7 @@ export default function RegistroPage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>1 usuario</strong></span>
+                  <span><strong>OCR con Google AI</strong></span>
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
@@ -102,33 +102,40 @@ export default function RegistroPage() {
             </div>
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-2xl font-bold text-gray-900">Pro</CardTitle>
-              <div className="mt-4">
-  <div className="flex items-baseline gap-2 mb-1">
-    <span className="text-5xl font-bold text-gray-900">$9.900</span>
-    <span className="text-gray-600">/mes</span>
-  </div>
-  <p className="text-xs text-gray-500 mb-2">IVA incluido · Facturación anual ($118.800 total)</p>
-  <div className="bg-emerald-50 rounded-lg p-2">
-    <p className="text-xs text-emerald-700">
-      <span className="font-semibold">También disponible:</span> $12.500/mes sin contrato
-    </p>
-  </div>
-</div>
+              <div className="mt-4 space-y-2">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                  <p className="text-xs text-emerald-700 font-semibold mb-1">PAGO ANUAL · Recomendado</p>
+                  <div className="flex items-baseline gap-1 justify-center">
+                    <span className="text-3xl font-bold text-gray-900">$3.300</span>
+                    <span className="text-gray-600 text-sm">/ usuario / mes</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">3 usuarios incluidos = $9.900 / mes</p>
+                  <p className="text-xs text-gray-500">Usuario extra: $2.500 c/u</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-2.5">
+                  <p className="text-xs text-gray-700 font-semibold mb-1">PAGO MES A MES</p>
+                  <div className="flex items-baseline gap-1 justify-center">
+                    <span className="text-2xl font-bold text-gray-900">$4.000</span>
+                    <span className="text-gray-600 text-sm">/ usuario / mes</span>
+                  </div>
+                  <p className="text-xs text-gray-500">3 usuarios incluidos = $12.000 / mes · Extra: $3.000 c/u</p>
+                </div>
+              </div>
               <p className="text-sm text-gray-600 mt-2">Para empresas en crecimiento</p>
             </CardHeader>
             <CardContent className="pt-6">
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>Hasta 3 usuarios</strong> ✅</span>
+                  <span><strong>Hasta 3 usuarios base + adicionales</strong></span>
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>500 boletas/mes</strong></span>
+                  <span><strong>500 boletas / mes</strong></span>
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span><strong>OCR Azure AI</strong></span>
+                  <span><strong>OCR con Google AI</strong></span>
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
@@ -152,7 +159,7 @@ export default function RegistroPage() {
               </Button>
               <p className="text-xs text-gray-500 text-center mt-4">
                 ⏱️ Recibirás tus accesos en máximo 24 hrs hábiles<br />
-                Total anual: $118.800
+                IVA incluido en todos los precios
               </p>
             </CardContent>
           </Card>

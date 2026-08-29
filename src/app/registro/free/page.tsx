@@ -119,7 +119,7 @@ export default function RegistroFreePage() {
               </li>
               <li className="flex items-start gap-2 text-sm text-gray-700">
                 <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span><strong>OCR Azure AI</strong> - Misma tecnología que planes pagos</span>
+                <span><strong>OCR con Google AI</strong> - Misma tecnología que planes pagos</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-gray-700">
                 <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
@@ -168,7 +168,7 @@ export default function RegistroFreePage() {
 
         <div className="mt-8 text-center space-y-3">
           <p className="text-gray-600">¿Necesitas más usuarios o boletas ilimitadas?</p>
-          <Button variant="outline" onClick={() => router.push('/registro/pago')} className="border-emerald-500 text-emerald-600 hover:bg-emerald-50">Ver planes Pro y Enterprise →</Button>
+          <Button variant="outline" onClick={() => router.push('/registro/pago')} className="border-emerald-500 text-emerald-600 hover:bg-emerald-50">Ver planes Pro →</Button>
         </div>
       </div>
     </div>

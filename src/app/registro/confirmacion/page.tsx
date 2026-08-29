@@ -25,13 +25,8 @@ export default function ConfirmacionPage() {
     },
     pro: {
       nombre: 'Pro',
-      precio: 9900,
+      precio: 3300,
       color: 'from-blue-500 to-indigo-600',
-    },
-    enterprise: {
-      nombre: 'Enterprise',
-      precio: 19990,
-      color: 'from-purple-500 to-pink-600',
     },
   }
 
@@ -92,8 +87,9 @@ export default function ConfirmacionPage() {
                     </p>
                   </div>
                   <p className="text-xs text-amber-700">
-                    Total anual: ${(planActual.precio * 12).toLocaleString('es-CL')} 
-                    (${planActual.precio.toLocaleString('es-CL')}/mes)
+                    Plan Pro desde <strong>${planActual.precio.toLocaleString('es-CL')}/usuario/mes</strong> (anual)
+                    <br />
+                    Hasta 3 usuarios incluidos
                   </p>
                 </div>
               </div>

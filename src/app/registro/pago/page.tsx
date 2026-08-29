@@ -29,25 +29,22 @@ export default function RegistroPagoPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // ✅ PRECIOS ACTUALIZADOS - MENSUAL Y ANUAL
+  // ✅ PRECIOS ACTUALIZADOS - MENSUAL Y ANUAL (por usuario)
   const planes = {
     pro: {
       nombre: 'Pro',
-      precioAnual: 9900,      // Facturación anual
-      precioMensual: 12900,   // Sin contrato
-      usuarios: 2,
+      precioPorUsuarioAnual: 3300,   // / usuario / mes (anual)
+      precioPorUsuarioMensual: 4000, // / usuario / mes (mes a mes)
+      usuariosBase: 3,
+      precioUsuarioExtraAnual: 2500,
+      precioUsuarioExtraMensual: 3000,
+      totalAnualMensual: 9900,   // 3 usuarios x $3.300
+      totalMensualMensual: 12000, // 3 usuarios x $4.000
       boletas: '500 boletas/mes',
-    },
-    enterprise: {
-      nombre: 'Enterprise',
-      precioAnual: 19990,     // Facturación anual
-      precioMensual: 24990,   // Sin contrato
-      usuarios: 5,
-      boletas: 'Ilimitadas',
     },
   }
 
-  const planActual = planes[formData.plan as 'pro' | 'enterprise'] || planes.pro
+  const planActual = planes[formData.plan as 'pro'] || planes.pro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -149,14 +146,14 @@ Acción requerida:
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-gray-900">📦 Resumen del plan</h3>
               <Badge variant="success">
-                ${planActual.precioAnual.toLocaleString('es-CL')}/mes
+                Pro
               </Badge>
             </div>
 
             <ul className="space-y-2 mb-4">
               <li className="flex items-start gap-2 text-sm text-gray-700">
                 <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span><strong>Hasta {planActual.usuarios} usuarios</strong> incluidos</span>
+                <span><strong>Hasta {planActual.usuariosBase} usuarios base</strong> + adicionales</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-gray-700">
                 <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
@@ -164,7 +161,7 @@ Acción requerida:
               </li>
               <li className="flex items-start gap-2 text-sm text-gray-700">
                 <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span><strong>OCR Azure AI</strong> - Misma tecnología para todos los planes</span>
+                <span><strong>OCR con Google AI</strong> - Misma tecnología para todos los planes</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-gray-700">
                 <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
@@ -176,62 +173,37 @@ Acción requerida:
               </li>
             </ul>
 
-            {/* Toggle de Planes */}
-            <div className="flex gap-2 mb-4">
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, plan: 'pro' })}
-                className={`flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all ${
-                  formData.plan === 'pro'
-                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <p className="font-semibold">Pro</p>
-                <p className="text-xs">$9.900/mes (anual)</p>
-                <p className="text-xs text-gray-500">$12.900/mes</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, plan: 'enterprise' })}
-                className={`flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all ${
-                  formData.plan === 'enterprise'
-                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <p className="font-semibold">Enterprise</p>
-                <p className="text-xs">$19.990/mes (anual)</p>
-                <p className="text-xs text-gray-500">$24.990/mes</p>
-              </button>
+            {/* Pricing Cards: Anual vs Mes a mes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <div className="bg-white border-2 border-emerald-500 rounded-lg p-4">
+                <p className="text-xs text-emerald-700 font-semibold mb-1">PAGO ANUAL · Recomendado</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-2xl font-bold text-gray-900">${planActual.precioPorUsuarioAnual.toLocaleString('es-CL')}</span>
+                  <span className="text-gray-600 text-sm">/ usuario / mes</span>
+                </div>
+                <p className="text-xs text-gray-600">3 usuarios = <strong>${planActual.totalAnualMensual.toLocaleString('es-CL')} / mes</strong></p>
+                <p className="text-xs text-gray-500">Usuario extra: ${planActual.precioUsuarioExtraAnual.toLocaleString('es-CL')} c/u</p>
+              </div>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-xs text-gray-700 font-semibold mb-1">PAGO MES A MES</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-2xl font-bold text-gray-900">${planActual.precioPorUsuarioMensual.toLocaleString('es-CL')}</span>
+                  <span className="text-gray-600 text-sm">/ usuario / mes</span>
+                </div>
+                <p className="text-xs text-gray-600">3 usuarios = <strong>${planActual.totalMensualMensual.toLocaleString('es-CL')} / mes</strong></p>
+                <p className="text-xs text-gray-500">Usuario extra: ${planActual.precioUsuarioExtraMensual.toLocaleString('es-CL')} c/u</p>
+              </div>
             </div>
 
-            {/* Info de Facturación Anual */}
+            {/* Info de Facturación */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <div className="flex items-start gap-2">
                 <Clock className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-amber-800">
-                  <p className="font-medium">Facturación anual</p>
+                  <p className="font-medium">El plan anual es más conveniente</p>
                   <p className="text-amber-700">
-                    Total: <strong>${(planActual.precioAnual * 12).toLocaleString('es-CL')}</strong> por año
+                    Ahorras <strong>${((planActual.precioPorUsuarioMensual - planActual.precioPorUsuarioAnual) * planActual.usuariosBase * 12).toLocaleString('es-CL')} al año</strong> por los 3 usuarios base.
                   </p>
-                  <p className="text-xs text-amber-600 mt-1">
-                    ({Math.round(planActual.precioAnual / planActual.usuarios).toLocaleString('es-CL')}/usuario/mes)
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Opción Mensual */}
-            <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <div className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-blue-800">
-                  <p className="font-medium">¿Prefieres flexibilidad?</p>
-                  <p className="text-blue-700">
-                    Disponible: <strong>${planActual.precioMensual.toLocaleString('es-CL')}/mes</strong> sin contrato anual
-                  </p>
-                  <p className="text-xs text-blue-600 mt-1">Contáctanos para coordinar</p>
                 </div>
               </div>
             </div>
