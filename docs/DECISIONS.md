@@ -71,22 +71,29 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 
 ### ADR-003 — Inconsistencia de límites de usuarios por plan según origen
 - **Fecha:** 2026-08-09
-- **Estado:** ✅ **Resuelto** (implementado) — ver resolución al final.
-- **Contexto:** Los límites de usuarios por plan difieren según el endpoint, y cambiaron la oferta pública (2026-08-10, elimina Enterprise y Plan Contador, Pro pasa a 3 usuarios):
-  - `api/admin/users` → `PLAN_LIMITS`: `free:1`, `pro:3`, `enterprise:10`.
-  - `registro/pago` → `planLimits`: `pro:2`, `enterprise:5` (valores antiguos aún presentes).
-  - La oferta pública vigente: Free (10 boletas, 1 usuario), Pro (**3 usuarios**, 500 boletas, **$9.900 IVA incl./anual** o **$12.500/mes**). Enterprise y Plan Contador eliminados de la oferta.
-  - Inconsistencia de boletas: en `admin/users` `enterprise` usa `9999`, la landing decía "boletas ilimitadas".
-- **Decisión (implementada):** Definir una **única fuente de verdad** para límites por plan (constante central compartida) y alinearla con el pricing público vigente.
-- **Alternativas consideradas:** mantener valores por endpoint (descartado, genera comportamiento divergente).
-- **Consecuencias:** Evita que un admin pueda crear más usuarios de los que corresponde a su plan, o que el registro permita límites distintos a los publicados.
-- **Resolución implementada:**
+- **Estado:** ✅ **Resuelto** (2026-08-28) — ver resolución al final.
+- **Contexto:** Los límites de usuarios por plan difieren según el endpoint, y cambiaron la oferta pública (2026-08-10, elimina Enterprise y Plan Contador, Pro pasa a 3 usuarios). La primera resolución (2026-08-18) alineó los valores en backend pero la UI pública mantenía precios desactualizados (Enterprise visible, precios antiguos en `/registro/pago` y `/registro/confirmacion`).
+  - Backend (alineado 2026-08-18): `api/admin/users` → `PLAN_LIMITS`: `free:{boletas:10,usuarios:1}`, `pro:{boletas:500,usuarios:3}`, `enterprise:{boletas:9999,usuarios:10}`.
+  - UI pública (corregido 2026-08-28): `/registro/pago` y `/registro/confirmacion` ofrecían plan Enterprise con precios antiguos (`$19.990/$24.990`) y Pro con precio total único (`$9.900`/`$12.900`) sin desglose por usuario.
+- **Decisión (implementada):** Definir una **única fuente de verdad** para límites por plan (constante central compartida) **y** presentar precios por usuario (no por plan) tanto en backend como en UI pública.
+- **Alternativas consideradas:** mantener valores por endpoint (descartado, genera comportamiento divergente). Mantener precio total en lugar de por usuario (descartado, impide escalado claro con usuarios extras).
+- **Consecuencias:** Evita que un admin pueda crear más usuarios de los que corresponde a su plan, o que el registro permita límites distintos a los publicados. La estructura por usuario es comercialmente más escalable y transparente.
+- **Resolución implementada (2026-08-18 — backend):**
   - Se creó la constante `PLAN_LIMITS` en `src/app/api/admin/users/route.ts` y `src/app/admin/page.tsx` con `{ free: 10, pro: 500, enterprise: 9999 }`.
   - El API route ahora siempre usa el límite del plan, ignorando el valor enviado por el cliente.
   - El frontend formulario hereda el plan del admin y valida el límite máximo de boletas.
   - El input `limite_boletas` está atado al máximo permitido por el plan seleccionado.
-  - Se alineó con la oferta pública vigente: Free (10 boletas/1 usuario), Pro (500 boletas/3 usuarios, $9.900 IVA incl./anual o $12.500/mes).
-- **Referencias:** `src/app/api/admin/users/route.ts`, `src/app/admin/page.tsx`, `CURRENT.md` sección 7.
+- **Resolución implementada (2026-08-28 — UI pública + nueva estructura de precios):**
+  - **Eliminación del plan Enterprise** de toda la UI pública: `/registro`, `/registro/pago`, `/registro/confirmacion`, landing. Permanece solo en el schema interno (`PLAN_LIMITS`, `PLAN_HIERARCHY`).
+  - **Nueva estructura de precios Pro** (presentada por usuario, no por plan):
+    - **Pago anual:** $3.300 / usuario / mes (IVA incluido). Hasta 3 usuarios incluidos → $9.900 / mes total. Usuario adicional: $2.500 c/u.
+    - **Pago mes a mes:** $4.000 / usuario / mes (IVA incluido). Hasta 3 usuarios incluidos → $12.000 / mes total. Usuario adicional: $3.000 c/u.
+  - `src/app/registro/pago/page.tsx`: nuevo objeto `planes` con `pro` únicamente, contiene `precioPorUsuarioAnual`, `precioPorUsuarioMensual`, `usuariosBase: 3`, `precioUsuarioExtraAnual`, `precioUsuarioExtraMensual`, `totalAnualMensual`, `totalMensualMensual`. Sin toggle Pro vs Enterprise.
+  - `src/app/registro/page.tsx`: presentación de Pro con dos cards (anual recomendado + mensual) y nota "IVA incluido en todos los precios".
+  - `src/app/registro/confirmacion/page.tsx`: solo `free` y `pro` en el objeto `planes`. `pro.precio = 3300` (por usuario, no total).
+  - `src/app/page.tsx` (landing): Pro con dos cards (anual + mensual), nota comercial "El plan anual sale más conveniente. Cada usuario adicional tiene precio preferencial." y nota de valor "El costo del plan se recupera con el primer gasto deducible que no pierdas.".
+  - Plan Free mejorado: mención explícita "OCR con Google AI (mismo que Pro)" y CTA "Empezar gratis sin tarjeta".
+- **Referencias:** `src/app/api/admin/users/route.ts`, `src/app/admin/page.tsx`, `src/app/registro/page.tsx`, `src/app/registro/pago/page.tsx`, `src/app/registro/confirmacion/page.tsx`, `src/app/page.tsx`, `CURRENT.md` sección 7.
 
 ---
 
@@ -139,6 +146,45 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
   3. Decidir si se implementa el borrado de imágenes y vincularlo a un flujo (ej. eliminar gasto).
   4. Verificar que los assets referenciados en `layout.tsx` existan en `public/images`.
 - **Referencias:** `src/app/api/user/route.ts`, `src/lib/sheets-users.ts`, `src/lib/storage.ts`, `src/app/layout.tsx`.
+
+---
+
+### ADR-007 — Rediseño de landing y alineación con NXChile
+- **Fecha:** 2026-08-28
+- **Estado:** ✅ **Resuelto** (implementado) — ver resolución al final.
+- **Contexto:** El plan "Mejora y Alineación GastosNX ↔ NXChile" (interno, 2026-08-28) identificó debilidades de conversión y desalineación con el sello `www.nxchile.com`:
+  - Identidad visual desconectada, falta de prueba social, CTA sin explicación del siguiente paso, poco refuerzo del vínculo con NXChile.
+  - Presentación de precios Pro poco clara (solo total $9.900, sin desglose por usuario ni extras).
+  - Menciones incorrectas de OCR ("Azure AI" en lugar de "Google AI") en 5 ubicaciones de la UI pública.
+  - Ausencia de sección "Para Contadores", FAQ, prueba social y canal de WhatsApp directo.
+  - OCR activo en backend: Google Cloud Vision (confirmado en `src/app/api/ocr/route.ts` y `lib/ocr.ts`).
+- **Decisión (implementada):** Rediseñar la landing (`src/app/page.tsx`) y las páginas de registro público (`/registro`, `/registro/free`, `/registro/pago`, `/registro/confirmacion`) **sin tocar la funcionalidad operativa** (login, dashboard, captura, admin, API). Implementar las secciones de la Fase 1 (quick wins) del plan.
+- **Alternativas consideradas:** rediseño completo con cambio de tipografía (descartado por costo de implementación y riesgo de LCP). Scraping de Instagram con `instagram-scraper` o puppeteer (descartado por riesgo de baneo de Meta y no soportado en runtime serverless de Vercel). Embeds dinámicos de Instagram vía API Graph (descartado por requerir cuenta Business de Meta, app aprobada y token de larga duración, fuera de alcance).
+- **Consecuencias:** Mayor coherencia con el sello NXChile, mejor claridad de precios, eliminación de menciones incorrectas de OCR, y habilitación de canales directos (WhatsApp, Instagram) sin agregar dependencias operativas.
+- **Resolución implementada:**
+  - **`src/app/page.tsx` (landing) — cambios principales:**
+    - **Hero:** badge "Producto de NXChile · Tecnología operacional", headline "Deja de perder gastos operacionales antes de la Declaración de Renta", subheadline con mención a NXChile.
+    - **Prueba social:** sección con 4 logos de clientes reales en `public/images/clients/` (AC Constructores y Consultores, RCC Servicios EIRL, Transportes San Andrés SPA, Bastcon), con efecto grayscale que se quita en hover.
+    - **Cómo funciona:** rediseño de los 3 pasos con números destacados y micro-copy de beneficio en cada uno + **video demo de YouTube embebido** (videoId `9txm6hqHre8`, mismo que `/manual`).
+    - **Planes y precios:** Free con mención explícita "OCR con Google AI (mismo que Pro)" y CTA "Empezar gratis sin tarjeta". Pro con dos cards (anual recomendado $3.300/usuario + mensual $4.000/usuario), nota comercial "El plan anual sale más conveniente. Cada usuario adicional tiene precio preferencial." y nota de valor destacada.
+    - **Sección "Producto de NXChile":** trust badges (SII, OCR con Google AI, Hecho en Chile) + link visible a www.nxchile.com.
+    - **FAQ:** 8 preguntas desplegables con `<details>`/`<summary>` (deducibilidad, SII, tiempo de acceso, export, precio por usuario, usuarios extra, diferencia anual vs mensual, OCR Google AI).
+    - **Para Contadores:** sección completa con beneficios clave (menos horas de revisión, respaldo trazable, exportación directa, cero costo para el contador), CTAs (`mailto:gastos@nxchile.com`) y mockup visual del panel de contador con tarjetas de los clientes reales.
+    - **Instagram (Opción D):** grid de 4 imágenes en `public/images/instagram/post-{1..4}.jpeg` enlazando a `https://www.instagram.com/nx_chile` con CTA gradient. **No se hace scraping ni embeds dinámicos** (riesgo de baneo de Meta).
+    - **WhatsApp flotante:** botón verde esquina inferior derecha con color `#25D366`, solo visible en desktop (`hidden md:flex`), tooltip "¿Dudas? Escríbenos". Link: `https://wa.me/56977412178?text=Hola,%20vengo%20de%20gastos.nxchile.com...`.
+    - **Sticky CTA mobile:** barra fija inferior mobile con botón "Probar gratis" + WhatsApp, aparece tras scroll >800px (`window.scrollY > 800`).
+    - **Correcciones de copy:** "OCR Azure AI" → "OCR con Google AI" en todas las ubicaciones (landing, `/registro`, `/registro/free`, `/registro/pago`).
+  - **`src/app/registro/page.tsx`:** nueva presentación de Pro con dos cards (anual + mensual), "OCR con Google AI" corregido, nota "IVA incluido en todos los precios".
+  - **`src/app/registro/free/page.tsx`:** "OCR con Google AI" corregido, eliminado "Enterprise" del CTA inferior.
+  - **`src/app/registro/pago/page.tsx`:** **eliminado plan Enterprise** del array `planes`. Nuevo objeto `planes.pro` con `precioPorUsuarioAnual`, `precioPorUsuarioMensual`, `usuariosBase: 3`, precios de extras. Eliminado toggle Pro vs Enterprise, reemplazado por dos cards de pricing (anual recomendado + mensual). Nota de ahorro "Ahorras $X al año" calculada dinámicamente. OCR corregido a "Google AI".
+  - **`src/app/registro/confirmacion/page.tsx`:** **eliminado Enterprise** del objeto `planes`. `pro.precio = 3300` (por usuario, no total). Mensaje actualizado: "Plan Pro desde $3.300/usuario/mes (anual), hasta 3 usuarios incluidos".
+  - **Nuevos assets en `public/images/`:** `clients/{ac_logo.png, RCCServicios.jpeg, sanAndres.png, bastcon.jpg}` e `instagram/post-{1..4}.jpeg` (autorización de uso de logos confirmada por el dueño del producto).
+- **Lo que NO se hizo (fuera de alcance o excluido explícitamente):**
+  - **Tipografía Inter / cambio de paleta premium** (deferido — requiere decisión de arquitectura de design tokens; impacto en LCP si no se usa `next/font`).
+  - **Tracking / GA4 events** (4.9 del plan, excluido por instrucción del usuario).
+  - **Scraping o embeds dinámicos de Instagram** (riesgo de baneo de Meta; se eligió Opción D: link estático a perfil + grid de imágenes controladas).
+  - **Funcionalidad operativa:** no se tocaron login, dashboard, captura, admin, ni API routes.
+- **Referencias:** `src/app/page.tsx`, `src/app/registro/page.tsx`, `src/app/registro/free/page.tsx`, `src/app/registro/pago/page.tsx`, `src/app/registro/confirmacion/page.tsx`, `public/images/clients/`, `public/images/instagram/`, `CURRENT.md` secciones 7, 11, 12.
 
 ---
 

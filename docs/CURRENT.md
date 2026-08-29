@@ -3,7 +3,7 @@
 > **Fuente de verdad del estado actual del proyecto.**
 > Este documento debe mantenerse sincronizado con cualquier cambio estructural. Léelo antes de modificar código.
 
-**Última actualización:** 2026-08-10
+**Última actualización:** 2026-08-28
 
 ---
 
@@ -179,18 +179,49 @@ Campos de la sesión (`UserSession`):
 
 ## 7. Planes y límites
 
-### Límites por plan — **Oferta pública vigente (2026-08-10)**
-| Plan | Boletas/mes | Usuarios | Precio |
-|------|-------------|----------|--------|
-| `free` | 10 | 1 (self-registro) | $0 |
-| `pro` | 500 | **3** | **$9.900/mes IVA incl. (pago anual inmediato, $118.800/año)** o **$12.500/mes** (mes a mes) |
+### Oferta pública vigente (2026-08-28)
 
-> ℹ️ **Cambios recientes (2026-08-10):** el plan **Enterprise fue eliminado de la oferta pública** (no existían clientes) y la sección **"Plan Contador" fue retirada** de la landing (no existía en el backend). Permanece `enterprise` en el schema interno/validación por si fuera necesario, pero ya no se ofrece.
+#### Plan Free
+- **$0 / mes**
+- 1 usuario (self-registro)
+- 10 boletas / mes
+- OCR con Google AI
+- Dashboard básico + Export CSV
+
+#### Plan Pro — Pago anual (recomendado)
+- **$3.300 por usuario / mes** (IVA incluido)
+- Incluye hasta **3 usuarios** → **$9.900 / mes** total
+- Usuario adicional (sobre los 3 de base): **$2.500 c/u**
+- Facturación anual
+- 500 boletas / mes
+- OCR con Google AI
+- Dashboard avanzado
+- Export CSV + Excel
+- Soporte prioritario
+
+#### Plan Pro — Pago mes a mes
+- **$4.000 por usuario / mes** (IVA incluido)
+- Incluye hasta **3 usuarios** → **$12.000 / mes** total
+- Usuario adicional (sobre los 3 de base): **$3.000 c/u**
+- Sin contrato
+- 500 boletas / mes
+- Mismas características que el Pro anual
+
+> ℹ️ **Enterprise eliminado (2026-08-28):** el plan Enterprise fue removido de la oferta pública y de los flujos de registro (`/registro`, `/registro/pago`, `/registro/confirmacion`). Permanece `enterprise` solo en el schema interno (`PLAN_LIMITS`, `PLAN_HIERARCHY`) por si fuera necesario a futuro, pero **ya no se ofrece, no se muestra en la UI pública y no se puede seleccionar en el registro**.
 >
-> ⚠️ **ADR-003 (2026-08-18):** **Resuelto** - Se unificaron los límites de boletas por plan utilizando la constante `PLAN_LIMITS` en `src/app/api/admin/users/route.ts` y `src/app/admin/page.tsx`. El admin ahora hereda el plan al crear usuarios y el límite de boletas está atado al plan seleccionado (Free: 10, Pro: 500, Enterprise: 9999). Antes estaba pendiente por inconsistencias entre `api/admin/users` y `registro/pago`.
+> ✅ **ADR-003 (2026-08-28):** **Resuelto**. Se unificó la fuente de verdad de límites por plan: `PLAN_LIMITS` en `src/app/api/admin/users/route.ts` y `src/app/admin/page.tsx`. Se alineó toda la UI pública (landing, `/registro`, `/registro/pago`, `/registro/confirmacion`) con la nueva estructura de precios por usuario. El admin hereda el plan al crear usuarios y el límite de boletas siempre viene de la constante del plan (no del cliente). Detalles completos en `DECISIONS.md` ADR-003.
 
 ### Jerarquía de planes (admin)
 `free (1) < pro (2) < enterprise (3)` — un admin solo puede crear/editar usuarios con planes iguales o inferiores al suyo (`PLAN_HIERARCHY`).
+
+### Constantes centralizadas
+
+| Archivo | Constante | Valores |
+|---------|-----------|---------|
+| `src/app/api/admin/users/route.ts` | `PLAN_LIMITS` | `{ free: { boletas: 10, usuarios: 1 }, pro: { boletas: 500, usuarios: 3 }, enterprise: { boletas: 9999, usuarios: 10 } }` |
+| `src/app/api/admin/users/route.ts` | `PLAN_HIERARCHY` | `{ free: 1, pro: 2, enterprise: 3 }` |
+| `src/app/admin/page.tsx` | `PLAN_LIMITS` (frontend) | `{ free: 10, pro: 500, enterprise: 9999 }` |
+| `src/app/registro/pago/page.tsx` | `planes.pro` | Precios por usuario (anual $3.300, mensual $4.000) y extras ($2.500 / $3.000) |
 
 ---
 
@@ -264,16 +295,18 @@ NEXT_PUBLIC_WEB3FORMS_KEY
 ## 11. Observaciones / temas pendientes conocidos
 
 > Las siguientes inconsistencias se encuentran **registradas como ADR en `docs/DECISIONS.md`**, ordenadas de mayor a menor importancia, cada una con sus pasos a corregir. Referencia cruzada del seguimiento: `DECISIONS.md`.
-> **Estado 2026-08-18:** ADR-002 y ADR-004 **resueltos**. ADR-003 **resuelto** (consistencia de límites de plan). Quedan pendientes ADR-001, ADR-005, ADR-006.
+> **Estado 2026-08-28:** ADR-002, ADR-003 y ADR-004 **resueltos**. Quedan pendientes ADR-001, ADR-005, ADR-006.
 
 | # | ADR | Tema pendiente | Urgencia |
 |---|-----|----------------|----------|
 | 1 | **ADR-001** | Estrategia de hashing de contraseñas inconsistente e insegura (SHA-256 plano vs. `algo:salt:hash`; password en texto plano vía email; admin default `admin123`) | 🔴 Crítica (seguridad) |
-| 3 | **ADR-005** | Confianza de OCR fija en 95 (Google Vision no entrega confianza en TEXT_DETECTION) — valor no fiable | 🟢 Baja (UX) |
-| 4 | **ADR-006** | Código muerto / no usado: `api/user` (501), `lib/sheets-users.ts` vacío, `deleteReceiptImage` sin uso, assets de `layout.tsx` faltantes | 🟡 Baja (deuda técnica) |
+| 2 | **ADR-005** | Confianza de OCR fija en 95 (Google Vision no entrega confianza en TEXT_DETECTION) — valor no fiable | 🟢 Baja (UX) |
+| 3 | **ADR-006** | Código muerto / no usado: `api/user` (501), `lib/sheets-users.ts` vacío, `deleteReceiptImage` sin uso, assets de `layout.tsx` faltantes | 🟡 Baja (deuda técnica) |
 
 ✅ **ADR-002 (2026-08-10):** Sesión migrada a **JWT HS256 en cookie httpOnly** (`src/lib/session.ts`), endpoints `/api/auth/me` y `/api/auth/logout`, API routes leen `readSession`, cliente usa `loadSession()`. Eliminada la sesión manipulable de localStorage + `x-session`.
+✅ **ADR-003 (2026-08-28):** **Resuelto** — Unificación de límites por plan, nueva estructura de precios por usuario ($3.300 anual / $4.000 mensual + extras), eliminación del plan Enterprise de la oferta pública, alineación de toda la UI pública. Ver `DECISIONS.md` ADR-003.
 ✅ **ADR-004 (2026-08-10):** Centralizado el cliente de Google Sheets en `src/lib/sheets.ts` (`getSheets(readOnly?)`), con soporte de ambos formatos de credenciales.
+✅ **ADR-007 (2026-08-28):** **Resuelto** — Rediseño de la landing (`src/app/page.tsx`) alineada con el sello NXChile: prueba social con logos de clientes reales, sección "Cómo funciona" con video demo embebido, sección "Para Contadores" con mockup, sección Instagram con link a @nx_chile, WhatsApp flotante, sticky CTA mobile, FAQ con 8 preguntas. Sin cambios en funcionalidad operativa. Ver `DECISIONS.md` ADR-007.
 
 Cada ADR en `DECISIONS.md` incluye el **contexto, la decisión, las alternativas y la resolución** detallados.
 
@@ -288,6 +321,24 @@ Cada ADR en `DECISIONS.md` incluye el **contexto, la decisión, las alternativas
 - Alias de importación: `@/*` → `./src/*`.
 - Sin librería de estado global; el estado se maneja con `useState`/`useEffect`.
 - **Sesión (ADR-002):** cookie httpOnly + JWT firmado. El cliente usa `loadSession()`/`getSession()` de `lib/auth.ts` (caché en memoria). No se persiste sesión en `localStorage`.
+
+### Branding y canales públicos (ADR-007)
+
+- **Marca oficial:** "GastosNX by NXChile". Logotipo en `public/images/LogogastosNX.png` (693×138, usado con `width={693}`/`height={138}` y clases `h-* w-auto object-contain`).
+- **Sitio base:** www.nxchile.com. La landing debe reforzar el vínculo con NXChile (badge "Producto de NXChile" en hero, sección confianza, link a www.nxchile.com).
+- **WhatsApp de contacto:** `+56 9 77412178` (configurado en `whatsappLink` de la landing, formato `https://wa.me/56977412178?text=...`). El mensaje predefinido es: "Hola, vengo de gastos.nxchile.com y quiero saber más sobre GastosNX para mi empresa."
+- **Instagram oficial:** `https://www.instagram.com/nx_chile`. La landing muestra un grid de 4 posts en `public/images/instagram/post-{1..4}.jpeg` enlazando al perfil. No se hace scraping ni embeds dinámicos (riesgo de baneo de Meta).
+- **Email de contacto:** `gastos@nxchile.com` (usado en CTAs "Solicitar acceso demo contador", "Quiero recomendar GastosNX", soporte).
+- **Vimeo/YouTube de demo:** videoId `9txm6hqHre8` embebido en la landing (también usado en `/manual`).
+- **Sticky CTA mobile:** aparece tras scroll >800px en mobile (`md:hidden`), fijo en bottom con botón "Probar gratis" + WhatsApp.
+- **WhatsApp flotante:** solo visible en desktop (`hidden md:flex`), esquina inferior derecha, color `#25D366`, con tooltip "¿Dudas? Escríbenos" al hover.
+- **Logos de clientes autorizados** (prueba social en landing): `public/images/clients/{ac_logo.png, RCCServicios.jpeg, sanAndres.png, bastcon.jpg}`. Empresas: AC Constructores y Consultores, RCC Servicios EIRL, Transportes San Andrés SPA, Bastcon.
+
+### OCR (proveedor único)
+
+- Proveedor activo: **Google Cloud Vision API** (TEXT_DETECTION). Configurado vía `GOOGLE_VISION_API_KEY`.
+- En la UI pública siempre se muestra como **"OCR con Google AI"** (nunca "Azure", "OCR.space" u otros).
+- Variables de entorno `AZURE_VISION_*` y `NEXT_PUBLIC_OCRSPACE_API_KEY` en `.env.local` son legados y **no se usan en código** (migración pendiente de limpieza, ADR-006 cubre parcialmente).
 
 ---
 
