@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
       rol: row[7] || 'user',
       creado_en: row[8] || '',
       sheet_id_asociado: row[9] || '',
+      tipo_usuario: row[10] || 'gastos', // NUEVO: lectura de la columna K
     }))
 
     return NextResponse.json({ users }, { status: 200 })
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { email, password, empresa_nombre, plan, limite_boletas, activo = true } = body
+    const { email, password, empresa_nombre, plan, tipo_usuario, limite_boletas, activo = true } = body
 
     // Validaciones básicas
     if (!email || !password || !empresa_nombre) {
@@ -181,12 +182,13 @@ export async function POST(request: NextRequest) {
       'user', // rol por defecto
       new Date().toISOString(),
       adminSheetId, // ✅ sheet_id_asociado del admin
+      tipo_usuario, // NUEVO: tipo de usuario (gastos, rinde, ambos)
     ]
 
     // Agregar a la sheet
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: 'Usuarios!A:J',
+      range: 'Usuarios!A:K',
       valueInputOption: 'RAW',
       requestBody: {
         values: [newRow],

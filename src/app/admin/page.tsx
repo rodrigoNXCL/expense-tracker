@@ -50,11 +50,12 @@ export default function AdminPage() {
 
   // Form state
 const [formData, setFormData] = useState({
-    email: '',
+email: '',
     password: '',
     empresa_nombre: currentUser?.empresa_nombre || '',
     plan: currentUser?.plan || 'free',
-    limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan] || 10) : 10,
+    tipo_usuario: currentUser?.tipo_usuario || 'gastos',  // NUEVO: gastos, rinde, ambos
+    limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan]?.boletas || 10) : 10,
     activo: true,
 })
 
@@ -204,7 +205,8 @@ const resetForm = () => {
         password: '',
         empresa_nombre: currentUser?.empresa_nombre || '',
         plan: currentUser?.plan || 'free',
-limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan] || 10) : 10,
+        tipo_usuario: currentUser?.tipo_usuario || 'gastos',
+        limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan]?.boletas || 10) : 10,
         activo: true,
     })
 }
