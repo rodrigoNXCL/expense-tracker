@@ -48,8 +48,9 @@ El Service Account debe tener acceso de **lectura y escritura** a:
 
 ### 2.1. Opción A: Mismo deploy, routing por subdominio (Recomendado para MVP) — ✅ Implementado
 
-**IMPORTANTE:** Esta opción **ya está implementada** en el código. En curso de configuración:
-agregar el dominio en Vercel, el DNS en Cloudflare y la variable `COOKIE_DOMAIN` en Vercel.
+**IMPORTANTE:** Esta opción **ya está implementada** y **desplegada y verificada en producción (2026-09-08)**:
+dominio `rinde.nxchile.com` agregado en Vercel, `CNAME rinde → expense-tracker-nxchile.vercel.app` propagado en
+Cloudflare y `COOKIE_DOMAIN=.nxchile.com` configurado. La sección queda como referencia del procedimiento.
 
 1. En **Vercel**, ir al proyecto del expense-tracker (el mismo de `gastos.nxchile.com`)
 2. Settings → Domains → Agregar `rinde.nxchile.com`

@@ -20,7 +20,7 @@ Propósito principal: capturar el respaldo de un gasto antes de que se pierda, o
 
 > ⚠️ **Coexistencia:** RindeNX es un **sistema independiente** que coexiste con GastosNX en el mismo repositorio. Ambos productos tienen dashboards separados, datos independientes y un **puente opcional** que permite aprovechar ciertos documentos de rendiciones en la línea de Gastos.
 
-- **Subdominio:** `rinde.nxchile.com` (mismo deploy que `gastos.nxchile.com`, enrutado por `src/proxy.ts`). Variable `COOKIE_DOMAIN` y dominio agregado en Vercel + DNS en Cloudflare (`CNAME rinde → expense-tracker-nxchile.vercel.app`) en proceso de propagación (ver `DEPLOY.md` §2.1).
+- **Subdominio:** `rinde.nxchile.com` (mismo deploy que `gastos.nxchile.com`, enrutado por `src/proxy.ts`). **Desplegado y verificado (2026-09-08):** dominio agregado en Vercel, DNS en Cloudflare (`CNAME rinde → expense-tracker-nxchile.vercel.app`) propagado y `COOKIE_DOMAIN=.nxchile.com` configurado. Detalles en `DEPLOY.md` §2.1.
 - **Landing pública:** `src/app/rinde-landing/` (ruta `/rinde-landing`, pública sin auth; en `rinde.nxchile.com` es la raíz vía proxy). Paleta ámbar/naranja (RindeNX), secciones Hero+CTA, Cómo funciona, Beneficios, Prueba social + contacto. Contacto: `rinde@nxchile.com`.
 - **SSO entre subdominios:** la cookie `gx_session` acepta `domain` vía la variable `COOKIE_DOMAIN` (p.ej. `.nxchile.com`). En localhost debe quedar vacía. Con el mismo deploy + `AUTH_SECRET`, login en un subdominio vale para ambos.
 - **Funcionalidad:** Manejo de rendiciones de fondos fijos, gastos de personal, revisión/aprobación por admin, generación de asiento contable.
@@ -42,7 +42,7 @@ Propósito principal: capturar el respaldo de un gasto antes de que se pierda, o
 | 5 | Puente GastosNX + RindeNX | ✅ Completada | Integración unidireccional RindeNX → GastosNX con selección manual de gastos al aprobar rendición. Solo `boleta` y `voucher` pasan (las `factura` no). |
 | 6 | RindeNX - Fondos y asientos | ✅ Completada | Spreadsheet RindeNX con 7 hojas (Rendiciones, GastosRinde, Asientos, Puente, Fondos, Config_Rinde + Gastos), dashboard, rendiciones, gastos, aprobación, asiento contable. |
 | 7 | RindeNX - Puente de documentos | ✅ Completada | Vista `/rinde/puente` con tabla de documentos traspasados, filtros y sección en detalle de rendición mostrando los gastos pasados. |
-| 8 | Documentación y despliegue | 🔄 En curso | Actualización de `CURRENT.md` y `DECISIONS.md`, guía de pruebas locales, guía de despliegue de `rinde.nxchile.com`. |
+| 8 | Documentación y despliegue | ✅ Completada | Actualización de `CURRENT.md` y `DECISIONS.md`, guía de pruebas locales, guía de despliegue de `rinde.nxchile.com`. Despliegue verificado y funcionando (2026-09-08). |
 
 ### Cambios adicionales recientes (post-Fase 8)
 
@@ -75,6 +75,7 @@ Propósito principal: capturar el respaldo de un gasto antes de que se pierda, o
 - ✅ **Landing pública RindeNX (2026-09-08):** nueva ruta pública `src/app/rinde-landing/page.tsx` (+ `layout.tsx` con metadata/OG propios) con Hero+CTA, "Cómo funciona" (3 pasos), Beneficios (6 cards), Prueba social (logos clientes NXChile) y Contacto (WhatsApp + `rinde@nxchile.com` + acceso). Paleta ámbar/naranja; CTA a `/login` compartido; sin registrar usuarios (acceso por admin).
 - ✅ **Proxy de subdominios (2026-09-08):** `src/proxy.ts` (Next 16 renombró `middleware` → `proxy`). En `rinde.nxchile.com`: `/`→`/rinde-landing`, `/login`→compartido, `/rinde**`→pasa directo, resto→rewrite `/rinde/<ruta>`. Fuera del host `rinde.` no hace nada. Assets estáticos siempre pasan.
 - ✅ **SSO cookie entre subdominios (2026-09-08):** `src/lib/session.ts` firma la cookie `gx_session` con `domain` optativo vía `COOKIE_DOMAIN` (debe ser `.nxchile.com` en producción). Mismo deploy + mismo `AUTH_SECRET` hacen que gastos./rinde. compartan sesión; en localhost la variable se deja vacía y el comportamiento no cambia.
+- ✅ **Despliegue en producción verificado (2026-09-08):** `rinde.nxchile.com` resuelve al mismo deploy que `gastos.nxchile.com`, carga la landing RindeNX en `/`, el login compartido funciona y la app `/rinde` opera con normalidad. Fase 8 cerrada.
 
 ---
 
@@ -544,7 +545,7 @@ NEXT_PUBLIC_WEB3FORMS_KEY
 ## 11. Observaciones / temas pendientes conocidos
 
 > Las siguientes inconsistencias se encuentran **registradas como ADR en `docs/DECISIONS.md`**, ordenadas de mayor a menor importancia, cada una con sus pasos a corregir. Referencia cruzada del seguimiento: `DECISIONS.md`.
-> **Estado 2026-09-02:** ADR-002, ADR-003, ADR-004, ADR-007 y ADR-008 **resueltos**. Fases 1-7 del plan de 8 completadas. En curso: Fase 8 (documentación y despliegue).
+> **Estado 2026-09-08:** ADR-002, ADR-003, ADR-004, ADR-007 y ADR-008 **resueltos**. Fases 1-8 del plan **completadas** (RindeNX desplegado y verificado en `rinde.nxchile.com`).
 
 | # | ADR | Tema pendiente | Urgencia |
 |---|-----|----------------|----------|
