@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Usuarios!A2:J',
+      range: 'Usuarios!A2:K',
     })
 
     const rows = response.data.values || []
@@ -239,7 +239,7 @@ export async function PUT(request: NextRequest) {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Usuarios!A:J',
+      range: 'Usuarios!A2:K',
     })
 
     const rows = response.data.values || []
@@ -266,11 +266,12 @@ export async function PUT(request: NextRequest) {
       currentRow[7] || 'user',
       currentRow[8] || '',
       currentRow[9] || '',
+      updates.tipo_usuario !== undefined ? updates.tipo_usuario : (currentRow[10] || 'gastos'),
     ]
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `Usuarios!A${rowNumber}:J${rowNumber}`,
+      range: `Usuarios!A${rowNumber}:K${rowNumber}`,
       valueInputOption: 'RAW',
       requestBody: {
         values: [updatedRow],

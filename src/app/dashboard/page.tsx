@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import {
   User, Shield, BarChart3, DollarSign, Camera, Download,
   LogOut, Building, CheckCircle, AlertTriangle, XCircle,
-  Eye, Receipt, TrendingUp, Wallet, Loader2, X
+  Eye, Receipt, TrendingUp, Wallet, Loader2, X, FileText
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -41,6 +41,11 @@ export default function DashboardPage() {
       const session = await loadSession()
       if (!session || !session.activo) {
         router.replace('/login')
+        return
+      }
+      // Usuarios 'solo rinde' no deberían estar en el dashboard de GastosNX
+      if (session.tipo_usuario === 'rinde') {
+        router.replace('/rinde')
         return
       }
       setUser(session)
@@ -187,6 +192,18 @@ export default function DashboardPage() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Salir
               </Button>
+              {(user.tipo_usuario === 'rinde' || user.tipo_usuario === 'ambos') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push('/rinde')}
+                  className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                  title="Ir a RindeNX"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  RindeNX
+                </Button>
+              )}
             </div>
           </div>
         </div>

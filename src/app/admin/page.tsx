@@ -23,6 +23,7 @@ interface User {
   activo: boolean
   rol: string
   sheet_id_asociado: string
+  tipo_usuario: 'gastos' | 'rinde' | 'ambos'
 }
 
 // Plan hierarchy
@@ -55,7 +56,7 @@ email: '',
     empresa_nombre: currentUser?.empresa_nombre || '',
     plan: currentUser?.plan || 'free',
     tipo_usuario: currentUser?.tipo_usuario || 'gastos',  // NUEVO: gastos, rinde, ambos
-    limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan]?.boletas || 10) : 10,
+    limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan] || 10) : 10,
     activo: true,
 })
 
@@ -87,16 +88,6 @@ email: '',
     }
   }
 
-  // ✅ Filtrar planes disponibles según el plan del admin actual
-  const getAvailablePlans = () => {
-    if (!currentUser) return ['free']
-    
-    const currentPlanLevel = PLAN_HIERARCHY[currentUser.plan] || 1
-    const allPlans = ['free', 'pro', 'enterprise']
-    
-    return allPlans.filter(plan => PLAN_HIERARCHY[plan] <= currentPlanLevel)
-  }
-
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -104,12 +95,6 @@ email: '',
     setSuccess(null)
 
     try {
-      // ✅ Validar que el plan no supere el del admin
-      const availablePlans = getAvailablePlans()
-      if (!availablePlans.includes(formData.plan)) {
-        throw new Error(`No tienes permisos para crear usuarios con plan ${formData.plan}`)
-      }
-
       // ✅ Validar que el límite de boletas no exceda el plan
       const maxBoletas = PLAN_LIMITS[formData.plan] || 10
       if (formData.limite_boletas > maxBoletas) {
@@ -206,7 +191,7 @@ const resetForm = () => {
         empresa_nombre: currentUser?.empresa_nombre || '',
         plan: currentUser?.plan || 'free',
         tipo_usuario: currentUser?.tipo_usuario || 'gastos',
-        limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan]?.boletas || 10) : 10,
+        limite_boletas: currentUser?.plan ? (PLAN_LIMITS[currentUser.plan] || 10) : 10,
         activo: true,
     })
 }
@@ -228,8 +213,6 @@ const resetForm = () => {
   }
 
   if (!currentUser) return null
-
-  const availablePlans = getAvailablePlans()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
@@ -343,6 +326,7 @@ const resetForm = () => {
                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</th>
                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wide">Empresa</th>
                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wide">Plan</th>
+                    <th className="text-center py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wide">Producto</th>
                     <th className="text-center py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wide">Boletas</th>
                     <th className="text-center py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wide">Estado</th>
                     <th className="text-right py-4 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wide">Acciones</th>
@@ -359,6 +343,20 @@ const resetForm = () => {
                           className="capitalize"
                         >
                           {user.plan}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <Badge 
+                          variant={
+                            user.tipo_usuario === 'rinde' ? 'warning' : 
+                            user.tipo_usuario === 'ambos' ? 'default' : 
+                            'secondary'
+                          }
+                          className="capitalize"
+                        >
+                          {user.tipo_usuario === 'rinde' ? 'RindeNX' : 
+                           user.tipo_usuario === 'ambos' ? 'Ambos' : 
+                           'GastosNX'}
                         </Badge>
                       </td>
                       <td className="py-4 px-6 text-center">
@@ -440,39 +438,42 @@ const resetForm = () => {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
                 />
-                <Input
-                  label="Nombre Empresa"
-                  value={formData.empresa_nombre}
-                  onChange={(e) => setFormData({ ...formData, empresa_nombre: e.target.value })}
-                  required
-                />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Plan</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Plan (heredado)</label>
+                  <div className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-700 capitalize flex items-center justify-between">
+                    <span>{currentUser?.plan || 'free'}</span>
+                    <span className="text-xs text-gray-500">Se hereda del admin</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Límite de Boletas (heredado)</label>
+                  <div className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-700 flex items-center justify-between">
+                    <span>{currentUser?.limite_boletas || 10}</span>
+                    <span className="text-xs text-gray-500">Boletas/mes</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Empresa (heredada)</label>
+                  <div className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-700 flex items-center justify-between">
+                    <span>{currentUser?.empresa_nombre || ''}</span>
+                    <span className="text-xs text-gray-500">Misma empresa</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Tipo de Producto *</label>
                   <select
-                    value={formData.plan}
-                    onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+                    value={formData.tipo_usuario}
+                    onChange={(e) => setFormData({ ...formData, tipo_usuario: e.target.value as 'gastos' | 'rinde' | 'ambos' })}
                     className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
-                    {availablePlans.map(plan => (
-                      <option key={plan} value={plan} className="capitalize">
-                        {plan} {plan === currentUser.plan ? '(tu plan)' : ''}
-                      </option>
-                    ))}
+                    <option value="gastos">Solo GastosNX</option>
+                    <option value="rinde">Solo RindeNX</option>
+                    <option value="ambos">Ambos productos</option>
                   </select>
                   <p className="text-xs text-gray-500 mt-1">
-                    Solo puedes crear usuarios con planes iguales o inferiores al tuyo
+                    Define a qué productos tendrá acceso este usuario
                   </p>
                 </div>
-                <Input
-                  label="Límite de Boletas"
-                  type="number"
-                  value={formData.limite_boletas}
-                  onChange={(e) => setFormData({ ...formData, limite_boletas: parseInt(e.target.value) || 0 })}
-                  required
-                  min="0"
-                  max={PLAN_LIMITS[formData.plan] || 10}
-                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
                 <div className="flex gap-3 pt-4">
                   <Button
                     type="button"

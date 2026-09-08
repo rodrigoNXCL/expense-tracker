@@ -7,6 +7,7 @@ export interface UserSession {
   activo: boolean
   rol: string
   sheet_id_asociado: string
+  tipo_usuario: 'gastos' | 'rinde' | 'ambos'
 }
 
 // Hash simple para passwords (SHA256)

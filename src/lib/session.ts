@@ -16,10 +16,15 @@ export interface SessionPayload {
   activo: boolean
   rol: string
   sheet_id_asociado: string
+  tipo_usuario?: 'gastos' | 'rinde' | 'ambos'
 }
 
 const COOKIE_NAME = 'gx_session'
 const TOKEN_TTL = 7 * 24 * 60 * 60 // 7 días
+
+// Dominio compartido para SSO entre subdominios (p.ej. '.nxchile.com' en Vercel).
+// Vacío en localhost/desarrollo para no romper la cookie local.
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || undefined
 
 function base64url(data: Buffer | string): string {
   return Buffer.from(data).toString('base64url')
@@ -87,6 +92,7 @@ export function setSessionCookie(response: NextResponse, token: string): NextRes
     sameSite: 'lax',
     path: '/',
     maxAge: TOKEN_TTL,
+    ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
   })
   return response
 }
@@ -99,6 +105,7 @@ export function clearSessionCookie(response: NextResponse): NextResponse {
     sameSite: 'lax',
     path: '/',
     maxAge: 0,
+    ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
   })
   return response
 }

@@ -188,6 +188,141 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 
 ---
 
+### ADR-008 — Plan de 8 fases: super-admin + RindeNX (2026-09-01)
+
+- **Contexto:** Se requiere incorporar un nuevo producto (**RindeNX**) al ecosistema NXChile sin afectar la estabilidad ni la funcionalidad operativa de **GastosNX**. Adicionalmente, se necesita un **super-admin** que gestione empresas y usuarios de forma centralizada (sin depender de variables de entorno como `SUPER_ADMIN_EMAILS`, que se prestaba a errores).
+- **Decisión (en implementación):**
+  1. Adoptar un **plan de 8 fases** explícito, registrado en `CURRENT.md` §2.
+  2. **GastosNX y RindeNX coexisten** en el mismo repositorio, pero con rutas, dominios y datos independientes. RindeNX se construirá en `src/app/rinde/` y se vinculará al subdominio `rinde.nxchile.com` cuando se despliegue.
+  3. El **super-admin** autentica contra la **hoja Usuarios** del Google Sheet maestro (no contra `SUPER_ADMIN_EMAILS`). El campo `rol: superadmin` en la hoja Users es la fuente de verdad.
+  4. Se agrega el campo `tipo_usuario` (columna K) a la hoja Users con valores `gastos`, `rinde` o `ambos`.
+  5. El **puente** (Fase 5) es **unidireccional**: RindeNX → GastosNX, solo para usuarios con `tipo_usuario: ambos`, y requiere confirmación del admin de la cuenta. Nunca al revés.
+- **Plan de 8 fases:**
+  1. ✅ Identificación de usuario (`tipo_usuario`).
+  2. ✅ Dashboard super-admin con navegación.
+  3. ⏳ Gestión de usuarios en la hoja Users.
+  4. ⏳ Gestión de empresas (hoja Config).
+  5. ⏳ Puente GastosNX + RindeNX.
+  6. ⏳ RindeNX - Fondos y asientos.
+  7. ⏳ RindeNX - Puente de documentos.
+  8. ⏳ Documentación y despliegue.
+- **Vinculación de subdominio (Fase 8):**
+  - `rinde.nxchile.com` se vinculará al directorio `src/app/rinde/` (pendiente de implementación).
+  - La configuración DNS se realizará al final del plan, en la Fase 8.
+- **Alternativas consideradas:** monorepos separados (Nx/Turborepo) para GastosNX y RindeNX (descartado por complejidad operativa y costo de mantener dos despliegues); single-app con todo mezclado (descartado por acoplamiento no deseado).
+- **Consecuencias:** GastosNX mantiene su funcionalidad intacta. RindeNX se desarrolla como módulo aislado. El super-admin permite gestionar ambos productos desde una sola consola.
+- **Lo que NO se hace (por ahora):** migrar GastosNX a monorepo, separar RindeNX en otro repo, modificar login/dashboard/captura/admin de GastosNX.
+- **Referencias:** `CURRENT.md` §1, §2, §6 (Users columna K), §11. Dashboard super-admin en `src/app/super-admin/`.
+
+---
+
+### ADR-009 — RindeNX como sistema independiente y puente unidireccional (2026-09-02)
+
+- **Contexto:** Se necesitaba un sistema para manejar rendiciones de fondos fijos y gastos de personal (RindeNX), coexistiendo con GastosNX (gastos operacionales menores). El cliente NXChile quería que ciertos gastos aprobados en rendiciones se aprovecharan también en la línea de Gastos, evitando duplicación de captura.
+- **Decisión (implementada):**
+  1. **RindeNX es un sistema independiente** con su propio dashboard (`/rinde`), su propio spreadsheet por cliente y su propia sesión.
+  2. **NO comparte tablas con GastosNX.** Cada cliente que use RindeNX tiene su propio spreadsheet con 4 hojas: `Rendiciones`, `Gastos`, `Asientos`, `Puente`, `Config`.
+  3. **El puente es unidireccional: RindeNX → GastosNX.** Nunca al revés. Solo aplica a empresas con `gastos_activo=TRUE` en la hoja `Config` del spreadsheet RindeNX.
+  4. **Selección manual de gastos al aprobar rendición.** El admin de la cuenta (no el super-admin) revisa la rendición y elige qué gastos pasan a GastosNX. Los demás quedan solo en RindeNX.
+  5. **El super-admin solo crea las cuentas.** No participa en la aprobación del puente.
+  6. **Tres tipos de usuario:** `gastos` (solo GastosNX), `rinde` (solo RindeNX), `ambos` (acceso a ambos con puente opcional).
+  7. **El campo `sheet_id_rinde`** en la sesión del usuario (futuro) apunta al spreadsheet RindeNX del cliente. Por ahora, se asume 1:1 con `sheet_id_asociado`.
+- **Fases cubiertas:** 5 (puente), 6 (módulo RindeNX), 7 (trazabilidad del puente).
+- **Vinculación de subdominio (Fase 8):**
+  - `rinde.nxchile.com` se vinculará al directorio `src/app/rinde/` en el deploy.
+  - En Vercel, se configura un dominio adicional con el path prefix `/rinde`.
+  - Configuración DNS pendiente (CNAME de `rinde.nxchile.com` al deploy de Vercel).
+- **Estructura del spreadsheet RindeNX (creada automáticamente al primer acceso):**
+  - `Rendiciones`: `id`, `fecha_creacion`, `fecha_cierre`, `estado`, `monto_total`, `descripcion`, `usuario_email`, `aprobado_por`, `comentarios`, `asiento_id`
+  - `Gastos`: `id`, `rendicion_id`, `fecha`, `rut`, `proveedor`, `monto`, `categoria`, `boleta_numero`, `giro`, `notas`, `image_url`, `creado_por`, `creado_en`, `pasado_a_gastos`
+  - `Asientos`: `id`, `rendicion_id`, `fecha`, `tipo`, `cuenta`, `debe`, `haber`, `descripcion`, `creado_por`, `creado_en`
+  - `Puente`: `id`, `rinde_gasto_id`, `rendicion_id`, `gastos_sheet_id`, `gastos_row_number`, `pasado_en`, `aprobado_por`
+  - `Config`: `empresa`, `rinde_activo`, `gastos_activo`, `gastos_sheet_id`, `admin_email`
+- **Lo que NO se hace:**
+  - No se migra GastosNX a monorepo.
+  - No se separan RindeNX y GastosNX en repos distintos (decisión: mismo repo, distinto módulo).
+  - No se comparte base de datos entre ambos (cada uno tiene su spreadsheet).
+  - No se afecta la lógica existente de GastosNX (login, dashboard, captura, admin, API).
+- **Referencias:** `src/app/rinde/`, `src/app/api/rinde/`, `src/lib/rinde-helpers.ts`, `CURRENT.md` §1, §2, §3.
+
+---
+
+### ADR-010 — Asignación de Fondos, tipo de documento y herencia de plan (2026-09-02)
+
+- **Contexto:** Después de la implementación base de RindeNX, se detectó la necesidad de:
+  1. Asignar fondos específicos a usuarios (no solo "tener rendiciones abiertas")
+  2. Separar el asiento contable según el tipo de documento (boleta vs factura) para cumplir con la lógica del SII chileno
+  3. Simplificar la creación de usuarios desde el admin (heredar plan y configuración)
+
+- **Decisión (implementada):**
+  1. **Hoja `Fondos` agregada al spreadsheet** (columnas A:I):
+     - El admin asigna un fondo con `monto_asignado`, `saldo` (se actualiza), `observacion` (glosa) y `estado`
+     - Estados: `en_curso` (puede recibir rendiciones) / `cerrado` (no recibe más)
+     - Permite múltiples fondos activos por usuario
+  2. **Columna `tipo_documento` agregada a `GastosRinde` (columna O)**:
+     - Valores: `boleta`, `factura`, `voucher`, `sin_comprobante`
+     - **El puente solo pasa `boleta` y `voucher`** (gastos menores). Las `factura` NO pasan a GastosNX.
+     - `sin_comprobante` se permite en RindeNX pero NO pasa al puente.
+  3. **Asiento contable separado en 3 líneas** (Nivel intermedio SII):
+     - Línea 1: `Gastos operacionales (boletas/vouchers)` → Debe
+     - Línea 2: `Proveedores por pagar (facturas)` → Debe
+     - Línea 3: `Caja / Banco` → Haber (total)
+     - No se maneja IVA ni retenciones (lo hace el contador después).
+  4. **Herencia automática al crear usuarios desde `/admin`**:
+     - El nuevo usuario hereda del admin: `plan`, `limite_boletas`, `empresa_nombre`, `sheet_id_asociado`
+     - El admin solo elige: `tipo_usuario` y `rol`
+     - El campo `sheet_id_asociado` es el mismo spreadsheet (contiene Gastos y Rinde).
+
+- **Estructura del spreadsheet unificado (un solo archivo por cliente):**
+  - `Gastos` (GastosNX)
+  - `Rendiciones` (cabecera de rendiciones, con `fondo_id` columna K)
+  - `GastosRinde` (gastos individuales de rendiciones, con `tipo_documento` columna O)
+  - `Asientos` (contables, 3 líneas por rendición)
+  - `Puente` (trazabilidad RindeNX → Gastos)
+  - `Fondos` (asignaciones del admin)
+  - `Config_Rinde` (config del puente)
+
+- **Faltante (deuda técnica para próximas iteraciones):**
+  - UI para vincular rendiciones con fondos (campo `fondo_id` ya existe en schema, falta en formularios)
+  - Descuento automático del `saldo` del fondo al aprobar una rendición
+  - Dashboard unificado para admin `ambos` con pestañas Gastos/Rinde/Fondos
+
+- **Referencias:** `src/lib/rinde-helpers.ts`, `src/app/api/rinde/fondos/`, `src/app/rinde/fondos/`, `src/app/admin/page.tsx`.
+
+---
+
+### ADR-011 — Modelo "una rendición por fondo" + asiento cuadrado con cuentas configurables (2026-09-03)
+
+- **Contexto:** En la validación del flujo RindeNX se detectaron dos mejoras de fondo:
+  1. El modelo anterior permitía crear una rendición por cada "evento" de gastos, duplicando rendiciones para el mismo fondo y dificultando la diferencia rendido vs. asignado.
+  2. El asiento contable era de 3 líneas fijas (`Caja/Banco`) y no reflejaba la **diferencia** entre lo rendido y lo asignado del fondo (saldo en contra / saldo a favor), ni permitía configurar las cuentas. Además, `Config_Rinde` había crecido a 7 columnas (A:G) pero `generateAsientoContable` ignoraba las columnas E/F.
+
+- **Decisión (implementada):**
+  1. **Modelo "una rendición por fondo en curso":**
+     - Cada fondo tiene una única rendición `abierta`. "Rendir contra este Fondo" reutiliza la rendición `abierta` existente (o crea una con `monto_estimado` = saldo del fondo).
+     - El usuario agrega gastos varias veces (OCR individual/masivo) a la **misma** rendición y puede **sobre-render** (rinde más del fondo asignado).
+  2. **Estados de rendición ampliados:**
+     - `abierta` → el usuario la cierra manualmente con **`marcar_terminada`** → `terminada` (bloquea agregar/editar gastos).
+     - Admin: `abrir`/devolver (vuelve a `abierta`), `aprobar` (con/sin puente), `rechazar`, o `pagar_saldo_favor` (registra fecha/medio/monto y cierra la rendición pagando el saldo a favor).
+  3. **Bloqueo por estado/ownership en el servidor:**
+     - `POST /api/rinde/gastos` solo acepta agregar gastos si la rendición está `abierta` y pertenece al usuario (salvo admin).
+     - El `monto_total` (col E) se recalcula en vivo sumando **solo los gastos de esa rendición**.
+  4. **Asiento contable cuadrado (Debe = Haber) — supera al asiento de 3 líneas del ADR-010:**
+     - Débito: `Gastos operacionales – Facturas` y `Gastos operacionales – Boletas/Vouchers`.
+     - Débito (si rindió menos): `Saldo en contra ({cuenta_saldo_contra})`.
+     - Haber: `{cuenta_anticipo}` por el monto asignado del fondo.
+     - Haber (si rindió más): `Saldo a favor ({cuenta_saldo_favor})`.
+     - `generateAsientoContable` ahora recibe las tres cuentas configurables de `Config_Rinde!E:G` (antes ignoraba E/F).
+  5. **Respaldo de diferencia en la UI:**
+     - `GET /api/rinde/rendiciones/[id]` devuelve el `fondo` (monto_asignado + saldo) para comparar el total rendido contra el **asignado** (no contra el monto_total de la rendición).
+  6. **La app es un registro operacional, no un sistema contable.** El asiento es un respaldo para el contador, exportable en **CSV / PDF (print)** y compartible por **correo o WhatsApp**.
+
+- **Deprecada / Superada:** el asiento de 3 líneas descrito en ADR-010 punto 3 queda reemplazado por el asiento cuadrado del ADR-011.
+
+- **Referencias:** `src/lib/rinde-helpers.ts` (`generateAsientoContable`), `src/app/api/rinde/gastos/route.ts`, `src/app/api/rinde/rendiciones/[id]/route.ts`, `src/app/api/rinde/puente/route.ts`, `src/app/rinde/dashboard-client.tsx`, `src/app/rinde/rendiciones/[id]/detalle-client.tsx`, `CURRENT.md` §6.
+
+---
+
 ### Nota sobre registro de nuevas inconsistencias
 
 A partir de ahora, cualquier nueva inconsistencia detectada se registrará con el formato ADR de la sección anterior y una referencia cruzada en `CURRENT.md` (sección "Observaciones / temas pendientes").

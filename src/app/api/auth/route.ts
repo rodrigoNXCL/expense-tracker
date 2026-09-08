@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
     // Autenticar con Google
     const sheets = await getSheets(true)
 
-    // Leer hoja "Usuarios" en Config Maestro
+    // Leer hoja "Usuarios" en Config Maestro (A:K incluye tipo_usuario)
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Usuarios!A2:J100',
+      range: 'Usuarios!A2:K100',
     })
 
     const rows = response.data.values
@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
       rol,
       __, // creado_en
       sheet_id_asociado,
+      tipo_usuario,
     ] = userRow
 
     // Verificar si está activo
@@ -111,9 +112,10 @@ export async function POST(request: NextRequest) {
       activo: true,
       rol: String(rol || 'user').toLowerCase().trim(),  // ← IMPORTANTE: .trim() + toLowerCase()
       sheet_id_asociado: String(sheet_id_asociado || '').trim(),
+      tipo_usuario: (String(tipo_usuario || 'gastos').toLowerCase().trim() as 'gastos' | 'rinde' | 'ambos'),  // ← NUEVO: 'gastos' | 'rinde' | 'ambos'
     }
 
-    console.log(`✅ Login exitoso: ${user.email} (rol: ${user.rol})`)
+    console.log(`✅ Login exitoso: ${user.email} (rol: ${user.rol}, tipo_usuario: ${user.tipo_usuario})`)
 
     // ADR-002: firmar sesión y setear cookie httpOnly (el cliente ya no manipula rol/sheet)
     const token = signSession(user)

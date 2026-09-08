@@ -47,7 +47,11 @@ export default function LoginPage() {
       // ADR-002: la cookie httpOnly ya fue seteada por el servidor.
       // Guardamos solo para el caché en memoria del cliente.
       saveSession(result.user)
-      router.push('/dashboard')
+      if (result.user.tipo_usuario === 'rinde' || result.user.tipo_usuario === 'ambos') {
+        router.push('/rinde')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')
     } finally {

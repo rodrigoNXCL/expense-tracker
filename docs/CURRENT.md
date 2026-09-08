@@ -1,20 +1,261 @@
-# CURRENT.md — GastosNX / GastosSII
+# CURRENT.md — GastosNX / RindeNX
 
 > **Fuente de verdad del estado actual del proyecto.**
 > Este documento debe mantenerse sincronizado con cualquier cambio estructural. Léelo antes de modificar código.
 
-**Última actualización:** 2026-08-28
+**Última actualización:** 2026-09-08
 
 ---
 
 ## 1. Resumen del proyecto
 
-**GastosNX** (versión `0.8.0`) es una aplicación web chilena para registrar, respaldar y categorizar **gastos operacionales menores** (peajes, estacionamientos, colaciones, combustibles, etc.) destinada a pymes y contadores en Chile.
+**GastosNX** (versión `1.0.0`) es una aplicación web chilena para registrar, respaldar y categorizar **gastos operacionales menores** (peajes, estacionamientos, colaciones, combustibles, etc.) destinada a pymes y contadores en Chile.
 
 Propósito principal: capturar el respaldo de un gasto antes de que se pierda, ordenarlo y dejarlo listo para la Declaración de Renta anual (compatible con requisitos SII). **No determina deducibilidad tributaria** — solo respaldo y orden documental.
 
 **Marca / URL:** gastos.nxchile.com · Autor: NXChile · Contacto: gastos@nxchile.com
 > ℹ️ **Marca (2026-08-10):** la interfaz fue unificada de **"GastosSII"** → **"GastosNX"** (navbar, footers, textos y emails). El logotipo oficial es `public/images/LogogastosNX.png` (693×138, usado con `width={693}`/`height={138}` y clases `h-* w-auto object-contain`).
+
+### RindeNX (sistema independiente, en desarrollo)
+
+> ⚠️ **Coexistencia:** RindeNX es un **sistema independiente** que coexiste con GastosNX en el mismo repositorio. Ambos productos tienen dashboards separados, datos independientes y un **puente opcional** que permite aprovechar ciertos documentos de rendiciones en la línea de Gastos.
+
+- **Subdominio:** `rinde.nxchile.com` (mismo deploy que `gastos.nxchile.com`, enrutado por `src/proxy.ts`). Variable `COOKIE_DOMAIN` y dominio agregado en Vercel + DNS en Cloudflare (`CNAME rinde → expense-tracker-nxchile.vercel.app`) en proceso de propagación (ver `DEPLOY.md` §2.1).
+- **Landing pública:** `src/app/rinde-landing/` (ruta `/rinde-landing`, pública sin auth; en `rinde.nxchile.com` es la raíz vía proxy). Paleta ámbar/naranja (RindeNX), secciones Hero+CTA, Cómo funciona, Beneficios, Prueba social + contacto. Contacto: `rinde@nxchile.com`.
+- **SSO entre subdominios:** la cookie `gx_session` acepta `domain` vía la variable `COOKIE_DOMAIN` (p.ej. `.nxchile.com`). En localhost debe quedar vacía. Con el mismo deploy + `AUTH_SECRET`, login en un subdominio vale para ambos.
+- **Funcionalidad:** Manejo de rendiciones de fondos fijos, gastos de personal, revisión/aprobación por admin, generación de asiento contable.
+- **Asignación de fondos:** El admin asigna un monto + observación/glosa a un usuario, quien rinde contra ese fondo.
+- **Puente (Fase 5):** RindeNX → GastosNX (dirección única). Solo aplica a empresas con `gastos_activo=TRUE` en la hoja `Config_Rinde` del spreadsheet.
+- **Usuarios afectados por el puente:** solo `tipo_usuario: ambos` y empresas que también usan GastosNX.
+- **NO comparte tablas con GastosNX:** cada cliente tiene su propio spreadsheet que contiene tanto la línea de Gastos como la de RindeNX.
+
+---
+
+## 2. Plan de 8 Fases del Proyecto
+
+| # | Fase | Estado | Descripción |
+|---|------|--------|-------------|
+| 1 | Identificación de usuario | ✅ Completada | Campo `tipo_usuario` agregado a la hoja Users (columna K). Valores: `gastos`, `rinde`, `ambos`. |
+| 2 | Dashboard super-admin con navegación | ✅ Completada | Autenticación contra Google Sheets, layout con navbar, logout, listado de fases. |
+| 3 | Gestión de usuarios en la hoja Users | ✅ Completada | CRUD de usuarios desde el super-admin (`/super-admin/usuarios`) con filtros, modal de edición y modal de creación. |
+| 4 | Gestión de empresas (hoja Config) | ✅ Completada | CRUD de empresas desde el super-admin (`/super-admin/empresas`) con validación de email/subdomain/sheet_id. |
+| 5 | Puente GastosNX + RindeNX | ✅ Completada | Integración unidireccional RindeNX → GastosNX con selección manual de gastos al aprobar rendición. Solo `boleta` y `voucher` pasan (las `factura` no). |
+| 6 | RindeNX - Fondos y asientos | ✅ Completada | Spreadsheet RindeNX con 7 hojas (Rendiciones, GastosRinde, Asientos, Puente, Fondos, Config_Rinde + Gastos), dashboard, rendiciones, gastos, aprobación, asiento contable. |
+| 7 | RindeNX - Puente de documentos | ✅ Completada | Vista `/rinde/puente` con tabla de documentos traspasados, filtros y sección en detalle de rendición mostrando los gastos pasados. |
+| 8 | Documentación y despliegue | 🔄 En curso | Actualización de `CURRENT.md` y `DECISIONS.md`, guía de pruebas locales, guía de despliegue de `rinde.nxchile.com`. |
+
+### Cambios adicionales recientes (post-Fase 8)
+
+- ✅ Hoja `Fondos` agregada (asignación de fondos por admin)
+- ✅ Columna `tipo_documento` en `GastosRinde` (boleta/factura/voucher/sin_comprobante)
+- ✅ Asiento contable separado por tipo (boletas vs facturas)
+- ✅ Herencia de plan/boletas/empresa al crear usuarios desde el admin
+- ✅ **Bug login corregido (2026-09-03):** la hoja Usuarios se leía solo hasta la columna J, por lo que `tipo_usuario` (columna K) nunca se cargaba en la sesión y todo usuario caía en `/dashboard`. Se amplió el rango a `Usuarios!A2:K100`, se agregó `tipo_usuario` al payload de sesión y a los tipos `SessionPayload`/`UserSession`. Ahora:
+  - `rinde` → login redirige a `/rinde`
+  - `ambos` → login redirige a GastosNX `/dashboard` y muestra botón **RindeNX** en el navbar (también redirige a `/rinde` si es `solo rinde`)
+  - `gastos` → bloqueado de `/rinde` (layout redirige a `/dashboard`)
+- ✅ Vinculación rendiciones ↔ fondos: `rendiciones` guardan `fondo_id` (col K), y al aprobar se descuenta el `monto_total` del saldo del fondo (`Fondos!D{row}`).
+- ✅ Asignación de fondos filtra usuarios: solo se listan usuarios con `tipo_usuario` = `rinde` o `ambos` (se excluye `gastos`).
+- ✅ Dashboard RindeNX rediseñado: diseño elegante (fondos neutros, stat cards arriba, pestañas **Fondos en Curso** / **Rendiciones**). Para usuarios no-admin se **oculta** el Puente de Documentos y se muestra flujo atado a un fondo único.
+- ✅ OCR + Supabase en captura de gastos de RindeNX: `/rinde/rendiciones/[id]/nuevo-gasto` ahora tiene captura de imagen (`CameraCapture`), OCR con pre-relleno (`OcrProcessor` + `parseBoletaChilena`), vista previa y subida del comprobante a Supabase Storage. `/api/rinde/gastos` acepta `multipart/form-data` (imagen + datos), sube la imagen y guarda `image_url` (col K). El detalle de rendición muestra miniatura del comprobante.
+- ✅ **Bugs corregidos (2026-09-03, sesión de revisión):**
+  - **Listado de usuarios al asignar fondo:** `/api/admin/users` (GET) leía `Usuarios!A2:J` y nunca devolvía `tipo_usuario` (col K), por lo que la asignación de fondos no mostraba ningún usuario (filtro `rinde`/`ambos`). Ampliado a `Usuarios!A2:K`. El PUT ahora lee/escribe `A:K` y preserva `tipo_usuario`.
+  - **Refresco de fondos/rendiciones:** los GET de `/api/rinde/fondos` y `/api/rinde/rendiciones` ejecutaban `ensureRindeStructure` (7+ llamadas a Google Sheets) en cada lectura, causando carga lenta. Se eliminó de los GET (la estructura ya se asegura en los POST/escrituras y al crear el spreadsheet). El GET de rendiciones ahora lee `A2:K` e incluye `fondo_id`.
+  - **`rinde/page.tsx`:** forzaba `tipo_usuario: 'rinde'` hardcodeado; ahora usa el tipo real de la sesión (afecta a usuarios `ambos`).
+- ✅ **Corrección de mapeo puente → hoja `Gastos` de GastosNX:** el POST `/api/rinde/puente` escribía solo 11 valores corridos en `Gastos!A:L` (A=fecha, ... K=creado_por, L vacío). Ahora escribe las 12 columnas en el MISMO orden que `/api/save-expense` y que lee `/api/expenses`: `A=timestamp`, `B=fecha`, `C=rut`, `D=proveedor`, `E=monto`, `F=categoria`, `G=boleta_numero`, `H=giro`, `I=notas`, `J=ocr_confidence`, `K=image_url`, `L=creado_por`. Así los gastos pasados por el puente calzan idénticos a los gastos nativos de GastosNX.
+- ~~⏳ Pendiente: Vincular dashboard unificado para admin `ambos`~~
+- ~~⏳ Pendiente: Actualización de `docs/PRUEBAS_LOCALES.md` con los nuevos flujos~~
+- ✅ **Modelo "una rendición por fondo" (2026-09-03):** cada fondo tiene una única rendición en curso. Al presionar **"Rendir contra este Fondo"** se reutiliza la rendición `abierta` existente (o se crea con `monto_estimado` = saldo del fondo). El usuario rinde varias veces (OCR individual/masivo) agregando gastos a la misma rendición, y puede **sobre-render** (rinde más del fondo asignado).
+- ✅ **Estados de rendición ampliados:** `terminada` (el usuario cierra su rendición, bloqueando edición) → el admin puede `abrir`/devolver, `aprobar`, `rechazar` o `pagar_saldo_favor` (cierra la rendición pagando el saldo a favor al usuario).
+- ✅ **Asiento cuadrado (Debe = Haber):** rediseñado en `generateAsientoContable` para reflejar la diferencia rendido vs fondo asignado (saldo en contra/a favor). Usa cuentas configurables de `Config_Rinde!E:F`. Ver estructura en §6.
+- ✅ **Bloqueo de gastos por estado:** POST `/api/rinde/gastos` ahora valida que la rendición esté `abierta` y pertenezca al/los usuarios con permiso; rechaza agregar gastos una vez `terminada`/`aprobada`/`cerrada`. El `monto_total` de la rendición (col E) se recalcula en vivo sumando **solo sus propios gastos**.
+- ✅ **Diferencia frente al fondo (2026-09-03):** el GET `/api/rinde/rendiciones/[id]` devuelve el `fondo` asignado (monto + saldo); la tarjeta de resumen del detalle y el mensaje de saldo en contra comparan el total rendido contra el **fondo asignado** (no contra el monto_total de la rendición).
+- ✅ **ADR-011 (2026-09-03):** unificación del modelo a "una rendición por fondo", estados ampliados (`terminada`, `pagar_saldo_favor`), bloqueo de gastos por estado/ownership, y **asiento cuadrado (Debe = Haber)** con cuentas configurables de `Config_Rinde!E:G` (supera el asiento de 3 líneas del ADR-010). Detalles en `DECISIONS.md` ADR-011.
+- ✅ **Refuerzo del parser OCR compartido (2026-09-03):** `src/lib/parser.ts` (`parseBoletaChilena`) se fortaleció y aplica a **ambos** productos (GastosNX `/captura` y RindeNX `/nuevo-gasto`). Correcciones: se eliminó un **loop infinito** (regex RUT sin flag `g`) que colgaba el parseo; detección de **tipo de documento** (boleta/factura/voucher); **monto** en la línea siguiente a `TOTAL:`/`MONTO COMPRA`; **RUT del proveedor** acotado al bloque superior del documento (no confunde tokens de tarjeta) tolerando formatos deformados por OCR; **proveedor** por razón social (SA./SPA./LTDA.); validación de dígito verificador del RUT.
+- ✅ **Landing pública RindeNX (2026-09-08):** nueva ruta pública `src/app/rinde-landing/page.tsx` (+ `layout.tsx` con metadata/OG propios) con Hero+CTA, "Cómo funciona" (3 pasos), Beneficios (6 cards), Prueba social (logos clientes NXChile) y Contacto (WhatsApp + `rinde@nxchile.com` + acceso). Paleta ámbar/naranja; CTA a `/login` compartido; sin registrar usuarios (acceso por admin).
+- ✅ **Proxy de subdominios (2026-09-08):** `src/proxy.ts` (Next 16 renombró `middleware` → `proxy`). En `rinde.nxchile.com`: `/`→`/rinde-landing`, `/login`→compartido, `/rinde**`→pasa directo, resto→rewrite `/rinde/<ruta>`. Fuera del host `rinde.` no hace nada. Assets estáticos siempre pasan.
+- ✅ **SSO cookie entre subdominios (2026-09-08):** `src/lib/session.ts` firma la cookie `gx_session` con `domain` optativo vía `COOKIE_DOMAIN` (debe ser `.nxchile.com` en producción). Mismo deploy + mismo `AUTH_SECRET` hacen que gastos./rinde. compartan sesión; en localhost la variable se deja vacía y el comportamiento no cambia.
+
+---
+
+## 3. Estructura de carpetas de RindeNX
+
+```
+src/
+  app/
+    rinde/                                  # Módulo RindeNX
+      layout.tsx                            # Auth guard
+      page.tsx                              # Dashboard de RindeNX
+      dashboard-client.tsx                  # UI dashboard
+      puente/
+        page.tsx                            # Vista de documentos del puente
+        puente-client.tsx                   # UI de documentos traspasados
+      fondos/
+        page.tsx                            # Asignación de fondos
+        fondos-client.tsx                   # UI de fondos
+      rendiciones/
+        [id]/
+          page.tsx                          # Detalle de rendición
+          detalle-client.tsx                # UI detalle + acciones + modal puente
+          nuevo-gasto/
+            page.tsx                        # Form nuevo gasto
+            nuevo-gasto-client.tsx          # UI formulario
+    rinde-landing/                          # Landing pública RindeNX (sin auth)
+      page.tsx                              # Landing (Hero+CTA, Cómo funciona, Beneficios, Prueba social+contacto)
+      layout.tsx                            # Metadata/OG propios de la landing
+    api/
+      rinde/
+        rendiciones/
+          route.ts                          # GET/POST rendiciones
+          [id]/
+            route.ts                        # GET/PATCH rendición
+        gastos/
+          route.ts                          # POST gastos (con tipo_documento)
+        puente/
+          route.ts                          # GET/POST puente
+          documentos/
+            route.ts                        # GET documentos del puente
+        fondos/
+          route.ts                          # GET/POST fondos
+          [id]/
+            route.ts                        # PATCH/DELETE fondo
+  lib/
+    rinde-helpers.ts                        # Helpers RindeNX (spreadsheetId, asientos, Fondos)
+  proxy.ts                                  # Proxy de subdominios: rinde.* → RindeNX (Next 16)
+```
+
+---
+
+## 6. Esquema de datos (Google Sheets)
+
+### Hoja **Usuarios** (columnas `A:K`)
+| Índice | Columna | Descripción |
+|--------|---------|-------------|
+| 0 | `email` | Email del usuario (único) |
+| 1 | `password_hash` | Hash SHA-256 de la contraseña |
+| 2 | `empresa_nombre` | Nombre de la empresa |
+| 3 | `plan` | `free` / `pro` / `enterprise` |
+| 4 | `limite_boletas` | Límite mensual de boletas |
+| 5 | `boletas_usadas` | Contador mensual de boletas |
+| 6 | `activo` | `TRUE` / `FALSE` |
+| 7 | `rol` | `admin` / `user` / `superadmin` |
+| 8 | `creado_en` | Timestamp ISO de creación |
+| 9 | `sheet_id_asociado` | Spreadsheet de la empresa (contiene Gastos y Rinde) |
+| 10 | `tipo_usuario` | `gastos` / `rinde` / `ambos` (Fase 1) |
+
+### Hoja **Gastos** (columnas `A:L`) — para GastosNX
+| Índice | Columna | Descripción |
+|--------|---------|-------------|
+| 0 | `timestamp` | Timestamp ISO de registro |
+| 1 | `fecha` | Fecha del gasto (YYYY-MM-DD) |
+| 2 | `rut` | RUT del proveedor |
+| 3 | `proveedor` | Nombre del proveedor |
+| 4 | `monto` | Monto (numérico) |
+| 5 | `categoria` | Categoría |
+| 6 | `boleta_numero` | N° de boleta |
+| 7 | `giro` | Giro del proveedor |
+| 8 | `notas` | Notas adicionales |
+| 9 | `ocr_confidence` | Confianza del OCR |
+| 10 | `image_url` | URL pública de la imagen en Supabase |
+| 11 | `creado_por` | Email del usuario que registró el gasto |
+
+### Hojas de RindeNX (en el mismo spreadsheet que Gastos)
+
+#### `Rendiciones` (columnas `A:K`)
+| Índice | Columna | Descripción |
+|--------|---------|-------------|
+| 0 | `id` | ID único de la rendición |
+| 1 | `fecha_creacion` | ISO timestamp |
+| 2 | `fecha_cierre` | ISO timestamp de cierre |
+| 3 | `estado` | `abierta` / `terminada` / `en_revision` / `aprobada` / `rechazada` / `cerrada` |
+| 4 | `monto_total` | Monto total de la rendición |
+| 5 | `descripcion` | Descripción |
+| 6 | `usuario_email` | Email del usuario que creó la rendición |
+| 7 | `aprobado_por` | Email del admin que aprobó |
+| 8 | `comentarios` | Comentarios del admin |
+| 9 | `asiento_id` | ID del asiento contable |
+| 10 | `fondo_id` | ID del fondo asignado (pendiente de UI) |
+
+#### `GastosRinde` (columnas `A:O`)
+| Índice | Columna | Descripción |
+|--------|---------|-------------|
+| 0 | `id` | ID único del gasto |
+| 1 | `rendicion_id` | ID de la rendición padre |
+| 2 | `fecha` | Fecha del gasto |
+| 3 | `rut` | RUT del proveedor |
+| 4 | `proveedor` | Nombre del proveedor |
+| 5 | `monto` | Monto numérico |
+| 6 | `categoria` | Categoría |
+| 7 | `boleta_numero` | Número de boleta/factura |
+| 8 | `giro` | Giro del proveedor |
+| 9 | `notas` | Notas |
+| 10 | `image_url` | URL de la imagen |
+| 11 | `creado_por` | Email del usuario |
+| 12 | `creado_en` | ISO timestamp |
+| 13 | `pasado_a_gastos` | `TRUE` / `FALSE` |
+| 14 | `tipo_documento` | `boleta` / `factura` / `voucher` / `sin_comprobante` |
+
+#### `Asientos` (columnas `A:J`)
+| Índice | Columna | Descripción |
+|--------|---------|-------------|
+| 0 | `id` | ID del asiento |
+| 1 | `rendicion_id` | ID de la rendición |
+| 2 | `fecha` | Fecha del asiento |
+| 3 | `tipo` | Tipo de asiento (`rendicion`) |
+| 4 | `cuenta` | Cuenta contable |
+| 5 | `debe` | Monto en debe |
+| 6 | `haber` | Monto en haber |
+| 7 | `descripcion` | Descripción del asiento |
+| 8 | `creado_por` | Email del admin |
+| 9 | `creado_en` | ISO timestamp |
+
+**Estructura del asiento (cuadrado, registro operacional que refleja la diferencia):**
+- `Gastos operacionales – Facturas` → Débito (total facturas)
+- `Gastos operacionales – Boletas/Vouchers` → Débito (total boletas + vouchers)
+- Si rindió **menos** que el fondo: `Saldo por devolver del usuario` → Débito (diferencia)
+- `Fondo por rendir – Cuenta por cobrar empleados` → Haber (monto asignado del fondo)
+- Si rindió **más** que el fondo: `Saldo a favor del usuario – Reembolso` → Haber (diferencia)
+
+El asiento **cuadra siempre** (Debe = Haber = monto asignado del fondo o total rendido). `cuenta_anticipo`, `cuenta_saldo_favor` y `cuenta_saldo_contra` son configurables en `Config_Rinde!E:G`. La app es un **registro operacional**, no un sistema contable: el contador usa este asiento como respaldo. Se descarga en **CSV / PDF (print)** y se comparte por **correo o WhatsApp**.
+
+#### `Puente` (columnas `A:F`)
+| Índice | Columna | Descripción |
+|--------|---------|-------------|
+| 0 | `id` | ID único del registro |
+| 1 | `rinde_gasto_id` | ID del gasto en GastosRinde |
+| 2 | `rendicion_id` | ID de la rendición |
+| 3 | `gastos_row_number` | Fila donde se insertó en hoja Gastos |
+| 4 | `pasado_en` | ISO timestamp del traspaso |
+| 5 | `aprobado_por` | Email del admin |
+
+**Nota:** Solo se registran traspasos de gastos con `tipo_documento` = `boleta` o `voucher`. Las facturas NO pasan al puente.
+
+#### `Fondos` (columnas `A:I`)
+| Índice | Columna | Descripción |
+|--------|---------|-------------|
+| 0 | `id` | ID único del fondo |
+| 1 | `usuario_email` | Email del usuario asignado |
+| 2 | `monto_asignado` | Monto original asignado |
+| 3 | `saldo` | Saldo actual (se descuenta al aprobar rendiciones) |
+| 4 | `observacion` | Glosa/observación del fondo |
+| 5 | `fecha_asignacion` | ISO timestamp |
+| 6 | `estado` | `en_curso` / `cerrado` |
+| 7 | `asignado_por` | Email del admin que asignó |
+| 8 | `empresa` | Nombre de la empresa |
+
+#### `Config_Rinde` (columnas `A:G`)
+| Índice | Columna | Descripción |
+|--------|---------|-------------|
+| 0 | `empresa` | Nombre de la empresa |
+| 1 | `rinde_activo` | `TRUE` / `FALSE` |
+| 2 | `gastos_activo` | `TRUE` / `FALSE` (controla el puente) |
+| 3 | `admin_email` | Email del admin |
+| 4 | `cuenta_anticipo` | Nombre de la cuenta anticipo (ej. "Fondo por rendir – Cuenta por cobrar empleados") |
+| 5 | `cuenta_saldo_favor` | Cuenta para saldo a favor (ej. "Saldo a favor del usuario – Reembolso") |
+| 6 | `cuenta_saldo_contra` | Cuenta para saldo en contra (ej. "Saldo por devolver del usuario") |
+
+### Hoja de configuración de empresas (`GOOGLE_CONFIG_SHEET_ID`, `A:E`)
+`email`, `sheetId`, `empresaNombre`, `subdomain`, `activo` (ver `lib/companyConfig.ts`).
 
 ---
 
@@ -72,7 +313,10 @@ Un **Spreadsheet maestro** (`GOOGLE_SHEET_ID_USERS`) contiene la hoja **Usuarios
 ```
 src/
   app/
-    └ (raíz) page.tsx ...         Landing pública (página de marketing)
+    └ (raíz) page.tsx ...         Landing pública GastosNX (página de marketing)
+    rinde-landing/
+      page.tsx ...                 Landing pública RindeNX (ámbar; ruta /rinde-landing)
+      layout.tsx ...               Metadata/OG propios de la landing RindeNX
     captura/page.tsx              Flujo de captura → OCR → revisión → guardado
     dashboard/page.tsx            Dashboard del usuario / empresa (stats + lista gastos + desglose por categoría)
     login/page.tsx                Login + modales recuperación/contacto
@@ -103,6 +347,7 @@ src/
         create-user-sheet/route.ts  Util: crea hoja Usuarios + admin por defecto
     layout.tsx                    Root layout (SEO, PWA, SupportButton)
     globals.css                   Estilos globales
+  proxy.ts                        Proxy de subdominios: rinde.* → RindeNX (Next 16)
   components/
     CameraCapture.tsx             Captura de foto/upload (blob)
     OcrProcessor.tsx              Overlay de progreso OCR
@@ -142,7 +387,7 @@ Campos de la sesión (`UserSession`):
 
 ## 6. Esquema de datos (Google Sheets)
 
-### Hoja **Usuarios** (columnas `A:J`)
+### Hoja **Usuarios** (columnas `A:K`)
 | Índice | Columna | Descripción |
 |--------|---------|-------------|
 | 0 | `email` | Email del usuario (único) |
@@ -152,9 +397,10 @@ Campos de la sesión (`UserSession`):
 | 4 | `limite_boletas` | Límite mensual de boletas |
 | 5 | `boletas_usadas` | Contador mensual de boletas |
 | 6 | `activo` | `TRUE` / `FALSE` |
-| 7 | `rol` | `admin` / `user` |
+| 7 | `rol` | `admin` / `user` / `superadmin` |
 | 8 | `creado_en` | Timestamp ISO de creación |
 | 9 | `sheet_id_asociado` | Spreadsheet de gastos de la empresa |
+| 10 | `tipo_usuario` | Producto: `gastos` / `rinde` / `ambos` (Fase 1) |
 
 ### Hoja **Gastos** (columnas `A:L`)
 | Índice | Columna | Descripción |
@@ -229,7 +475,7 @@ Campos de la sesión (`UserSession`):
 
 1. **Captura** (`/captura`): el usuario fotografía o sube una imagen (componente `CameraCapture`).
 2. **OCR** (`/api/ocr`): la imagen se envía a **Google Cloud Vision** (`TEXT_DETECTION`), que devuelve el texto completo. Confianza fija en `95`.
-3. **Parseo** (`lib/parser.ts`): `parseBoletaChilena(ocrText, confidence)` extrae fecha, RUT, proveedor, monto, giro y n° de boleta usando expresiones regulares.
+3. **Parseo** (`lib/parser.ts`): `parseBoletaChilena(ocrText, confidence)` extrae fecha, RUT, proveedor, monto, giro y n° de boleta usando expresiones regulares. **Compartido por GastosNX (`/captura`) y RindeNX (`/rinde/.../nuevo-gasto`)**: aplica la misma lógica robusta a ambos. El parser detecta boleta/factura/voucher (`tipoDocumento`, usado por RindeNX), captura el **monto** en la línea siguiente a `TOTAL:`/`MONTO COMPRA` (típico de vouchers), busca el **RUT del proveedor** en el bloque superior del documento (evitando tokens de tarjeta) tolerando formatos deformados por OCR, y prioriza **razón social** del proveedor (SA., SPA., LTDA.). Incluye la restricción del dígito verificador del RUT.
 4. **Revisión** (`ExpenseForm`): el usuario valida/edita los campos y selecciona categoría.
 5. **Guardado** (`/api/save-expense`, POST multipart):
    - Sube la imagen a Supabase Storage (`receipts` bucket). **Si falla, igual guarda el gasto** (imagen opcional).
@@ -277,6 +523,9 @@ GOOGLE_SHEET_ID_USERS
 # Sesión JWT (ADR-002, OBLIGATORIA)
 AUTH_SECRET              (mín 16 caracteres; firma de la cookie de sesión)
 
+# SSO entre subdominios (solo producción, ver DEPLOY.md §2.1)
+COOKIE_DOMAIN            ('.nxchile.com'; compartir sesión entre gastos. y rinde.)
+
 # OCR
 GOOGLE_VISION_API_KEY
 
@@ -295,7 +544,7 @@ NEXT_PUBLIC_WEB3FORMS_KEY
 ## 11. Observaciones / temas pendientes conocidos
 
 > Las siguientes inconsistencias se encuentran **registradas como ADR en `docs/DECISIONS.md`**, ordenadas de mayor a menor importancia, cada una con sus pasos a corregir. Referencia cruzada del seguimiento: `DECISIONS.md`.
-> **Estado 2026-08-28:** ADR-002, ADR-003 y ADR-004 **resueltos**. Quedan pendientes ADR-001, ADR-005, ADR-006.
+> **Estado 2026-09-02:** ADR-002, ADR-003, ADR-004, ADR-007 y ADR-008 **resueltos**. Fases 1-7 del plan de 8 completadas. En curso: Fase 8 (documentación y despliegue).
 
 | # | ADR | Tema pendiente | Urgencia |
 |---|-----|----------------|----------|
@@ -333,6 +582,14 @@ Cada ADR en `DECISIONS.md` incluye el **contexto, la decisión, las alternativas
 - **Sticky CTA mobile:** aparece tras scroll >800px en mobile (`md:hidden`), fijo en bottom con botón "Probar gratis" + WhatsApp.
 - **WhatsApp flotante:** solo visible en desktop (`hidden md:flex`), esquina inferior derecha, color `#25D366`, con tooltip "¿Dudas? Escríbenos" al hover.
 - **Logos de clientes autorizados** (prueba social en landing): `public/images/clients/{ac_logo.png, RCCServicios.jpeg, sanAndres.png, bastcon.jpg}`. Empresas: AC Constructores y Consultores, RCC Servicios EIRL, Transportes San Andrés SPA, Bastcon.
+
+### Branding RindeNX (landing pública, 2026-09-08)
+
+- **Marca:** "RindeNX by NXChile". Sin archivo de logo dedicado: se usa un badge (cuadro degradado `amber-500 → orange-600` + ícono `FileText` blanco) junto al wordmark "Rinde**NX**" (`text-amber-600`), mismo estilo que la navbar de la app `/rinde`.
+- **Paleta:** ámbar/naranja (`amber-*`, `orange-*`) sobre neutros; contraste: secciones oscuras `neutral-950` y acentos `bg-amber-500`.
+- **Contacto:** `rinde@nxchile.com` + WhatsApp `+56 9 77412178` (mismo número que GastosNX, mensaje predefinido "vengo de rinde.nxchile.com").
+- **CTA principal:** "Ingresar a mi cuenta" → `/login` compartido con GastosNX. RindeNX **no tiene registro público**: los usuarios los crea el admin en la hoja Usuarios.
+- **Cross-sell:** en la landing hay link a `https://gastos.nxchile.com` (y viceversa desde GastosNX) porque comparten cuenta y deploy.
 
 ### OCR (proveedor único)
 
