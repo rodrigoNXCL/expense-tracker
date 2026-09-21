@@ -38,6 +38,7 @@ export default function RindeLandingPage() {
               </span>
             </div>
             <div className="flex items-center gap-1">
+              <button onClick={() => router.push('/precios')} className="px-5 py-2.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors">Planes y precios</button>
               <button onClick={() => router.push('/login')} className="px-5 py-2.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors">Iniciar Sesión</button>
               <a href="https://gastos.nxchile.com" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex ml-2 px-5 py-2.5 bg-neutral-900 text-white text-sm font-semibold rounded-full hover:bg-neutral-700 transition-colors">
                 GastosNX →
@@ -71,9 +72,9 @@ export default function RindeLandingPage() {
                 <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-7 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25">
                   Solicitar demostración <ArrowRight className="w-4 h-4" />
                 </a>
-                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-7 py-3.5 bg-white text-neutral-700 text-base font-semibold rounded-full border border-neutral-200 hover:border-neutral-300 transition-all text-center">
-                  ¿Prefieres hablar directamente? Escríbenos.
-                </a>
+                <button onClick={() => router.push('/precios')} className="w-full sm:w-auto px-7 py-3.5 bg-white text-neutral-700 text-base font-semibold rounded-full border border-neutral-200 hover:border-neutral-300 transition-all text-center">
+                  Ver planes y precios
+                </button>
               </div>
             </div>
 
@@ -543,9 +544,9 @@ export default function RindeLandingPage() {
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center gap-2 shadow-lg shadow-amber-500/20">
                 Solicitar demostración <ArrowRight className="w-4 h-4" />
               </a>
-              <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-transparent text-white text-base font-semibold rounded-full border border-white/25 hover:border-white/50 transition-all">
-                ¿Prefieres hablar directamente? Escríbenos.
-              </a>
+              <button onClick={() => router.push('/precios')} className="px-8 py-3.5 bg-transparent text-white text-base font-semibold rounded-full border border-white/25 hover:border-white/50 transition-all">
+                Ver planes y precios
+              </button>
             </div>
             <p className="text-sm text-neutral-500 mt-8">💬 ¿Dudas? Escríbenos por WhatsApp y te mostramos el sistema.</p>
           </div>
@@ -676,6 +677,7 @@ export default function RindeLandingPage() {
               <h4 className="text-white font-semibold mb-4 text-sm">Producto</h4>
               <ul className="space-y-2.5 text-sm">
                 <li><button onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white transition-colors">Cómo funciona</button></li>
+                <li><button onClick={() => router.push('/precios')} className="hover:text-white transition-colors">Planes y precios</button></li>
                 <li><button onClick={() => router.push('/login')} className="hover:text-white transition-colors">Iniciar Sesión</button></li>
                 <li><a href="https://gastos.nxchile.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GastosNX — gastos tributarios</a></li>
               </ul>
