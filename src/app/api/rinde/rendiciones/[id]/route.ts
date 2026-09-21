@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSheets } from '@/lib/sheets'
 import { readSession } from '@/lib/session'
-import { getRindeSpreadsheetId, ensureRindeStructure, generateAsientoContable } from '@/lib/rinde-helpers'
+import { getRindeSpreadsheetId, generateAsientoContable } from '@/lib/rinde-helpers'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +22,6 @@ export async function GET(
     }
 
     const sheets = await getSheets()
-    await ensureRindeStructure(sheets, spreadsheetId)
 
     const rendRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -80,7 +79,7 @@ export async function GET(
         range: 'Asientos!A2:J',
       })
       const astRows = astRes.data.values || []
-      const astLines = astRows.filter((row: any[]) => row[0] === rendicion.asiento_id)
+      const astLines = astRows.filter((row: any[]) => row[0] === rendicion.asiento_id || row[1] === id)
       const lineas = astLines.map((row: any[]) => ({
         cuenta: row[4] || '',
         debe: parseFloat(row[5]) || 0,
@@ -181,7 +180,6 @@ export async function PATCH(
     }
 
     const sheets = await getSheets()
-    await ensureRindeStructure(sheets, spreadsheetId)
 
     const rendRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -248,24 +246,27 @@ export async function PATCH(
       const cuentaSaldoFavor = configRow[5] || 'Saldo a favor del usuario – Reembolso'
       const cuentaSaldoContra = configRow[6] || 'Saldo por devolver del usuario'
 
-      // Monto asignado del fondo
+      // Monto asignado del fondo (una sola lectura de Fondos, reutilizada para descontar el saldo)
       const fondoIdA = rendRow[10] || ''
+      let fondosRows: any[] = []
+      let fondoRowIdx = -1
       let montoAsignadoFondo = 0
       if (fondoIdA) {
         const fResA = await sheets.spreadsheets.values.get({
           spreadsheetId,
           range: 'Fondos!A2:I',
         })
-        const fRowA = (fResA.data.values || []).find((row: any[]) => row[0] === fondoIdA)
-        montoAsignadoFondo = fRowA ? parseFloat(fRowA[2]) || 0 : 0
+        fondosRows = fResA.data.values || []
+        fondoRowIdx = fondosRows.findIndex((row: any[]) => row[0] === fondoIdA)
+        montoAsignadoFondo = fondoRowIdx !== -1 ? parseFloat(fondosRows[fondoRowIdx][2]) || 0 : 0
       }
 
       const asiento = generateAsientoContable(id, montoBoletas, montoFacturas, rendRow[5], montoAsignadoFondo, cuentaAnticipo, cuentaSaldoFavor, cuentaSaldoContra)
 
       const asientoValues: any[][] = []
-      asiento.lineas.forEach((linea, idx) => {
+      asiento.lineas.forEach((linea) => {
         asientoValues.push([
-          idx === 0 ? asiento.id : '',
+          asiento.id,
           asiento.rendicion_id,
           asiento.fecha,
           asiento.tipo,
@@ -288,26 +289,18 @@ export async function PATCH(
 
       // Descontar saldo del fondo asociado con el TOTAL rendido (boletas+vouchers+facturas)
       // Solo al aprobar (el pago saldo a favor cierra sin tocar el fondo si ya se descontó)
-      if (fondoIdA && accion === 'aprobar') {
-        const fondosRes = await sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: 'Fondos!A2:I',
-        })
-        const fondosRows = fondosRes.data.values || []
-        const fondoRowIdx = fondosRows.findIndex((row: any[]) => row[0] === fondoIdA)
-        if (fondoRowIdx !== -1) {
-          const fondoRow = fondosRows[fondoRowIdx]
-          const saldoActual = parseFloat(fondoRow[3]) || 0
-          const nuevoSaldo = Math.max(0, saldoActual - totalRendido)
-          const fondoRowNumber = fondoRowIdx + 2
+      if (fondoIdA && accion === 'aprobar' && fondoRowIdx !== -1) {
+        const fondoRow = fondosRows[fondoRowIdx]
+        const saldoActual = parseFloat(fondoRow[3]) || 0
+        const nuevoSaldo = Math.max(0, saldoActual - totalRendido)
+        const fondoRowNumber = fondoRowIdx + 2
 
-          await sheets.spreadsheets.values.update({
-            spreadsheetId,
-            range: `Fondos!D${fondoRowNumber}`,
-            valueInputOption: 'RAW',
-            requestBody: { values: [[String(nuevoSaldo)]] },
-          })
-        }
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `Fondos!D${fondoRowNumber}`,
+          valueInputOption: 'RAW',
+          requestBody: { values: [[String(nuevoSaldo)]] },
+        })
       }
 
       // Actualizar el monto_total real (col E) con el total rendido

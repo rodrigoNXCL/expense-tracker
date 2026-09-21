@@ -158,7 +158,14 @@ export default function RindeDashboardClient({ session }: Props) {
   const totalMontoFondos = activeFondos.reduce((sum, f) => sum + f.monto_asignado, 0)
   const totalSaldoFondos = activeFondos.reduce((sum, f) => sum + f.saldo, 0)
 
-  const rendicionesPendientes = rendiciones.filter((r) => r.estado === 'en_revision' || r.estado === 'abierta')
+  const rendicionesPendientes = rendiciones.filter(
+    (r) => r.estado === 'abierta' || r.estado === 'terminada' || r.estado === 'en_revision'
+  )
+  const totalConsumido = totalMontoFondos - totalSaldoFondos
+  const montoPendiente = rendicionesPendientes.reduce((s, r) => s + (r.monto_total || 0), 0)
+  const totalComprometido = totalConsumido + montoPendiente
+  const pctComprometido = totalMontoFondos > 0 ? Math.min(100, Math.round((totalComprometido / totalMontoFondos) * 100)) : 0
+  const totalAprobado = rendiciones.filter((r) => r.estado === 'aprobada' || r.estado === 'cerrada').reduce((s, r) => s + (r.monto_total || 0), 0)
 
   return (
     <div className="min-h-screen bg-slate-50/60 text-slate-800">
@@ -242,12 +249,22 @@ export default function RindeDashboardClient({ session }: Props) {
           </div>
 
           <div className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs flex items-center justify-between">
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Saldo Disponible</p>
               <p className="text-2xl font-bold text-emerald-600 mt-1">${totalSaldoFondos.toLocaleString('es-CL')}</p>
-              <p className="text-xs text-slate-500 mt-1">Para rendiciones futuras</p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${pctComprometido >= 95 ? 'bg-rose-500' : pctComprometido >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                    style={{ width: `${pctComprometido}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 shrink-0">
+                  {totalComprometido > 0 ? `Comprometido $${totalComprometido.toLocaleString('es-CL')} (${pctComprometido}%)` : 'Nada comprometido'}
+                </p>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shrink-0">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
@@ -256,7 +273,11 @@ export default function RindeDashboardClient({ session }: Props) {
             <div>
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Por Revisar / Abiertas</p>
               <p className="text-2xl font-bold text-amber-600 mt-1">{rendicionesPendientes.length}</p>
-              <p className="text-xs text-slate-500 mt-1">Rendiciones requeridas</p>
+              <p className="text-xs text-slate-500 mt-1">
+                {montoPendiente > 0
+                  ? `Por $${montoPendiente.toLocaleString('es-CL')} en rendiciones en curso`
+                  : 'Sin rendiciones pendientes'}
+              </p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
               <Clock className="w-5 h-5" />
@@ -269,7 +290,9 @@ export default function RindeDashboardClient({ session }: Props) {
               <p className="text-2xl font-bold text-slate-900 mt-1">
                 {rendiciones.filter((r) => r.estado === 'aprobada' || r.estado === 'cerrada').length}
               </p>
-              <p className="text-xs text-slate-500 mt-1">Cerradas y contabilizadas</p>
+              <p className="text-xs text-slate-500 mt-1">
+                {totalAprobado > 0 ? `Total contabilizado: $${totalAprobado.toLocaleString('es-CL')}` : 'Cerradas y contabilizadas'}
+              </p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200">
               <CheckCircle className="w-5 h-5" />
@@ -359,7 +382,9 @@ export default function RindeDashboardClient({ session }: Props) {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {activeFondos.map((f) => (
+                  {activeFondos.map((f) => {
+                    const consumo = consumoFondo(f, rendiciones)
+                    return (
                     <div
                       key={f.id}
                       className="border border-slate-200/80 hover:border-amber-300 rounded-xl p-5 bg-white hover:shadow-xs transition-all flex flex-col justify-between"
@@ -376,19 +401,55 @@ export default function RindeDashboardClient({ session }: Props) {
 
                         <p className="text-sm font-semibold text-slate-900 line-clamp-2">{f.observacion}</p>
 
-                        <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
+                        <div className="pt-2 border-t border-slate-100 space-y-2.5">
+                          <div className="flex items-baseline justify-between">
+                            <div>
+                              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Saldo Disponible</p>
+                              <p className="text-lg font-bold text-emerald-600">
+                                ${f.saldo.toLocaleString('es-CL')}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Asignado</p>
+                              <p className="text-xs font-semibold text-slate-600">
+                                ${f.monto_asignado.toLocaleString('es-CL')}
+                              </p>
+                            </div>
+                          </div>
+
                           <div>
-                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Saldo Disponible</p>
-                            <p className="text-lg font-bold text-emerald-600">
-                              ${f.saldo.toLocaleString('es-CL')}
+                            <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider mb-1">
+                              <span>Avance de la rendición vs fondo</span>
+                              <span className={`font-bold ${consumo.pctTotal >= 100 ? 'text-rose-600' : consumo.pctTotal >= 60 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                {consumo.pctTotal}%
+                              </span>
+                            </div>
+                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${consumo.pctTotal >= 100 ? 'bg-rose-500' : consumo.pctTotal >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                style={{ width: `${Math.min(100, consumo.pctTotal)}%` }}
+                              />
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-1">
+                              Rendido <span className="font-semibold text-slate-700">${consumo.rendidoTotal.toLocaleString('es-CL')}</span>{' '}
+                              de ${f.monto_asignado.toLocaleString('es-CL')}
                             </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Asignado</p>
-                            <p className="text-xs font-semibold text-slate-600">
-                              ${f.monto_asignado.toLocaleString('es-CL')}
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              Aprobado/descontado ${consumo.consumido.toLocaleString('es-CL')}
                             </p>
+                            {consumo.sobreRendido > 0 && (
+                              <p className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-lg px-2.5 py-1.5 mt-1.5">
+                                Sobre-rendido +${consumo.sobreRendido.toLocaleString('es-CL')} — saldo a favor a reembolsar
+                              </p>
+                            )}
                           </div>
+
+                          {isAdmin && consumo.enTramite > 0 && (
+                            <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200/60 rounded-lg px-2.5 py-1.5">
+                              {consumo.enTramite} rendición(es) en trámite por $
+                              {consumo.montoTramite.toLocaleString('es-CL')}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -411,7 +472,8 @@ export default function RindeDashboardClient({ session }: Props) {
                         )}
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -511,6 +573,22 @@ export default function RindeDashboardClient({ session }: Props) {
       )}
     </div>
   )
+}
+
+function consumoFondo(f: Fondo, rendiciones: Rendicion[]) {
+  const asignado = f.monto_asignado || 0
+  const saldo = f.saldo || 0
+  const consumido = Math.max(0, asignado - saldo)
+  const pct = asignado > 0 ? Math.min(100, Math.round((consumido / asignado) * 100)) : 0
+  const delFondo = (r: Rendicion) => r.fondo_id === f.id && r.estado !== 'rechazada'
+  const enTramite = rendiciones.filter(
+    (r) => delFondo(r) && (r.estado === 'abierta' || r.estado === 'terminada' || r.estado === 'en_revision')
+  )
+  const montoTramite = enTramite.reduce((s, r) => s + (r.monto_total || 0), 0)
+  const rendidoTotal = rendiciones.filter(delFondo).reduce((s, r) => s + (r.monto_total || 0), 0)
+  const sobreRendido = Math.max(0, rendidoTotal - asignado)
+  const pctTotal = asignado > 0 ? Math.min(100, Math.round((rendidoTotal / asignado) * 100)) : 0
+  return { consumido, pct, enTramite: enTramite.length, montoTramite, rendidoTotal, sobreRendido, pctTotal }
 }
 
 function EstadoBadge({ estado }: { estado: Rendicion['estado'] }) {

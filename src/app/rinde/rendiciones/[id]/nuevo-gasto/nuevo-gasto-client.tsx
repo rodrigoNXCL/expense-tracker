@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, Save, Loader2, Camera, CheckCircle, Receipt,
@@ -39,6 +39,25 @@ export default function NuevoGastoClient({ session, rendicionId }: Props) {
     notas: '',
     tipo_documento: 'boleta',
   })
+
+  const [fondoInfo, setFondoInfo] = useState<{ monto_asignado: number; saldo: number } | null>(null)
+  const [rendidoActual, setRendidoActual] = useState(0)
+
+  useEffect(() => {
+    fetch(`/api/rinde/rendiciones/${rendicionId}`, { credentials: 'same-origin' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.fondo) setFondoInfo(data.fondo)
+        const total = (data?.gastos || []).reduce((s: number, g: { monto?: number }) => s + (g.monto || 0), 0)
+        setRendidoActual(total)
+      })
+      .catch(() => {})
+  }, [rendicionId])
+
+  const fondoConsumido =
+    !!fondoInfo && ((fondoInfo.saldo || 0) <= 0 || rendidoActual >= (fondoInfo.monto_asignado || 0))
+  const sobreRendido =
+    !!fondoInfo && rendidoActual > (fondoInfo.monto_asignado || 0)
 
   const handleImageCapture = (imageBlob: Blob) => {
     if (previewUrl) URL.revokeObjectURL(previewUrl)
@@ -202,6 +221,26 @@ export default function NuevoGastoClient({ session, rendicionId }: Props) {
                   Intentar con otra imagen
                 </button>
               )}
+            </div>
+          </div>
+        )}
+
+        {fondoConsumido && (
+          <div className={`mb-4 border rounded-xl p-3 text-sm flex items-start gap-2 ${
+            sobreRendido
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-amber-50 border-amber-200 text-amber-800'
+          }`}>
+            <AlertCircle className={`w-4 h-4 mt-0.5 shrink-0 ${sobreRendido ? 'text-emerald-600' : 'text-amber-600'}`} />
+            <div>
+              <p className="font-semibold">
+                {sobreRendido
+                  ? `Fondo sobre-rendido: ya se llevan $${rendidoActual.toLocaleString('es-CL')} de $${(fondoInfo!.monto_asignado || 0).toLocaleString('es-CL')}`
+                  : 'Fondo consumido — saldo en $0'}
+              </p>
+              <p className="text-xs mt-0.5 opacity-90">
+                Puedes registrar igualmente este gasto: está permitido sobre-render el fondo. El excedente se liquidará como saldo a favor a reembolsar al momento de aprobar.
+              </p>
             </div>
           </div>
         )}

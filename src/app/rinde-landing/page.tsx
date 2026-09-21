@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  ArrowRight, Check, Clock, FileText, Layers, Lock, MessageCircle,
+  ArrowRight, Check, FileText, Layers, Lock, MessageCircle,
   Receipt, Shield, Wallet, Camera, Users, Building2,
 } from 'lucide-react'
 import Image from 'next/image'
@@ -65,14 +65,14 @@ export default function RindeLandingPage() {
                 <span className="text-amber-600"> cuadradas, todos los meses.</span>
               </h1>
               <p className="text-lg sm:text-xl text-neutral-500 mb-10 max-w-xl leading-relaxed">
-                RindeNX digitaliza los fondos por rendir de tu empresa: asigna fondos, registra gastos con OCR y genera el asiento contable de forma automática. Desarrollado por NXChile.
+                Controla cada fondo que entregas, cada gasto que se rinde y cada saldo pendiente, desde un solo lugar.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button onClick={() => router.push('/login')} className="w-full sm:w-auto px-7 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25">
-                  Ingresar a mi cuenta <ArrowRight className="w-4 h-4" />
-                </button>
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-7 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25">
+                  Solicitar demostración <ArrowRight className="w-4 h-4" />
+                </a>
                 <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-7 py-3.5 bg-white text-neutral-700 text-base font-semibold rounded-full border border-neutral-200 hover:border-neutral-300 transition-all text-center">
-                  Pedir acceso para mi empresa
+                  ¿Prefieres hablar directamente? Escríbenos.
                 </a>
               </div>
             </div>
@@ -173,88 +173,359 @@ export default function RindeLandingPage() {
         </div>
       </section>
 
-      {/* ===== CÓMO FUNCIONA ===== */}
-      <section id="como-funciona" className="py-24 lg:py-28 bg-white">
+      {/* ===== ¿TU EMPRESA TODAVÍA FUNCIONA ASÍ? ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">¿Tu empresa todavía funciona así?</h2>
+            <p className="text-lg text-neutral-500 leading-relaxed">Si reconoces alguno de estos problemas, RindeNX es para ti.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto mb-12">
+            {[
+              { icon: '💰', text: 'Entregas dinero y después persigues la rendición.' },
+              { icon: '📱', text: 'Las boletas llegan por WhatsApp y se pierden.' },
+              { icon: '📅', text: 'Hay fondos abiertos durante semanas sin cerrar.' },
+              { icon: '📊', text: 'Excel tiene una versión distinta cada día.' },
+              { icon: '🔍', text: 'No sabes quién tiene dinero pendiente.' },
+              { icon: '📋', text: 'El contador recibe información incompleta.' },
+              { icon: '⚖️', text: 'Las diferencias aparecen al final, cuando ya es tarde.' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-4 p-5 bg-neutral-50 rounded-2xl border border-black/5">
+                <span className="text-2xl shrink-0">{item.icon}</span>
+                <p className="text-neutral-700 text-[15px] leading-relaxed">{item.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <p className="text-xl lg:text-2xl font-bold text-neutral-900">RindeNX pone orden desde el momento en que entregas el fondo.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== CÓMO FUNCIONA — TIMELINE ===== */}
+      <section id="como-funciona" className="py-24 lg:py-28 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">El eslabón que faltaba entre tu fondo y tu contador.</h2>
             <p className="text-lg text-neutral-500 leading-relaxed">RindeNX no reemplaza a tu contador. Le entrega una rendición ordenada, respaldada y siempre cuadrada — sin boleta perdida, sin saldo que quede sin explicar.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            <div className="bg-neutral-50 rounded-3xl p-8 border border-black/10 hover:border-amber-300 transition-all">
-              <div className="relative w-full h-44 mb-6 rounded-2xl overflow-hidden">
-                <Image src="/images/paso3_contador.webp" alt="Fondo asignado a un rendidor dentro de RindeNX" fill className="object-cover" />
+          <div className="max-w-3xl mx-auto">
+            <div className="relative">
+              {/* Línea vertical */}
+              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-amber-200" />
+              <div className="space-y-8">
+                {[
+                  { step: 1, title: 'Asignar fondo', desc: 'El administrador entrega un fondo de caja o cupo de gasto a cada rendidor. Una rendición por fondo. Nada de montos huérfanos.', icon: Wallet },
+                  { step: 2, title: 'Registrar gastos', desc: 'El rendidor registra boletas, facturas y vouchers con OCR o manualmente. Cada gasto queda imputado a su rendición.', icon: Receipt },
+                  { step: 3, title: 'Adjuntar respaldos', desc: 'Cada gasto se acompaña de su comprobante digital. Imagen, trazabilidad y respaldo listo para revisión.', icon: FileText },
+                  { step: 4, title: 'Revisar', desc: 'El administrador revisa cada gasto, verifica montos y comprobantes. Todo queda registrado con comentarios.', icon: Users },
+                  { step: 5, title: 'Aprobar o rechazar', desc: 'Aprueba rendiciones cuadradas o rechaza las que tengan diferencias. La decisión queda trazada.', icon: Check },
+                  { step: 6, title: 'Cuadrar', desc: 'El sistema calcula la diferencia contra el fondo asignado. Saldo a favor, saldo por devolver, todo claro.', icon: Layers },
+                  { step: 7, title: 'Generar asiento', desc: 'RindeNX genera automáticamente el asiento contable con Debe = Haber. Anticipo, saldo a favor y por devolver, listos.', icon: FileText },
+                ].map((item, i) => (
+                  <div key={i} className="relative flex items-start gap-6 pl-0">
+                    <div className="relative z-10 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+                      <item.icon className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="bg-white rounded-2xl p-6 border border-black/5 flex-1 shadow-sm">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">Paso {item.step}</span>
+                        <h3 className="text-lg font-semibold text-neutral-900">{item.title}</h3>
+                      </div>
+                      <p className="text-neutral-500 text-[15px] leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 bg-amber-100 text-amber-700 rounded-full text-sm font-bold mb-3">1</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Se asigna un fondo, no un gasto suelto</h3>
-              <p className="text-neutral-500 text-[15px] leading-relaxed">El administrador entrega un fondo de caja o cupo de gasto a cada rendidor. <span className="text-amber-700 font-medium">Una rendición por fondo. Nada de montos huérfanos.</span></p>
-            </div>
-            <div className="bg-neutral-50 rounded-3xl p-8 border border-black/10 hover:border-amber-300 transition-all">
-              <div className="relative w-full h-44 mb-6 rounded-2xl overflow-hidden">
-                <Image src="/images/paso1_captura.webp" alt="Rendidor fotografiando una boleta con OCR dentro de RindeNX" fill className="object-cover" />
-              </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 bg-amber-100 text-amber-700 rounded-full text-sm font-bold mb-3">2</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Cada gasto se rinde con su respaldo</h3>
-              <p className="text-neutral-500 text-[15px] leading-relaxed">El rendidor registra boletas, facturas y vouchers con OCR o manualmente. <span className="text-amber-700 font-medium">Cada gasto queda imputado a su rendición con imagen y trazabilidad.</span></p>
-            </div>
-            <div className="bg-neutral-50 rounded-3xl p-8 border border-black/10 hover:border-amber-300 transition-all">
-              <div className="relative w-full h-44 mb-6 rounded-2xl overflow-hidden">
-                <Image src="/images/paso2_respaldo.webp" alt="Rendición cerrada, aprobada y convertida en asiento contable en RindeNX" fill className="object-cover" />
-              </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 bg-amber-100 text-amber-700 rounded-full text-sm font-bold mb-3">3</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Se cierra, se aprueba y el asiento sale solo</h3>
-              <p className="text-neutral-500 text-[15px] leading-relaxed">El sistema calcula la diferencia contra el fondo asignado y genera el asiento automáticamente. <span className="text-amber-700 font-medium">Debe = Haber. Anticipo, saldo a favor y por devolver, actualizados.</span></p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== BENEFICIOS ===== */}
+      {/* ===== DEMO: FONDOS EN ACCIÓN ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">Así se ve el control en tiempo real.</h2>
+            <p className="text-lg text-neutral-500 leading-relaxed">Cada fondo asignado muestra su estado, rendición y saldo al instante. Sin Excel, sin WhatsApp, sin sorpresas.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Card 1: Fondo en revisión */}
+            <div className="bg-white rounded-3xl p-8 shadow-2xl shadow-amber-600/10 ring-1 ring-black/5">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-neutral-900">Transportes San Andrés</p>
+                    <p className="text-xs text-neutral-500">Fondo operacional · Agosto 2026</p>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full">En revisión</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                  <p className="text-xs font-medium text-amber-700 mb-1">Fondo asignado</p>
+                  <p className="text-xl font-bold text-neutral-900">$800.000</p>
+                </div>
+                <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                  <p className="text-xs font-medium text-amber-700 mb-1">Rendido</p>
+                  <p className="text-xl font-bold text-neutral-900">$655.000</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-neutral-50 rounded-2xl p-4 border border-black/5">
+                  <p className="text-xs font-medium text-neutral-500 mb-1">Pendiente</p>
+                  <p className="text-xl font-bold text-neutral-900">$145.000</p>
+                </div>
+                <div className="bg-neutral-50 rounded-2xl p-4 border border-black/5">
+                  <p className="text-xs font-medium text-neutral-500 mb-1">Documentos</p>
+                  <p className="text-xl font-bold text-neutral-900">24</p>
+                </div>
+              </div>
+              <div className="mt-5 pt-4 border-t border-black/5">
+                <div className="w-full bg-neutral-100 rounded-full h-2.5">
+                  <div className="bg-amber-500 h-2.5 rounded-full" style={{ width: '82%' }} />
+                </div>
+                <p className="text-xs text-neutral-500 mt-2 text-right">82% rendido</p>
+              </div>
+            </div>
+
+            {/* Card 2: Fondo aprobado */}
+            <div className="bg-white rounded-3xl p-8 shadow-2xl shadow-emerald-600/10 ring-1 ring-black/5">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-tr from-emerald-500 to-green-600 rounded-xl flex items-center justify-center">
+                    <Check className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-neutral-900">RCC Servicios</p>
+                    <p className="text-xs text-neutral-500">Fondo de caja chica · Agosto 2026</p>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">Aprobada</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                  <p className="text-xs font-medium text-emerald-700 mb-1">Fondo asignado</p>
+                  <p className="text-xl font-bold text-neutral-900">$300.000</p>
+                </div>
+                <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                  <p className="text-xs font-medium text-emerald-700 mb-1">Rendido</p>
+                  <p className="text-xl font-bold text-neutral-900">$300.000</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                  <p className="text-xs font-medium text-emerald-700 mb-1">Diferencia</p>
+                  <p className="text-xl font-bold text-emerald-600">$0</p>
+                </div>
+                <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                  <p className="text-xs font-medium text-emerald-700 mb-1">Estado</p>
+                  <div className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <p className="text-sm font-bold text-emerald-600">Cuadrada</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 pt-4 border-t border-black/5 flex items-center justify-between">
+                <p className="text-xs text-neutral-500">Asiento contable generado</p>
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600">
+                  <Check className="w-3.5 h-3.5" /> Debe = Haber
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== BENEFICIOS — EL FONDO COMPLETO ===== */}
       <section className="py-24 lg:py-28 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <div className="inline-flex items-center justify-center w-14 h-14 bg-amber-500 rounded-2xl mb-8">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Fin a las rendiciones que nunca cuadran.</h2>
-            <p className="text-lg text-neutral-500 leading-relaxed">RindeNX está hecho para pymes y contadores que necesitan controlar fondos por rendir sin planillas desactualizadas ni correos persiguiendo comprobantes.</p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">El fondo completo queda controlado de principio a fin.</h2>
+            <p className="text-lg text-neutral-500 leading-relaxed">No es solo OCR ni solo asientos. Es control total sobre cada fondo que entregas, desde que sale de tu caja hasta que llega a tu contador.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Wallet className="w-6 h-6 text-amber-600" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Un fondo, una rendición</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Siempre sabes qué fondo está en manos de quién, cuánto se ha rendido y cuánto falta por justificar.</p>
+              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Fondo → Gasto → Saldo</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed">Cada fondo asignado se追踪 desde su entrega hasta su cierre. Siempre sabes qué fondo está en manos de quién y cuánto falta por justificar.</p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Camera className="w-6 h-6 text-amber-600" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Registro con OCR, en el momento</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Boletas, facturas y vouchers se leen solos. El rendidor registra al instante y deja el respaldo digital para siempre.</p>
+              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">OCR en el momento</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed">Boletas, facturas y vouchers se leen al instante. El rendidor registra y deja el respaldo digital para siempre, sin WhatsApp.</p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 border border-black/5">
+              <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Users className="w-6 h-6 text-amber-600" /></div>
+              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Aprobación con comentarios</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed">Aprueba o rechaza cada rendición dejando la instrucción registrada. Trazabilidad completa para auditoría.</p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Check className="w-6 h-6 text-amber-600" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Asiento cuadrado automático</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Al aprobar, RindeNX genera el asiento de la rendición con Debe = Haber: anticipo, saldo a favor y saldo por devolver, sin errores de tipeo.</p>
-            </div>
-            <div className="bg-white rounded-2xl p-6 border border-black/5">
-              <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Clock className="w-6 h-6 text-amber-600" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Estados claros de punta a punta</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Abierta, terminada, en revisión, aprobada o rechazada. Cada rendición sabe exactamente dónde está y qué le falta.</p>
+              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Asiento automático</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed">Al aprobar, RindeNX genera el asiento con Debe = Haber: anticipo, saldo a favor y saldo por devolver, sin errores.</p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Layers className="w-6 h-6 text-amber-600" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Puente con GastosNX</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Los gastos operacionales de la rendición pueden pasar a GastosNX para el respaldo tributario anual. Una sola cuenta, una sola empresa.</p>
+              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Integración GastosNX</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed">Los gastos operacionales pasan a GastosNX para el respaldo tributario anual. Una sola cuenta, una sola empresa.</p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Lock className="w-6 h-6 text-amber-600" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Trazabilidad y control</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Todo queda registrado: quién asignó el fondo, quién rinde, quién aprueba y con qué comentarios. Auditoría lista para revisión.</p>
+              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Panel administrativo</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed">Ves todos los fondos, rendiciones y asientos en un solo lugar. Control total sin planillas desactualizadas.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== PRUEBA SOCIAL + CONTACTO ===== */}
+      {/* ===== RINDENX + GASTOSNX ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">RindeNX controla la rendición. GastosNX continúa el proceso.</h2>
+            <p className="text-lg text-neutral-500 leading-relaxed">Los gastos operacionales de una rendición pueden pasar a GastosNX para mantener el respaldo documental y facilitar el trabajo tributario posterior.</p>
+          </div>
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              {/* RindeNX */}
+              <div className="bg-gradient-to-br from-amber-50 to-white rounded-3xl p-8 border border-amber-200/50">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-neutral-900">RindeNX</p>
+                    <p className="text-xs text-amber-600 font-medium">Control de fondos</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {['Fondos asignados', 'Rendiciones con OCR', 'Aprobación y trazabilidad', 'Asiento contable automático'].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full" />
+                      <p className="text-neutral-700 text-sm">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Flecha */}
+              <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-12 h-12 bg-neutral-900 rounded-full items-center justify-center shadow-lg z-10">
+                <ArrowRight className="w-5 h-5 text-white" />
+              </div>
+
+              {/* GastosNX */}
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-3xl p-8 border border-blue-200/50">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <Layers className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-neutral-900">GastosNX</p>
+                    <p className="text-xs text-blue-600 font-medium">Respaldo tributario</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {['Respaldos documentales', 'Orden de gastos', 'Trabajo del contador', 'Cumplimiento tributario'].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      <p className="text-neutral-700 text-sm">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="mt-12 text-center">
+              <p className="text-neutral-500 text-sm">Dos productos, un mismo ecosistema. Tus rendiciones fluyen directamente al respaldo tributario.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== TESTIMONIOS ===== */}
+      <section className="py-24 lg:py-28 bg-neutral-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">Lo que dicen quienes ya cuadran.</h2>
+            <p className="text-lg text-neutral-500 leading-relaxed">Empresas chilenas que pasaron del caos al control con RindeNX.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Testimonio 1 */}
+            <div className="bg-white rounded-2xl p-8 border border-black/5 shadow-sm">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 font-bold text-sm">AC</div>
+                <div>
+                  <p className="font-semibold text-neutral-900">AC Constructores</p>
+                  <p className="text-xs text-neutral-500">Construcción</p>
+                </div>
+              </div>
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">Antes</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">Las rendiciones tardaban 2 semanas en llegar. El contador pedía comprobantes por WhatsApp y siempre faltaba algo.</p>
+              </div>
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Ahora</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">Las rendiciones llegan cuadradas el mismo mes. Todo está en RindeNX, con OCR y asiento automático.</p>
+              </div>
+              <div className="pt-4 border-t border-neutral-100">
+                <p className="text-sm font-semibold text-amber-600">Resultado: 80% menos tiempo administrativo</p>
+              </div>
+            </div>
+
+            {/* Testimonio 2 */}
+            <div className="bg-white rounded-2xl p-8 border border-black/5 shadow-sm">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-sm">RC</div>
+                <div>
+                  <p className="font-semibold text-neutral-900">RCC Servicios</p>
+                  <p className="text-xs text-neutral-500">Servicios industriales</p>
+                </div>
+              </div>
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">Antes</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">El contador perdía horas pidiendo comprobantes. Las boletas se perdían en WhatsApp y Excel tenía 3 versiones.</p>
+              </div>
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Ahora</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">Todo está en RindeNX. El contador recibe la rendición completa, con respaldos y asiento listo.</p>
+              </div>
+              <div className="pt-4 border-t border-neutral-100">
+                <p className="text-sm font-semibold text-amber-600">Resultado: Contador trabaja 60% más rápido</p>
+              </div>
+            </div>
+
+            {/* Testimonio 3 */}
+            <div className="bg-white rounded-2xl p-8 border border-black/5 shadow-sm">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-bold text-sm">TS</div>
+                <div>
+                  <p className="font-semibold text-neutral-900">Transportes San Andrés</p>
+                  <p className="text-xs text-neutral-500">Transporte</p>
+                </div>
+              </div>
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">Antes</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">Pasábamos de Excel con 3 versiones a no saber quién tenía dinero pendiente. Las diferencias aparecían al final.</p>
+              </div>
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Ahora</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">Vemos todos los fondos en un solo panel. Cada rendición está controlada desde que se asigna hasta que se aprueba.</p>
+              </div>
+              <div className="pt-4 border-t border-neutral-100">
+                <p className="text-sm font-semibold text-amber-600">Resultado: Control total, 0 sorpresas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== CTA FINAL — SOLICITAR DEMO ===== */}
       <section className="py-24 lg:py-28 bg-neutral-950 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <Image src="/images/cierre_cta.webp" alt="Fondo de la sección de contacto de RindeNX" fill className="object-cover" />
@@ -269,12 +540,12 @@ export default function RindeLandingPage() {
               Cada fondo por rendir que pasa por RindeNX vuelve como una rendición ordenada, un asiento contable listo y un saldo sin preguntas pendientes.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <button onClick={() => router.push('/login')} className="px-8 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center gap-2 shadow-lg shadow-amber-500/20">
-                Ingresar a mi cuenta <ArrowRight className="w-4 h-4" />
-              </button>
-              <button onClick={() => router.push('/login')} className="px-8 py-3.5 bg-transparent text-white text-base font-semibold rounded-full border border-white/25 hover:border-white/50 transition-all">
-                Probar con mis rendidores
-              </button>
+              <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center gap-2 shadow-lg shadow-amber-500/20">
+                Solicitar demostración <ArrowRight className="w-4 h-4" />
+              </a>
+              <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-transparent text-white text-base font-semibold rounded-full border border-white/25 hover:border-white/50 transition-all">
+                ¿Prefieres hablar directamente? Escríbenos.
+              </a>
             </div>
             <p className="text-sm text-neutral-500 mt-8">💬 ¿Dudas? Escríbenos por WhatsApp y te mostramos el sistema.</p>
           </div>
@@ -285,7 +556,7 @@ export default function RindeLandingPage() {
               <p className="text-sm font-semibold text-neutral-900">WhatsApp directo</p>
               <p className="text-xs text-neutral-500 mt-1">+56 9 7741 2178</p>
             </a>
-            <a href="mailto:rinde@nxchile.com?subject=Solicito%20acceso%20a%20RindeNX" className="bg-white rounded-2xl p-5 text-center hover:shadow-xl transition-all">
+            <a href="mailto:rinde@nxchile.com?subject=Solicito%20demo%20de%20RindeNX" className="bg-white rounded-2xl p-5 text-center hover:shadow-xl transition-all">
               <div className="text-2xl mb-2">📧</div>
               <p className="text-sm font-semibold text-neutral-900">Escríbenos</p>
               <p className="text-xs text-neutral-500 mt-1">rinde@nxchile.com</p>
@@ -325,7 +596,7 @@ export default function RindeLandingPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-6 py-3.5 bg-amber-500 text-white text-[15px] font-semibold rounded-full hover:bg-amber-600 transition-colors inline-flex items-center justify-center gap-2">
                   <Building2 className="w-4 h-4" />
-                  Solicitar acceso para mi empresa
+                  Solicitar demostración
                 </a>
                 <button onClick={() => router.push('/login')} className="px-6 py-3.5 bg-white text-neutral-700 text-[15px] font-semibold rounded-full border border-neutral-200 hover:border-neutral-300 transition-all inline-flex items-center justify-center gap-2">
                   <Users className="w-4 h-4" />
@@ -428,9 +699,9 @@ export default function RindeLandingPage() {
       {/* ===== STICKY CTA MOBILE ===== */}
       {showStickyCTA && (
         <div className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 backdrop-blur-xl border-t border-black/10 shadow-2xl shadow-black/10 p-3 flex gap-2">
-          <button onClick={() => router.push('/login')} className="flex-1 px-4 py-3 bg-amber-500 text-white text-sm font-semibold rounded-full hover:bg-amber-600 transition-colors">
-            Ingresar a mi cuenta
-          </button>
+          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-3 bg-amber-500 text-white text-sm font-semibold rounded-full hover:bg-amber-600 transition-colors text-center">
+            Solicitar demostración
+          </a>
           <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-4 py-3 bg-[#25D366] text-white text-sm font-semibold rounded-full hover:bg-[#1DA851] transition-colors inline-flex items-center justify-center">
             <MessageCircle className="w-5 h-5" />
           </a>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSheets } from '@/lib/sheets'
 import { readSession } from '@/lib/session'
-import { getRindeSpreadsheetId, ensureRindeStructure } from '@/lib/rinde-helpers'
+import { getRindeSpreadsheetId } from '@/lib/rinde-helpers'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +32,6 @@ export async function PATCH(
     }
 
     const sheets = await getSheets()
-    await ensureRindeStructure(sheets, spreadsheetId)
 
     const fondosRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -113,7 +112,6 @@ export async function DELETE(
     }
 
     const sheets = await getSheets()
-    await ensureRindeStructure(sheets, spreadsheetId)
 
     const rendRes = await sheets.spreadsheets.values.get({
       spreadsheetId,

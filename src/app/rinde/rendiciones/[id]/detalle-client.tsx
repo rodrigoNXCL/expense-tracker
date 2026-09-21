@@ -353,7 +353,7 @@ export default function RendicionDetalleClient({ session, rendicionId }: Props) 
           </div>
         </div>
 
-        {asiento && (
+        {asiento && isAdmin && (
           <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <h3 className="text-lg font-semibold text-emerald-900 flex items-center gap-2">
@@ -417,7 +417,7 @@ export default function RendicionDetalleClient({ session, rendicionId }: Props) 
           </div>
         )}
 
-        {puente.length > 0 && (
+        {puente.length > 0 && isAdmin && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6">
             <h3 className="text-lg font-semibold text-amber-900 mb-3 flex items-center gap-2">
               <ArrowRight className="w-5 h-5" />
@@ -488,7 +488,7 @@ export default function RendicionDetalleClient({ session, rendicionId }: Props) 
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Categoría</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Tipo Doc</th>
                     <th className="text-right px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Monto</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Pasado a Gastos</th>
+                    {isAdmin && <th className="text-center px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Pasado a Gastos</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -521,6 +521,7 @@ export default function RendicionDetalleClient({ session, rendicionId }: Props) 
                       <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
                         ${g.monto.toLocaleString('es-CL')}
                       </td>
+                      {isAdmin && (
                       <td className="px-4 py-3 text-center">
                         {g.pasado_a_gastos ? (
                           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
@@ -532,6 +533,7 @@ export default function RendicionDetalleClient({ session, rendicionId }: Props) 
                           </span>
                         )}
                       </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

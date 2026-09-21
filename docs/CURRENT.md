@@ -3,7 +3,7 @@
 > **Fuente de verdad del estado actual del proyecto.**
 > Este documento debe mantenerse sincronizado con cualquier cambio estructural. Léelo antes de modificar código.
 
-**Última actualización:** 2026-09-08
+**Última actualización:** 2026-09-14
 
 ---
 
@@ -21,7 +21,7 @@ Propósito principal: capturar el respaldo de un gasto antes de que se pierda, o
 > ⚠️ **Coexistencia:** RindeNX es un **sistema independiente** que coexiste con GastosNX en el mismo repositorio. Ambos productos tienen dashboards separados, datos independientes y un **puente opcional** que permite aprovechar ciertos documentos de rendiciones en la línea de Gastos.
 
 - **Subdominio:** `rinde.nxchile.com` (mismo deploy que `gastos.nxchile.com`, enrutado por `src/proxy.ts`). **Desplegado y verificado (2026-09-08):** dominio agregado en Vercel, DNS en Cloudflare (`CNAME rinde → expense-tracker-nxchile.vercel.app`) propagado y `COOKIE_DOMAIN=.nxchile.com` configurado. Detalles en `DEPLOY.md` §2.1.
-- **Landing pública:** `src/app/rinde-landing/` (ruta `/rinde-landing`, pública sin auth; en `rinde.nxchile.com` es la raíz vía proxy). Paleta ámbar/naranja (RindeNX), secciones Hero+CTA, Cómo funciona, Beneficios, Prueba social + contacto. Contacto: `rinde@nxchile.com`.
+- **Landing pública:** `src/app/rinde-landing/` (ruta `/rinde-landing`, pública sin auth; en `rinde.nxchile.com` es la raíz vía proxy). Paleta ámbar/naranja (RindeNX). Secciones: Hero+CTA demo, Prueba social (logos), "¿Tu empresa todavía funciona así?" (pain points), Cómo funciona (timeline 7 pasos), Demo visual (2 cards de fondo), Beneficios (fondo completo controlado), RindeNX+GastosNX (ecosistema), Testimonios (Antes→Resultado), CTA final (demo+WhatsApp). Contacto: `rinde@nxchile.com`.
 - **SSO entre subdominios:** la cookie `gx_session` acepta `domain` vía la variable `COOKIE_DOMAIN` (p.ej. `.nxchile.com`). En localhost debe quedar vacía. Con el mismo deploy + `AUTH_SECRET`, login en un subdominio vale para ambos.
 - **Funcionalidad:** Manejo de rendiciones de fondos fijos, gastos de personal, revisión/aprobación por admin, generación de asiento contable.
 - **Asignación de fondos:** El admin asigna un monto + observación/glosa a un usuario, quien rinde contra ese fondo.
@@ -76,6 +76,14 @@ Propósito principal: capturar el respaldo de un gasto antes de que se pierda, o
 - ✅ **Proxy de subdominios (2026-09-08):** `src/proxy.ts` (Next 16 renombró `middleware` → `proxy`). En `rinde.nxchile.com`: `/`→`/rinde-landing`, `/login`→compartido, `/rinde**`→pasa directo, resto→rewrite `/rinde/<ruta>`. Fuera del host `rinde.` no hace nada. Assets estáticos siempre pasan.
 - ✅ **SSO cookie entre subdominios (2026-09-08):** `src/lib/session.ts` firma la cookie `gx_session` con `domain` optativo vía `COOKIE_DOMAIN` (debe ser `.nxchile.com` en producción). Mismo deploy + mismo `AUTH_SECRET` hacen que gastos./rinde. compartan sesión; en localhost la variable se deja vacía y el comportamiento no cambia.
 - ✅ **Despliegue en producción verificado (2026-09-08):** `rinde.nxchile.com` resuelve al mismo deploy que `gastos.nxchile.com`, carga la landing RindeNX en `/`, el login compartido funciona y la app `/rinde` opera con normalidad. Fase 8 cerrada.
+- ✅ **Avance de consumo en "Fondos en Curso" (2026-09-14):** las tarjetas de fondo del dashboard ahora muestran barra de progreso de **avance del consumo** (`consumido = monto_asignado − saldo`, con % coloreado por umbrales), el monto consumido "de $X", y para el admin un badge con la cantidad y monto de rendiciones **en trámite** (abierta/terminada/en_revision) atadas al fondo. Se agrega el helper `consumoFondo()` en `dashboard-client.tsx`.
+- ✅ **429 Google Sheets mitigado en flujo aprobar+puente (2026-09-14):** se eliminó `ensureRindeStructure` (≈7 lecturas) de los GET y PATCH de `rendiciones/[id]`, del GET/POST de `puente`, y del PATCH/DELETE de `fondos/[id]` (la estructura solo se asegura en los POST/escrituras). Además se deduplicaron lecturas: el POST `/api/rinde/puente` ya no relee `GastosRinde` (recalcula totales desde la lectura inicial) ni `Fondos` (una sola lectura usada para asignado y descuento de saldo); el PATCH de rendiciones igual reusa una lectura única de `Fondos`. El ciclo aprobar+puente pasa de ~55 a ~18 lecturas.
+- ✅ **Avance vs fondo incluye sobre-rendición (2026-09-14):** en las tarjetas de fondo del dashboard (admin y rendidor) el avance refleja lo **efectivamente rendido** (incluye rendiciones en trámite): "Rendido $X de $Y", porcentaje (puede superar 100%), "aprobado/descontado" y badge verde "Sobre-rendido +$Z — saldo a favor a reembolsar" cuando se rindió más que el fondo asignado (`consumoFondo()` en `dashboard-client.tsx`).
+- ✅ **Tarjetas superiores con avance (2026-09-14):** "Saldo Disponible" muestra barra de avance con "Comprometido (aprobado + en trámite) $X (pct%)"; "Por Revisar / Abiertas" muestra "Por $X en rendiciones en curso"; "Rendiciones Aprobadas" muestra "Total contabilizado $X".
+- ✅ **Asiento contable desplegado completo (2026-09-14):** el GET de rendición solo devolvía la primera línea del asiento (el id se escribía únicamente en la fila cabecera), mostrando Debe/Haber en 0 cuando la primera línea era de facturas vacías. Se corrige: el GET filtra por `rendicion_id` (col B) para recuperar **todas** las líneas del asiento, y los generadores (POST `/api/rinde/puente` y PATCH rendiciones) escriben `asiento.id` en **todas** las líneas. El asiento de la rendición ejemplo se despliega completo y cuadrado.
+- ✅ **Aviso "Fondo consumido/sobre-rendido" al agregar gasto (2026-09-14):** en `/rinde/rendiciones/[id]/nuevo-gasto` se consulta el detalle de la rendición; si el fondo está en $0 o ya se rindió ≥ monto asignado, se muestra un banner (ámbar si alcanzó el límite, verde si ya está sobre-rendido) indicando que igual puede registrar el gasto porque la sobre-rendición está permitida y el excedente se liquidará como saldo a favor al aprobar.
+- ✅ **Detalle de rendición por rol (2026-09-14):** el rendidor ve solo lo que rindió (resumen, gastos y acciones de su rendición); la sección **Asiento Contable**, los **Documentos enviados a GastosNX (puente)** y la columna "Pasado a Gastos" quedan visibles únicamente para admins en `/rinde/rendiciones/[id]`.
+- ✅ **Landing RindeNX — upgrades para campaña comercial (2026-09-14):** rediseño completo de `src/app/rinde-landing/page.tsx` para campañas de publicidad. Cambios: (1) CTA unificado a **"Solicitar demostración"** (→ WhatsApp) en hero, admin section, sticky mobile y CTA final; (2) nuevo subtítulo de posicionamiento en hero; (3) nueva sección **"¿Tu empresa todavía funciona así?"** con 7 pain points; (4) **timeline de 7 pasos** (reemplaza 3 cards con imágenes); (5) nueva sección **demo visual** con 2 cards de fondo (en revisión $800k / aprobada $300k); (6) beneficios reformulados: "El fondo completo controlado de principio a fin"; (7) nueva sección **RindeNX + GastosNX** (ecosistema con diagrama); (8) **testimonios placeholder** con estructura Antes→Resultado (AC, RCC, San Andrés); (9) imports limpiados (`Clock` eliminado).
 
 ---
 
@@ -589,7 +597,7 @@ Cada ADR en `DECISIONS.md` incluye el **contexto, la decisión, las alternativas
 - **Marca:** "RindeNX by NXChile". Sin archivo de logo dedicado: se usa un badge (cuadro degradado `amber-500 → orange-600` + ícono `FileText` blanco) junto al wordmark "Rinde**NX**" (`text-amber-600`), mismo estilo que la navbar de la app `/rinde`.
 - **Paleta:** ámbar/naranja (`amber-*`, `orange-*`) sobre neutros; contraste: secciones oscuras `neutral-950` y acentos `bg-amber-500`.
 - **Contacto:** `rinde@nxchile.com` + WhatsApp `+56 9 77412178` (mismo número que GastosNX, mensaje predefinido "vengo de rinde.nxchile.com").
-- **CTA principal:** "Ingresar a mi cuenta" → `/login` compartido con GastosNX. RindeNX **no tiene registro público**: los usuarios los crea el admin en la hoja Usuarios.
+- **CTA principal:** "Solicitar demostración" → WhatsApp (`https://wa.me/56977412178`). RindeNX **no tiene registro público**: los usuarios los crea el admin en la hoja Usuarios.
 - **Cross-sell:** en la landing hay link a `https://gastos.nxchile.com` (y viceversa desde GastosNX) porque comparten cuenta y deploy.
 
 ### OCR (proveedor único)
