@@ -379,7 +379,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">¿Qué puedes registrar?</h2>
-            <p className="text-lg text-neutral-500 max-w-2xl mx-auto">Todo gasto operacional menor que necesites respaldar. La clasificación y tratamiento tributario corresponden a cada empresa y su asesoría contable.</p>
+            <p className="text-lg text-neutral-500 max-w-2xl mx-auto">Gastos operacionales que necesites registrar y respaldar, especialmente aquellos que no siguen el flujo de una factura.<br />La clasificación y tratamiento tributario corresponden a cada empresa y su asesoría contable.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {[
@@ -407,7 +407,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Registra cuando ocurre. No al cierre del año.</h2>
-            <p className="text-lg text-neutral-500">Cada gasto registrado a tiempo es un respaldo que no reconstructiones después.</p>
+            <p className="text-lg text-neutral-500">Cada gasto registrado a tiempo es un gasto que no tendrás que reconstruir después.</p>
           </div>
 
           {/* Timeline mensual */}
@@ -510,7 +510,7 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-neutral-900">Boleta / Voucher / Gasto menor</h3>
-                  <p className="text-xs text-neutral-500">Sin factura formal</p>
+                  <p className="text-xs text-neutral-500">Documentos que no siguen el flujo de una factura</p>
                 </div>
               </div>
               <div className="h-px bg-emerald-200 my-4" />
@@ -731,8 +731,8 @@ export default function LandingPage() {
       <section id="precios" className="py-24 lg:py-28 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Elige tu plan. Empieza a recuperar lo que estabas perdiendo.</h2>
-            <p className="text-lg text-neutral-500 max-w-2xl mx-auto">El costo del plan se recupera con el primer gasto deducible que no pierdas. Sin tarjeta para empezar.</p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Elige tu plan. Empieza a ordenar tus gastos.</h2>
+            <p className="text-lg text-neutral-500 max-w-2xl mx-auto">Registra tus primeros gastos reales sin tarjeta y comprueba cómo funciona.</p>
           </div>
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {/* Plan Free */}
@@ -760,7 +760,7 @@ export default function LandingPage() {
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-xs font-semibold tracking-wide">MÁS POPULAR</div>
               <div className="mb-6">
                 <h3 className="text-xl font-semibold text-white mb-1">Pro</h3>
-                <p className="text-neutral-400 text-sm">Para pymes que quieren cerrar el año pagando menos.</p>
+                <p className="text-neutral-400 text-sm">Para pymes que quieren mantener sus gastos registrados y ordenados durante todo el año.</p>
               </div>
               <div className="mb-7 space-y-3">
                 <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
@@ -795,7 +795,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="text-center mt-14 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 rounded-2xl max-w-3xl mx-auto">
-            <p className="text-neutral-700 font-medium">💡 <strong>El costo del plan se recupera con el primer gasto deducible que no pierdas.</strong> Cada semana sin GastosNX es una semana de respaldos que ya no puedes recuperar.</p>
+            <p className="text-neutral-700 font-medium">Registra los gastos cuando ocurren y evita reconstruirlos meses después.</p>
           </div>
         </div>
       </section>
@@ -810,7 +810,7 @@ export default function LandingPage() {
           <div className="space-y-3">
             {[
               { q: '¿GastosNX determina si un gasto es deducible?', a: 'No. GastosNX no reemplaza a tu contador ni determina deducibilidad tributaria. Su objetivo es entregarte respaldo y orden documental para que tu contador pueda trabajar mejor.' },
-              { q: '¿Los documentos sirven ante el SII?', a: 'GastosNX entrega respaldo y orden documental compatible con los requisitos del SII. La validez tributaria final la determina tu contador según la normativa vigente.' },
+              { q: '¿Los documentos quedan respaldados para su revisión?', a: 'GastosNX mantiene el registro del gasto asociado a su documento de respaldo y conserva la información ordenada para su revisión. El tratamiento y validez tributaria de cada gasto corresponde a la empresa y a su asesoría contable según la normativa vigente.' },
               { q: '¿Cuánto tarda el acceso?', a: 'El plan Free se activa de inmediato. Los planes Pro se activan en máximo 24 hrs hábiles tras confirmar el pago.' },
               { q: '¿Puedo exportar a Excel/CSV?', a: 'Sí. El plan Pro incluye exportación a CSV y Excel con todos los gastos del período, listos para tu contador.' },
               { q: '¿Cómo funciona el precio por usuario?', a: 'El plan Pro incluye hasta 3 usuarios base. Cada usuario adicional tiene un precio preferencial según el periodo elegido (anual o mes a mes).' },
@@ -841,8 +841,8 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="text-center lg:text-left">
-              <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6 tracking-tight">Llega a tu contador con todo. Paga solo lo que te corresponde.</h2>
-              <p className="text-lg text-neutral-400 mb-10 leading-relaxed">Cada gasto que registras hoy puede volver mañana como ahorro real en tu declaración. GastosNX es la herramienta que conecta tu operación con tu contador — para que ningún gasto válido quede fuera de tu renta.</p>
+              <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6 tracking-tight">Llega a tu contador con todo ordenado.</h2>
+              <p className="text-lg text-neutral-400 mb-10 leading-relaxed">Registra durante el año los gastos reales de tu empresa, conserva sus respaldos y llega al cierre con la información construida, no reconstruida. GastosNX es la herramienta que conecta tu operación con tu contador — para que la información de tus gastos llegue ordenada y respaldada a revisión.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start items-center">
                 <button onClick={() => router.push('/registro/free')} className="px-8 py-3.5 bg-white text-neutral-900 text-base font-semibold rounded-full hover:bg-neutral-100 transition-all inline-flex items-center gap-2">Comenzar ahora <ArrowRight className="w-4 h-4" /></button>
                 <button onClick={() => router.push('/registro')} className="px-8 py-3.5 bg-transparent text-white text-base font-semibold rounded-full border border-white/25 hover:border-white/50 transition-all">Ver Planes</button>
@@ -972,7 +972,7 @@ export default function LandingPage() {
                   className="h-11 w-auto object-contain brightness-0 invert"
                 />
               </div>
-              <p className="text-sm leading-relaxed text-neutral-500">GastosNX es el sistema que usan pymes y contadores en Chile para registrar, respaldar y ordenar gastos operacionales menores. Compatible con los requisitos del SII. Desarrollado en Chile para la realidad tributaria chilena.</p>
+              <p className="text-sm leading-relaxed text-neutral-500">GastosNX es el sistema que usan pymes y contadores en Chile para registrar, respaldar y ordenar los gastos operacionales de su empresa. Desarrollado en Chile para la realidad tributaria chilena.</p>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm">Producto</h4>
