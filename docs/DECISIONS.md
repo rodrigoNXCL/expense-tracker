@@ -3,7 +3,7 @@
 > **Fuente de verdad de las decisiones de arquitectura.**
 > Cada decisión relevante se registra aquí. No contradecir una decisión registrada sin justificación técnica y sin actualizar este documento.
 
-**Última actualización:** 2026-08-09
+**Última actualización:** 2026-09-22
 
 ---
 
@@ -322,6 +322,25 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 - **Referencias:** `src/lib/rinde-helpers.ts` (`generateAsientoContable`), `src/app/api/rinde/gastos/route.ts`, `src/app/api/rinde/rendiciones/[id]/route.ts`, `src/app/api/rinde/puente/route.ts`, `src/app/rinde/dashboard-client.tsx`, `src/app/rinde/rendiciones/[id]/detalle-client.tsx`, `CURRENT.md` §6.
 
 ---
+
+### ADR-012 — Rediseño de landing GastosNX: enfoque explicativo con flujos visuales
+
+- **Fecha:** 2026-09-22
+- **Estado:** Aceptada (implementada)
+- **Contexto:** La landing de GastosNX original (ADR-007) era una landing de marketing estándar con secciones genéricas (features, problemas, FAQ). El problema comercial es que GastosNX requiere **educación**: el visitante no entiende automáticamente qué son los "gastos operacionales menores" ni por qué importa registrarlos. RindeNX vende rápido porque el problema es evidente ("entrego dinero y necesito controlar cómo se rindió"), pero GastosNX necesita explicar un concepto más difuso.
+- **Decisión (implementada):** Rediseñar la landing con 19 secciones siguiendo una directriz de "explicación visual y flujos": cada concepto se explica con un flujo visual, no solo con texto. El visitante debe poder explicar GastosNX con sus propias palabras al terminar el recorrido: "Es donde registro y respaldo los gastos de mi empresa que no necesariamente pasan por una factura."
+- **Principios clave:**
+  1. **No explicar solo con texto.** Cuando un concepto pueda explicarse con un flujo, mostrar el flujo.
+  2. **El dato y el flujo son el diseño.** Priorizar tablas, registros, documentos, estados, filtros, totales, historial y flujos. Evitar ilustraciones abstractas, robots, sparkles, imágenes de stock.
+  3. **Dashboard con datos reales.** No mostrar un dashboard genérico; mostrar una interfaz con información realista ($1.245.800 total, 47 documentos, desglose por categoría).
+  4. **Ejemplo concreto.** Un peaje de $8.500 recorre todo el sistema, mostrando qué captura GastosNX.
+  5. **Comparación Antes/Después.** Flujo visual del problema (7 pasos sin sistema) vs la solución (7 pasos con GastosNX).
+  6. **RindeNX→GastosNX como sección estratégica.** Separar factura (proceso contable) de boleta/voucher (→ GastosNX).
+  7. **Beneficios por perfil.** Empresa, admin, trabajador, contador: cada uno entiende qué gana.
+  8. **Declaración de Renta como consecuencia del orden**, no como promesa fiscal.
+- **Alternativas consideradas:** mantener la landing anterior con tweaks menores (descartado, no resuelve el problema de educación comercial); crear una página interactiva con JavaScript pesado (descartado, impacto en performance y mantenibilidad).
+- **Consecuencias:** Landing más extensa que RindeNX (necesario para educación comercial). Mayor mantenimiento de la página principal. Mejor comprensión del producto por parte del visitante. Se eliminaron dependencias de imágenes de fondo (`problema_boletas.webp`, `cierre_cta.webp`) que ya no se usan.
+- **Referencias:** `src/app/page.tsx`, `CURRENT.md` §2 (cambios adicionales recientes), ADR-012.
 
 ### Nota sobre registro de nuevas inconsistencias
 

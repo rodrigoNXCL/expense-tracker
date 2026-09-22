@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Shield, ArrowRight, Lock, Clock, Camera, FileText, MessageCircle, X, Play, Star, Building2, Calculator, Briefcase, Users } from 'lucide-react'
+import { Check, Shield, ArrowRight, Lock, Clock, Camera, FileText, MessageCircle, X, Play, Building2, Calculator, Briefcase, Users, ChevronRight, Receipt, Car, Fuel, ShoppingCart, Coffee, Package, Wallet, TrendingUp, Calendar, BarChart3, ArrowDown, ArrowDownRight, SplitSquareVertical } from 'lucide-react'
 import Image from 'next/image'
 
 export default function LandingPage() {
@@ -44,22 +44,20 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ===== HERO PRINCIPAL ===== */}
+      {/* ===== 1. HERO ===== */}
       <section className="relative pt-32 pb-20 lg:pt-44 lg:pb-32 bg-linear-to-b from-white to-neutral-50 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            <div className="text-center lg:text-left flex flex-col items-center lg:items-start nx-fade-up">
+            <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 border border-emerald-200/60 text-emerald-700 rounded-full text-[13px] font-medium mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 Producto de NXChile · Tecnología operacional
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-bold text-neutral-900 mb-6 leading-[1.05] tracking-tight">
-                Deja de perder gastos operacionales
-                <br className="hidden sm:block" />
-                <span className="text-emerald-600"> antes de la Declaración de Renta.</span>
+                ¿Dónde quedan los gastos que no son factura?
               </h1>
               <p className="text-lg sm:text-xl text-neutral-500 mb-10 max-w-xl leading-relaxed">
-                Captura boletas desde el celular, organízalas automáticamente y entrégalas listas a tu contador. Desarrollado por NXChile.
+                Peajes, estacionamientos, colaciones, vouchers. Gastos reales que tu empresa hace todos los días. GastosNX los registra, respalda y ordena para que nunca más se pierdan.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button onClick={() => router.push('/registro/free')} className="w-full sm:w-auto px-7 py-3.5 bg-neutral-900 text-white text-base font-semibold rounded-full hover:bg-neutral-700 transition-all inline-flex items-center justify-center gap-2">
@@ -70,7 +68,7 @@ export default function LandingPage() {
                 </button>
               </div>
             </div>
-            <div className="relative hidden lg:block nx-fade-up" style={{ animationDelay: '0.15s' }}>
+            <div className="relative hidden lg:block">
               <div className="relative w-full h-110 lg:h-140 rounded-[28px] overflow-hidden shadow-2xl shadow-black/10 ring-1 ring-black/5">
                 <Image src="/images/hero_principal.webp" alt="Usuario fotografiando una boleta con GastosNX antes de que se pierda" fill className="object-cover" priority />
               </div>
@@ -79,7 +77,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===== PRUEBA SOCIAL: LOGOS DE CLIENTES ===== */}
+      {/* ===== PRUEBA SOCIAL ===== */}
       <section className="py-12 lg:py-16 bg-neutral-50 border-b border-black/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-8">
@@ -102,198 +100,634 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===== BLOQUE DE CONFIANZA SIMPLE ===== */}
-      <section className="py-12 bg-white border-y border-black/5">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-lg text-neutral-600 font-medium">
-            Pensado para pymes y contadores que necesitan dejar atrás el caos de las boletas.
-          </p>
-        </div>
-      </section>
-
-      {/* ===== CÓMO FUNCIONA — 3 PASOS + VIDEO DEMO ===== */}
-      <section id="como-funciona" className="py-24 lg:py-28 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">El eslabón que faltaba entre tu operación y tu contador.</h2>
-            <p className="text-lg text-neutral-500 leading-relaxed">GastosNX no reemplaza a tu contador. Le da todo lo que necesita para revisar tu operación sin perder tiempo. Sin boletas perdidas. Sin gastos que quedaron fuera.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
-            <div className="bg-neutral-50 rounded-3xl p-8 border border-black/10 hover:border-emerald-300 transition-all">
-              <div className="relative w-full h-44 mb-6 rounded-2xl overflow-hidden">
-                <Image src="/images/paso1_captura.webp" alt="Usuario capturando un gasto con GastosNX desde el celular" fill className="object-cover" />
-              </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold mb-3">1</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Captura en el momento</h3>
-              <p className="text-neutral-500 text-[15px] leading-relaxed">En el estacionamiento, en el restaurant, en la ferretería. Saca la foto en el momento. GastosNX lee la boleta y la registra sola. <span className="text-emerald-700 font-medium">Ahorras tiempo y nunca más persigues un voucher.</span></p>
-            </div>
-            <div className="bg-neutral-50 rounded-3xl p-8 border border-black/10 hover:border-emerald-300 transition-all">
-              <div className="relative w-full h-44 mb-6 rounded-2xl overflow-hidden">
-                <Image src="/images/paso2_respaldo.webp" alt="Respaldo digital de gastos operacionales guardados desde el celular" fill className="object-cover" />
-              </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold mb-3">2</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Respaldo automático en la nube</h3>
-              <p className="text-neutral-500 text-[15px] leading-relaxed">El sistema lo clasifica por tipo de gasto, lo guarda con trazabilidad completa y lo deja disponible para cuando lo necesites. <span className="text-emerald-700 font-medium">Trazabilidad real, lista para el SII.</span></p>
-            </div>
-            <div className="bg-neutral-50 rounded-3xl p-8 border border-black/10 hover:border-emerald-300 transition-all">
-              <div className="relative w-full h-44 mb-6 rounded-2xl overflow-hidden">
-                <Image src="/images/paso3_contador.webp" alt="Vista del dashboard de GastosNX con exportación de gastos en CSV y Excel" fill className="object-cover" />
-              </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold mb-3">3</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Tu contador recibe todo ordenado</h3>
-              <p className="text-neutral-500 text-[15px] leading-relaxed">Exporta todos los gastos del período con un clic. Llega con todo ordenado por categoría y fecha. <span className="text-emerald-700 font-medium">Menos horas de revisión, más orden para el cierre.</span></p>
-            </div>
+      {/* ===== 2. PROBLEMA ===== */}
+      <section className="py-24 lg:py-28 bg-neutral-950 text-white relative overflow-hidden">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold mb-6 tracking-tight">El gasto ocurrió.<br />¿Pero quedó registrado?</h2>
+            <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+              El peaje de $8.500. La boleta del almuerzo. El voucher del estacionamiento. Son gastos reales. Pero si no quedan registrados con su respaldo, para efectos prácticos no existen.
+            </p>
           </div>
 
-          {/* ===== VIDEO DEMO ===== */}
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 border border-emerald-200/60 text-emerald-700 rounded-full text-[13px] font-medium mb-4">
-                <Play className="w-3 h-3" />
-                Demo en 40 segundos
+          {/* Flujo del problema */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+              <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-4">Lo que pasa hoy</p>
+              <div className="space-y-3">
+                {['Gasto ocurre', 'Foto por WhatsApp', 'Papel en el bolsillo', 'Correo al final del mes', 'Excel desordenado', 'Documento perdido', 'Reconstrucción al cierre'].map((step, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                    <span className="text-neutral-300 text-sm">{step}</span>
+                  </div>
+                ))}
               </div>
-              <h3 className="text-2xl lg:text-3xl font-bold text-neutral-900 tracking-tight">Míralo funcionando</h3>
-              <p className="text-neutral-500 mt-2">Sin registro, sin configuración. Solo lo que hace GastosNX por tu pyme.</p>
             </div>
-            <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl shadow-black/10 ring-1 ring-black/5" style={{ paddingTop: '56.25%' }}>
-              <iframe
-                src="https://www.youtube.com/embed/9txm6hqHre8?rel=0&modestbranding=1"
-                title="Demo GastosNX — Funcionamiento del sistema"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="absolute top-0 left-0 w-full h-full"
-              />
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6">
+              <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-4">Lo que debería pasar</p>
+              <div className="space-y-3">
+                {['Gasto ocurre', 'Fotografía el documento', 'GastosNX registra', 'Datos + imagen guardados', 'Historial ordenado', 'Revisión cuando necesites', 'Exportación lista'].map((step, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                    <span className="text-neutral-300 text-sm">{step}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== SECCIÓN PROBLEMA ===== */}
-      <section className="py-24 lg:py-28 bg-neutral-50 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04]">
-          <Image src="/images/problema_boletas.webp" alt="Boletas y vouchers sin respaldo en escritorio de empresa" fill className="object-cover" />
-        </div>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-6 tracking-tight">Un gasto sin respaldo suele perderse en el proceso.</h2>
-          <p className="text-lg text-neutral-500 leading-relaxed mb-8">
-            El peaje, el estacionamiento, la colación de trabajo, los materiales del día: todos son gastos reales. Todos son gastos que conviene guardar y ordenar. Pero sin respaldo, el SII no los reconoce.
-            <br /><br />
-            <span className="text-emerald-600 font-semibold">Cuando llega la Declaración de Renta, esos gastos no existen. Y tu empresa paga impuestos sobre una base que debería ser menor. Eso no es mala suerte — es falta de sistema.</span>
-          </p>
-        </div>
-      </section>
-
-      {/* ===== SECCIÓN SOLUCIÓN / FEATURES ===== */}
-      <section className="py-24 lg:py-28 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 max-w-3xl mx-auto">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-neutral-900 rounded-2xl mb-8">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Hecho para los que mueven Chile todos los días.</h2>
-            <p className="text-lg text-neutral-500 leading-relaxed">GastosNX está diseñado para pymes y contadores chilenos que necesitan registrar gastos menores operacionales y mantener el orden antes del cierre. Sin depender de papel. Sin carpetas improvisadas. Sin perder un peso que te corresponde recuperar.</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            <div className="bg-neutral-50 rounded-2xl p-6 border border-black/5">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 ring-1 ring-black/5"><Camera className="w-6 h-6 text-neutral-900" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Captura en segundos, donde estés</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Fotografía la boleta en el momento. Sin esperar llegar a la oficina. Sin perder el respaldo.</p>
-            </div>
-            <div className="bg-neutral-50 rounded-2xl p-6 border border-black/5">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 ring-1 ring-black/5"><Shield className="w-6 h-6 text-neutral-900" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Respaldo digital con trazabilidad</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Cada documento guardado en la nube con trazabilidad completa. Documentos guardados y disponibles para revisión.</p>
-            </div>
-            <div className="bg-neutral-50 rounded-2xl p-6 border border-black/5">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 ring-1 ring-black/5"><Lock className="w-6 h-6 text-neutral-900" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Acceso inmediato para ti y tu contador</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Cualquier boleta en menos de 10 segundos. Sin llamar a nadie. Sin buscar en carpetas.</p>
-            </div>
-            <div className="bg-neutral-50 rounded-2xl p-6 border border-black/5">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 ring-1 ring-black/5"><FileText className="w-6 h-6 text-neutral-900" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Historial listo para declaración de renta</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Todos tus gastos ordenados por tipo, monto y fecha. Exactamente como lo necesita tu contador.</p>
-            </div>
-            <div className="bg-neutral-50 rounded-2xl p-6 border border-black/5">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 ring-1 ring-black/5"><Check className="w-6 h-6 text-neutral-900" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Exportación directa para tu contador</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Un clic y tienes todos los gastos del período en Excel o CSV. Tu contador llega con todo listo.</p>
-            </div>
-            <div className="bg-neutral-50 rounded-2xl p-6 border border-black/5">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 ring-1 ring-black/5"><Clock className="w-6 h-6 text-neutral-900" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Menos papeles. Más orden.</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Cada boleta que antes se perdía, ahora está respaldada. Y eso se traduce en llegar a tu contador con todo más claro y ordenado.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== SECCIÓN DIFERENCIAL ===== */}
-      <section className="py-24 lg:py-28 bg-white">
+      {/* ===== 3. EXPLICACIÓN SIMPLE ===== */}
+      <section className="py-20 lg:py-24 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-neutral-900 rounded-2xl mb-8">
-            <Shield className="w-6 h-6 text-white" />
-          </div>
-          <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-6 tracking-tight">Si el gasto existe, debería quedar respaldado.</h2>
-          <p className="text-lg text-neutral-500 leading-relaxed">GastosNX está diseñado para empresas y contribuyentes que necesitan registrar gastos operacionales menores y mantener el orden antes del cierre. Si el gasto queda guardado y ordenado, tu contador puede revisarlo con más facilidad. Nosotros nos encargamos de que siempre tengas ese respaldo.</p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-6 tracking-tight">Todo gasto cuenta.</h2>
+          <p className="text-lg text-neutral-500 leading-relaxed max-w-2xl mx-auto">
+            GastosNX no es una carpeta de imágenes. Es un sistema que vincula <strong className="text-neutral-900">los datos del gasto</strong> con <strong className="text-neutral-900">el documento que lo respalda</strong>, y los mantiene ordenados para cuando tu contador los necesite.
+          </p>
         </div>
       </section>
 
-      {/* ===== TIPOS DE GASTO ===== */}
+      {/* ===== 4. FLUJO PRINCIPAL ===== */}
+      <section id="como-funciona" className="py-24 lg:py-28 bg-neutral-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">Así funciona GastosNX.</h2>
+            <p className="text-lg text-neutral-500 leading-relaxed max-w-2xl mx-auto">Cada gasto sigue un camino claro: desde que ocurre hasta que queda listo para revisión y exportación.</p>
+          </div>
+
+          {/* Flujo visual central */}
+          <div className="relative max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {[
+                { icon: <ShoppingCart className="w-6 h-6" />, title: 'Gasto ocurre', desc: 'Peaje, boleta, voucher, estacionamiento', color: 'bg-amber-50 border-amber-200 text-amber-700' },
+                { icon: <Camera className="w-6 h-6" />, title: 'Captura documento', desc: 'Fotografía o upload del respaldo', color: 'bg-blue-50 border-blue-200 text-blue-700' },
+                { icon: <FileText className="w-6 h-6" />, title: 'GastosNX registra', desc: 'OCR lee fecha, monto, proveedor', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+                { icon: <Shield className="w-6 h-6" />, title: 'Documento respaldado', desc: 'Datos + imagen vinculados', color: 'bg-violet-50 border-violet-200 text-violet-700' },
+                { icon: <BarChart3 className="w-6 h-6" />, title: 'Historial listo', desc: 'Ordenado para revisión y exportación', color: 'bg-neutral-100 border-neutral-200 text-neutral-700' },
+              ].map((step, i) => (
+                <div key={i} className="relative">
+                  <div className={`${step.color} border rounded-2xl p-5 text-center h-full`}>
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/80 mb-3">{step.icon}</div>
+                    <h3 className="text-sm font-bold mb-1">{step.title}</h3>
+                    <p className="text-xs opacity-70 leading-relaxed">{step.desc}</p>
+                  </div>
+                  {i < 4 && (
+                    <div className="hidden lg:flex absolute top-1/2 -right-3 -translate-y-1/2 z-10">
+                      <ChevronRight className="w-5 h-5 text-neutral-300" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 5. EJEMPLO REAL ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Un gasto real, recorriendo todo el sistema.</h2>
+            <p className="text-lg text-neutral-500">Así se ve cuando un trabajador registra un peaje de $8.500.</p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 items-start">
+            {/* Lado izquierdo: el gasto */}
+            <div className="bg-neutral-50 rounded-3xl p-8 border border-black/5">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                  <Car className="w-6 h-6 text-amber-700" />
+                </div>
+                <div>
+                  <p className="font-bold text-neutral-900">Peaje Ruta 68</p>
+                  <p className="text-sm text-neutral-500">15/09/2026 · Trabajador: Juan Pérez</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-6 border border-black/5 mb-4">
+                <p className="text-4xl font-bold text-neutral-900 mb-1">$8.500</p>
+                <p className="text-sm text-neutral-500">Peaje · Voucher impreso</p>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-neutral-500">
+                <Camera className="w-4 h-4" />
+                <span>Juan fotografía el voucher en el momento</span>
+              </div>
+            </div>
+
+            {/* Lado derecho: qué captura GastosNX */}
+            <div className="space-y-4">
+              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">GastosNX captura automáticamente</p>
+              {[
+                { label: 'Fecha', value: '15/09/2026', icon: <Calendar className="w-4 h-4" /> },
+                { label: 'Monto', value: '$8.500', icon: <Wallet className="w-4 h-4" /> },
+                { label: 'Tipo de gasto', value: 'Peaje', icon: <Car className="w-4 h-4" /> },
+                { label: 'Documento', value: 'Voucher #45892', icon: <FileText className="w-4 h-4" /> },
+                { label: 'Usuario', value: 'Juan Pérez', icon: <Users className="w-4 h-4" /> },
+                { label: 'Estado', value: 'Respaldado', icon: <Shield className="w-4 h-4" /> },
+              ].map((field, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl border border-black/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-700">{field.icon}</div>
+                    <span className="text-sm text-neutral-600">{field.label}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-neutral-900">{field.value}</span>
+                </div>
+              ))}
+              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200/60">
+                <p className="text-sm text-emerald-700 font-medium">El voucher queda asociado al registro. El gasto queda en el historial. Administración puede consultar quién gastó, cuánto, cuándo, en qué y con qué respaldo.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 6. ANTES VS DESPUÉS ===== */}
+      <section className="py-24 lg:py-28 bg-neutral-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">El gasto ya ocurrió.<br />El problema es lo que pasa después.</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-3xl p-8 border border-black/5">
+              <p className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-6">Sin sistema</p>
+              <div className="space-y-3">
+                {[
+                  'Gasto ocurre',
+                  'Foto por WhatsApp',
+                  'Papel en el bolsillo',
+                  'Correo al final del mes',
+                  'Excel desordenado',
+                  'Documento perdido',
+                  'Reconstrucción al cierre',
+                ].map((step, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-red-50 rounded-xl">
+                    <span className="w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                    <span className="text-sm text-neutral-700">{step}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-emerald-50 rounded-3xl p-8 border border-emerald-200/60">
+              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-6">Con GastosNX</p>
+              <div className="space-y-3">
+                {[
+                  'Gasto ocurre',
+                  'Fotografía el documento',
+                  'GastosNX registra',
+                  'Datos + imagen guardados',
+                  'Historial ordenado',
+                  'Revisión cuando necesites',
+                  'Exportación lista',
+                ].map((step, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-emerald-200/40">
+                    <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                    <span className="text-sm text-neutral-700">{step}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 7. DASHBOARD / PRODUCTO REAL ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Así se ve tu información.</h2>
+            <p className="text-lg text-neutral-500">No ilustraciones. La interfaz real con datos reales.</p>
+          </div>
+
+          {/* Mockup del dashboard */}
+          <div className="bg-neutral-950 rounded-3xl p-6 lg:p-8 shadow-2xl shadow-black/20 ring-1 ring-white/10 max-w-5xl mx-auto">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500" />
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <span className="ml-3 text-xs text-neutral-500 font-mono">GastosNX — Dashboard</span>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              {[
+                { label: 'Total del mes', value: '$1.245.800', accent: true },
+                { label: 'Documentos', value: '47', accent: false },
+                { label: 'Sin observaciones', value: '43', accent: false },
+                { label: 'Pendientes', value: '4', accent: false },
+              ].map((stat, i) => (
+                <div key={i} className={`rounded-xl p-4 ${stat.accent ? 'bg-emerald-500/15 border border-emerald-500/30' : 'bg-white/5 border border-white/10'}`}>
+                  <p className="text-xs text-neutral-400 mb-1">{stat.label}</p>
+                  <p className={`text-xl font-bold ${stat.accent ? 'text-emerald-400' : 'text-white'}`}>{stat.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Desglose */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-6">
+              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-4">Desglose por categoría</p>
+              <div className="space-y-2.5">
+                {[
+                  { cat: 'Boletas', monto: '$420.000', pct: 34 },
+                  { cat: 'Peajes', monto: '$240.800', pct: 19 },
+                  { cat: 'Otros', monto: '$305.000', pct: 24 },
+                  { cat: 'Vouchers', monto: '$185.000', pct: 15 },
+                  { cat: 'Estacionamientos', monto: '$95.000', pct: 8 },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <span className="text-sm text-neutral-300 w-32 shrink-0">{item.cat}</span>
+                    <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${item.pct}%` }} />
+                    </div>
+                    <span className="text-sm font-mono text-neutral-400 w-20 text-right">{item.monto}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Registros recientes */}
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+              <div className="p-4 border-b border-white/10">
+                <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Registros recientes</p>
+              </div>
+              <div className="divide-y divide-white/5">
+                {[
+                  { fecha: '15/09', desc: 'Peaje Ruta 68', monto: '$8.500', tipo: 'Peaje', user: 'Juan P.' },
+                  { fecha: '15/09', desc: 'Almuerzo clientes', monto: '$32.500', tipo: 'Boleta', user: 'María S.' },
+                  { fecha: '14/09', desc: 'Estacionamiento Centro', monto: '$6.000', tipo: 'Voucher', user: 'Carlos R.' },
+                  { fecha: '14/09', desc: 'Materiales ferretería', monto: '$18.200', tipo: 'Boleta', user: 'Ana L.' },
+                  { fecha: '13/09', desc: 'Combustible', monto: '$52.000', tipo: 'Voucher', user: 'Pedro M.' },
+                ].map((g, i) => (
+                  <div key={i} className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs text-neutral-500 font-mono w-12">{g.fecha}</span>
+                      <div>
+                        <p className="text-sm text-neutral-200">{g.desc}</p>
+                        <p className="text-xs text-neutral-500">{g.tipo} · {g.user}</p>
+                      </div>
+                    </div>
+                    <span className="text-sm font-mono text-neutral-300">{g.monto}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 8. QUÉ PUEDES REGISTRAR ===== */}
       <section className="py-24 lg:py-28 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">¿Qué gastos puedes guardar con GastosNX?</h2>
-            <p className="text-lg text-neutral-500 leading-relaxed">En Chile, los gastos operacionales menores son importantes de registrar. GastosNX te ayuda a capturarlos todos, sin que ninguno quede fuera de tu declaración.</p>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">¿Qué puedes registrar?</h2>
+            <p className="text-lg text-neutral-500 max-w-2xl mx-auto">Todo gasto operacional menor que necesites respaldar. La clasificación y tratamiento tributario corresponden a cada empresa y su asesoría contable.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            <div className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-black/5">
-              <div className="text-3xl">🛣️</div>
-              <div>
-                <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Peajes</h3>
-                <p className="text-neutral-500 text-sm leading-relaxed">Gastos de peaje que conviene respaldar en el momento. Fotografía el voucher y nunca más pierdas ese respaldo.</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            {[
+              { icon: <Receipt className="w-6 h-6" />, name: 'Boletas', desc: 'Compras menores del día a día' },
+              { icon: <FileText className="w-6 h-6" />, name: 'Vouchers', desc: 'Tickets de tarjeta y otros' },
+              { icon: <Car className="w-6 h-6" />, name: 'Peajes', desc: 'Peajes de ruta y autopista' },
+              { icon: <Fuel className="w-6 h-6" />, name: 'Estacionamientos', desc: 'Tickets de parking' },
+              { icon: <ShoppingCart className="w-6 h-6" />, name: 'Compras menores', desc: 'Materiales, insumos, urgentes' },
+              { icon: <Coffee className="w-6 h-6" />, name: 'Alimentación', desc: 'Colaciones y reuniones' },
+              { icon: <Package className="w-6 h-6" />, name: 'Gastos de terreno', desc: 'Operaciones fuera de la oficina' },
+              { icon: <TrendingUp className="w-6 h-6" />, name: 'Otros gastos', desc: 'Cualquier gasto operacional' },
+            ].map((item, i) => (
+              <div key={i} className="bg-white rounded-2xl p-5 border border-black/5 text-center hover:border-emerald-300 transition-colors">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-neutral-100 rounded-xl text-neutral-700 mb-3">{item.icon}</div>
+                <h3 className="text-sm font-bold text-neutral-900 mb-1">{item.name}</h3>
+                <p className="text-xs text-neutral-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 9. FLUJO MENSUAL ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Registra cuando ocurre. No al cierre del año.</h2>
+            <p className="text-lg text-neutral-500">Cada gasto registrado a tiempo es un respaldo que no reconstructiones después.</p>
+          </div>
+
+          {/* Timeline mensual */}
+          <div className="relative max-w-3xl mx-auto">
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-neutral-200 hidden md:block" />
+            <div className="space-y-6">
+              {[
+                { dia: 'Día 1', gasto: 'Peaje $8.500', accion: 'Registro + respaldo' },
+                { dia: 'Día 7', gasto: 'Almuerzo clientes $28.000', accion: 'Registro + respaldo' },
+                { dia: 'Día 15', gasto: 'Materiales $45.000', accion: 'Registro + respaldo' },
+                { dia: 'Día 22', gasto: 'Estacionamiento $6.000', accion: 'Registro + respaldo' },
+                { dia: 'Día 30', gasto: '47 gastos acumulados', accion: 'Historial ordenado → Revisión → Exportación' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-4 md:gap-8">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center shrink-0 relative z-10">
+                    <span className="text-xs font-bold text-emerald-700">{item.dia.split(' ')[1]}</span>
+                  </div>
+                  <div className="bg-neutral-50 rounded-xl p-4 border border-black/5 flex-1">
+                    <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1">{item.dia}</p>
+                    <p className="text-sm font-semibold text-neutral-900 mb-0.5">{item.gasto}</p>
+                    <p className="text-xs text-emerald-700">{item.accion}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-lg font-semibold text-neutral-900">No esperes al cierre del año para reconstruir tus gastos.<br />Regístralos cuando ocurren.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 10. FLUJO ANUAL ===== */}
+      <section className="py-24 lg:py-28 bg-neutral-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">El respaldo se construye durante todo el año.</h2>
+            <p className="text-lg text-neutral-500">Cuando llega el momento de revisar el año, ya tienes el historial construido.</p>
+          </div>
+
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-w-4xl mx-auto mb-10">
+            {['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'].map((mes, i) => (
+              <div key={i} className={`rounded-xl p-4 text-center border ${i < 9 ? 'bg-emerald-50 border-emerald-200/60' : 'bg-white border-black/5'}`}>
+                <p className="text-xs font-semibold text-neutral-500 mb-1">{mes}</p>
+                <p className={`text-lg font-bold ${i < 9 ? 'text-emerald-700' : 'text-neutral-300'}`}>{i < 9 ? '✓' : '—'}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-black/5 max-w-2xl mx-auto text-center">
+            <p className="text-sm text-neutral-500 mb-2">Gastos acumulados al cierre</p>
+            <p className="text-3xl font-bold text-neutral-900 mb-2">$14.892.400</p>
+            <p className="text-sm text-neutral-500">564 documentos · 12 meses · Historial completo</p>
+            <div className="mt-4 flex items-center justify-center gap-4 text-sm">
+              <span className="text-emerald-700 font-medium">Revisión contable</span>
+              <ChevronRight className="w-4 h-4 text-neutral-300" />
+              <span className="text-neutral-700 font-medium">Tratamiento tributario según corresponda</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 11. RINDENX → GASTOSNX ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-50 border border-amber-200/60 text-amber-700 rounded-full text-[13px] font-medium mb-6">
+              <SplitSquareVertical className="w-3 h-3" />
+              RindeNX + GastosNX
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">¿Qué pasa con los gastos que aparecen en una rendición?</h2>
+            <p className="text-lg text-neutral-500 max-w-2xl mx-auto">RindeNX controla el fondo y cierra la rendición. Los gastos que no siguen el flujo de una factura pueden pasar a GastosNX. Así el gasto no queda fuera del registro de la empresa.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Factura */}
+            <div className="bg-neutral-50 rounded-3xl p-8 border border-black/5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-700" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-neutral-900">Factura</h3>
+                  <p className="text-xs text-neutral-500">Proveedor · IVA</p>
+                </div>
+              </div>
+              <div className="h-px bg-neutral-200 my-4" />
+              <div className="flex items-center gap-2 text-sm text-neutral-600">
+                <ArrowDownRight className="w-4 h-4 text-blue-600" />
+                <span>Flujo de información para proceso contable</span>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-black/5">
-              <div className="text-3xl">🅿️</div>
-              <div>
-                <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Estacionamientos</h3>
-                <p className="text-neutral-500 text-sm leading-relaxed">Estacionamientos y gastos diarios que conviene respaldar en el momento. Respalda cada ticket antes de que se borre.</p>
+
+            {/* Boleta / Voucher */}
+            <div className="bg-emerald-50 rounded-3xl p-8 border border-emerald-200/60">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <Receipt className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-neutral-900">Boleta / Voucher / Gasto menor</h3>
+                  <p className="text-xs text-neutral-500">Sin factura formal</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-black/5">
-              <div className="text-3xl">🛒</div>
-              <div>
-                <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Compras menores</h3>
-                <p className="text-neutral-500 text-sm leading-relaxed">Materiales, insumos y compras menores suman más de lo que crees al cierre tributario.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-black/5">
-              <div className="text-3xl">📄</div>
-              <div>
-                <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Vouchers</h3>
-                <p className="text-neutral-500 text-sm leading-relaxed">Vouchers digitalizados y con trazabilidad. Válidos ante cualquier revisión.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-black/5">
-              <div className="text-3xl">☕</div>
-              <div>
-                <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Colaciones</h3>
-                <p className="text-neutral-500 text-sm leading-relaxed">Colaciones y gastos diarios que muchas veces se olvidan si no se registran a tiempo.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-black/5">
-              <div className="text-3xl">📦</div>
-              <div>
-                <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Gastos operacionales diarios</h3>
-                <p className="text-neutral-500 text-sm leading-relaxed">Cada gasto operacional del día, respaldado y listo para descontarlo en tu Declaración de Renta.</p>
+              <div className="h-px bg-emerald-200 my-4" />
+              <div className="flex items-center gap-2 text-sm text-emerald-700">
+                <ArrowDownRight className="w-4 h-4" />
+                <span>GastosNX → Registro + respaldo + historial</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== PLANES Y PRECIOS ===== */}
+      {/* ===== 12. CASO COMPLETO DE UNA RENDICIÓN ===== */}
+      <section className="py-24 lg:py-28 bg-neutral-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Caso completo: un fondo, varios gastos.</h2>
+            <p className="text-lg text-neutral-500">Un trabajador recibe $500.000 y realiza distintos gastos durante la semana.</p>
+          </div>
+
+          <div className="bg-white rounded-3xl p-8 border border-black/5 shadow-lg shadow-black/5 max-w-4xl mx-auto">
+            {/* Fondo */}
+            <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-6 mb-8">
+              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-2">Fondo entregado</p>
+              <p className="text-3xl font-bold text-amber-900">$500.000</p>
+            </div>
+
+            {/* Gastos */}
+            <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-4">Gastos realizados</p>
+            <div className="grid sm:grid-cols-2 gap-3 mb-8">
+              {[
+                { desc: 'Factura materiales', monto: '$220.000', tipo: 'Factura' },
+                { desc: 'Boleta alimentación', monto: '$45.000', tipo: 'Boleta' },
+                { desc: 'Voucher peaje', monto: '$18.000', tipo: 'Voucher' },
+                { desc: 'Estacionamiento', monto: '$12.000', tipo: 'Voucher' },
+                { desc: 'Otros gastos respaldados', monto: '$25.000', tipo: 'Boleta' },
+              ].map((g, i) => (
+                <div key={i} className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl border border-black/5">
+                  <div>
+                    <p className="text-sm font-semibold text-neutral-900">{g.desc}</p>
+                    <p className="text-xs text-neutral-500">{g.tipo}</p>
+                  </div>
+                  <span className="text-sm font-mono text-neutral-700">{g.monto}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* RindeNX */}
+            <div className="bg-neutral-950 rounded-2xl p-6 text-white mb-8">
+              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-3">RindeNX controla</p>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div><p className="text-lg font-bold">$500.000</p><p className="text-xs text-neutral-400">Fondo</p></div>
+                <div><p className="text-lg font-bold">$320.000</p><p className="text-xs text-neutral-400">Total gastos</p></div>
+                <div><p className="text-lg font-bold">$180.000</p><p className="text-xs text-neutral-400">Saldo</p></div>
+              </div>
+            </div>
+
+            {/* Separación */}
+            <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-4">Separación por tipo</p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200/60">
+                <p className="text-sm font-bold text-blue-900 mb-1">Factura → Proceso contable</p>
+                <p className="text-xs text-blue-700">$220.000 · Información para el contador</p>
+              </div>
+              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200/60">
+                <p className="text-sm font-bold text-emerald-900 mb-1">Boletas + Vouchers → GastosNX</p>
+                <p className="text-xs text-emerald-700">$100.000 · Registro + respaldo + historial</p>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-neutral-50 rounded-xl border border-black/5 text-center">
+              <p className="text-sm text-neutral-600">La empresa conserva una historia completa de cómo se utilizó el dinero.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 13. BENEFICIOS POR PERFIL ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">¿Qué gana cada persona?</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {[
+              { role: 'Empresa / Dueño', quote: 'Veo cuánto se está gastando y dónde.', icon: <Building2 className="w-6 h-6" /> },
+              { role: 'Administración', quote: 'Dejo de perseguir documentos y reconstruir gastos.', icon: <Calculator className="w-6 h-6" /> },
+              { role: 'Trabajador', quote: 'Registro el gasto cuando ocurre y adjunto su respaldo.', icon: <Users className="w-6 h-6" /> },
+              { role: 'Contador', quote: 'Recibo información más ordenada para revisar.', icon: <Briefcase className="w-6 h-6" /> },
+            ].map((item, i) => (
+              <div key={i} className="bg-neutral-50 rounded-2xl p-6 border border-black/5 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-xl text-emerald-700 mb-4">{item.icon}</div>
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-2">{item.role}</p>
+                <p className="text-sm text-neutral-700 italic">&ldquo;{item.quote}&rdquo;</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 14. CONTABILIDAD / REVISIÓN ===== */}
+      <section className="py-24 lg:py-28 bg-neutral-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-5 tracking-tight">Información lista para que tu contador revise.</h2>
+              <p className="text-lg text-neutral-500 leading-relaxed mb-8">GastosNX no hace la contabilidad. Entrega información ordenada para que el proceso correspondiente se ejecute con menos errores y menos tiempo perdido.</p>
+              <ul className="space-y-3">
+                {[
+                  'Exporta gastos por período en CSV o Excel',
+                  'Cada registro incluye fecha, monto, categoría y documento',
+                  'El contador recibe todo categorizado y con respaldo',
+                  'Sin reconstructuir gastos desde correos o WhatsApp',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-neutral-700">
+                    <Check className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                    <span className="text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="relative">
+              <div className="bg-white rounded-3xl p-8 shadow-2xl shadow-black/10 ring-1 ring-black/5">
+                <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-4">Exportación de gastos — Agosto 2026</p>
+                <div className="space-y-2">
+                  {[
+                    { fecha: '01/08', desc: 'Peaje Ruta 5', cat: 'Peaje', monto: '$7.200' },
+                    { fecha: '03/08', desc: 'Almuerzo reunión', cat: 'Boleta', monto: '$24.500' },
+                    { fecha: '05/08', desc: 'Estacionamiento', cat: 'Voucher', monto: '$5.000' },
+                    { fecha: '08/08', desc: 'Materiales obra', cat: 'Boleta', monto: '$38.000' },
+                    { fecha: '12/08', desc: 'Combustible', cat: 'Voucher', monto: '$48.000' },
+                  ].map((g, i) => (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-neutral-400 font-mono w-10">{g.fecha}</span>
+                        <div>
+                          <p className="text-sm text-neutral-900">{g.desc}</p>
+                          <p className="text-xs text-neutral-500">{g.cat}</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-mono text-neutral-700">{g.monto}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-neutral-900">Total período</span>
+                  <span className="text-lg font-bold text-emerald-700">$122.700</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 15. DECLARACIÓN DE RENTA ===== */}
+      <section className="py-24 lg:py-28 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-6 tracking-tight">Cuando llega el momento de revisar el año, ya tienes el historial construido.</h2>
+          <p className="text-lg text-neutral-500 leading-relaxed max-w-2xl mx-auto mb-10">
+            GastosNX no determina deducibilidad tributaria. Eso lo hace tu contador. Lo que GastosNX hace es que los gastos estén registrados, respaldados y ordenados para que el proceso se ejecute correctamente.
+          </p>
+
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-3xl mx-auto">
+            {[
+              { text: 'Gasto durante el año', icon: <ShoppingCart className="w-5 h-5" /> },
+              { text: 'Registro', icon: <FileText className="w-5 h-5" /> },
+              { text: 'Respaldo', icon: <Shield className="w-5 h-5" /> },
+              { text: 'Historial', icon: <BarChart3 className="w-5 h-5" /> },
+            ].map((step, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-4 py-2 bg-neutral-50 rounded-xl border border-black/5">
+                  <div className="text-emerald-600">{step.icon}</div>
+                  <span className="text-sm font-medium text-neutral-700">{step.text}</span>
+                </div>
+                {i < 3 && <ChevronRight className="w-4 h-4 text-neutral-300 hidden md:block" />}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4">
+            <div className="px-6 py-3 bg-neutral-100 rounded-xl border border-neutral-200">
+              <p className="text-sm font-medium text-neutral-700">Cierre del período</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-neutral-300 hidden md:block" />
+            <div className="px-6 py-3 bg-neutral-100 rounded-xl border border-neutral-200">
+              <p className="text-sm font-medium text-neutral-700">Revisión contable</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-neutral-300 hidden md:block" />
+            <div className="px-6 py-3 bg-emerald-100 rounded-xl border border-emerald-200">
+              <p className="text-sm font-medium text-emerald-800">Tratamiento tributario según corresponda</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 16. CLIENTES REALES ===== */}
+      <section className="py-20 lg:py-24 bg-neutral-50 border-y border-black/5">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-8">Empresas que ya usan GastosNX</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 items-center mb-12">
+            <div className="flex items-center justify-center h-20 transition-all opacity-60 hover:opacity-100 grayscale hover:grayscale-0">
+              <Image src="/images/clients/ac_logo.png" alt="AC Constructores y Consultores" width={240} height={80} className="max-h-16 w-auto object-contain" />
+            </div>
+            <div className="flex items-center justify-center h-20 transition-all opacity-60 hover:opacity-100 grayscale hover:grayscale-0">
+              <Image src="/images/clients/RCCServicios.jpeg" alt="RCC Servicios EIRL" width={240} height={80} className="max-h-16 w-auto object-contain" />
+            </div>
+            <div className="flex items-center justify-center h-20 transition-all opacity-60 hover:opacity-100 grayscale hover:grayscale-0">
+              <Image src="/images/clients/sanAndres.png" alt="Transportes San Andrés SPA" width={240} height={80} className="max-h-16 w-auto object-contain" />
+            </div>
+            <div className="flex items-center justify-center h-20 transition-all opacity-60 hover:opacity-100 grayscale hover:grayscale-0">
+              <Image src="/images/clients/bastcon.jpg" alt="Bastcon" width={240} height={80} className="max-h-16 w-auto object-contain" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 17. PLANES Y PRECIOS ===== */}
       <section id="precios" className="py-24 lg:py-28 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -321,7 +755,7 @@ export default function LandingPage() {
               <button onClick={() => router.push('/registro/free')} className="w-full px-6 py-3.5 bg-neutral-900 text-white text-[15px] font-semibold rounded-full hover:bg-neutral-700 transition-colors">Empezar gratis sin tarjeta</button>
               <p className="text-xs text-neutral-500 text-center mt-3">Ideal para probar el sistema con tus primeros gastos.</p>
             </div>
-            {/* Plan Pro (Destacado) */}
+            {/* Plan Pro */}
             <div className="bg-neutral-900 rounded-3xl p-8 text-white relative shadow-2xl shadow-black/20 flex flex-col">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-xs font-semibold tracking-wide">MÁS POPULAR</div>
               <div className="mb-6">
@@ -366,116 +800,39 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===== CONFIANZA + NXCHILE ===== */}
-      <section className="py-20 lg:py-24 bg-neutral-50 border-y border-black/5">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white border border-emerald-200/60 text-emerald-700 rounded-full text-[13px] font-medium mb-6">
-            Producto oficial de NXChile
-          </div>
-          <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-5 tracking-tight">
-            GastosNX es un producto de NXChile.
-          </h2>
-          <p className="text-lg text-neutral-500 leading-relaxed max-w-3xl mx-auto mb-10">
-            Tecnología operacional para empresas chilenas. Compatible con los requisitos del <span className="font-semibold text-neutral-700">SII</span> · <span className="font-semibold text-neutral-700">OCR con Google AI</span> · Desarrollado en Chile para la realidad tributaria chilena.
-          </p>
-          <div className="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-            <div className="bg-white rounded-2xl p-5 border border-black/5">
-              <div className="text-2xl mb-2">🏛️</div>
-              <p className="text-sm font-semibold text-neutral-900">Compatible con SII</p>
-              <p className="text-xs text-neutral-500 mt-1">Respaldo documental ordenado</p>
-            </div>
-            <div className="bg-white rounded-2xl p-5 border border-black/5">
-              <div className="text-2xl mb-2">🤖</div>
-              <p className="text-sm font-semibold text-neutral-900">OCR con Google AI</p>
-              <p className="text-xs text-neutral-500 mt-1">Lectura automática de boletas</p>
-            </div>
-            <div className="bg-white rounded-2xl p-5 border border-black/5">
-              <div className="text-2xl mb-2">🇨🇱</div>
-              <p className="text-sm font-semibold text-neutral-900">Hecho en Chile</p>
-              <p className="text-xs text-neutral-500 mt-1">Para la realidad local</p>
-            </div>
-          </div>
-          <div className="mt-10">
-            <a href="https://www.nxchile.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-emerald-700 font-semibold hover:text-emerald-800 transition-colors">
-              Conoce NXChile →
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== FAQ ===== */}
-      <section id="faq" className="py-24 lg:py-28 bg-white">
+      {/* ===== 18. FAQ ===== */}
+      <section id="faq" className="py-24 lg:py-28 bg-neutral-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">Preguntas frecuentes</h2>
             <p className="text-lg text-neutral-500">Lo que más nos preguntan antes de empezar.</p>
           </div>
           <div className="space-y-3">
-            <details className="group bg-neutral-50 rounded-2xl border border-black/5 overflow-hidden">
-              <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
-                <span className="font-semibold text-neutral-900">¿GastosNX determina si un gasto es deducible?</span>
-                <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
-              </summary>
-              <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">No. GastosNX no reemplaza a tu contador ni determina deducibilidad tributaria. Su objetivo es entregarte respaldo y orden documental para que tu contador pueda trabajar mejor.</div>
-            </details>
-            <details className="group bg-neutral-50 rounded-2xl border border-black/5 overflow-hidden">
-              <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
-                <span className="font-semibold text-neutral-900">¿Los documentos sirven ante el SII?</span>
-                <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
-              </summary>
-              <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">GastosNX entrega respaldo y orden documental compatible con los requisitos del SII. La validez tributaria final la determina tu contador según la normativa vigente.</div>
-            </details>
-            <details className="group bg-neutral-50 rounded-2xl border border-black/5 overflow-hidden">
-              <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
-                <span className="font-semibold text-neutral-900">¿Cuánto tarda el acceso?</span>
-                <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
-              </summary>
-              <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">El plan Free se activa de inmediato. Los planes Pro se activan en máximo 24 hrs hábiles tras confirmar el pago.</div>
-            </details>
-            <details className="group bg-neutral-50 rounded-2xl border border-black/5 overflow-hidden">
-              <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
-                <span className="font-semibold text-neutral-900">¿Puedo exportar a Excel/CSV?</span>
-                <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
-              </summary>
-              <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">Sí. El plan Pro incluye exportación a CSV y Excel con todos los gastos del período, listos para tu contador.</div>
-            </details>
-            <details className="group bg-neutral-50 rounded-2xl border border-black/5 overflow-hidden">
-              <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
-                <span className="font-semibold text-neutral-900">¿Cómo funciona el precio por usuario?</span>
-                <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
-              </summary>
-              <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">El plan Pro incluye hasta 3 usuarios base. Cada usuario adicional tiene un precio preferencial según el periodo elegido (anual o mes a mes).</div>
-            </details>
-            <details className="group bg-neutral-50 rounded-2xl border border-black/5 overflow-hidden">
-              <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
-                <span className="font-semibold text-neutral-900">¿Puedo agregar más de 3 usuarios?</span>
-                <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
-              </summary>
-              <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">Sí. Puedes agregar usuarios adicionales con precio preferencial: $2.500 c/u (plan anual) o $3.000 c/u (plan mes a mes). IVA incluido.</div>
-            </details>
-            <details className="group bg-neutral-50 rounded-2xl border border-black/5 overflow-hidden">
-              <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
-                <span className="font-semibold text-neutral-900">¿Qué diferencia hay entre pago anual y mes a mes?</span>
-                <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
-              </summary>
-              <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">El plan anual tiene un mejor precio por usuario ($3.300 vs $4.000) y se factura una vez al año. El plan mes a mes te da flexibilidad sin contrato, con un valor ligeramente mayor.</div>
-            </details>
-            <details className="group bg-neutral-50 rounded-2xl border border-black/5 overflow-hidden">
-              <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
-                <span className="font-semibold text-neutral-900">¿Qué tecnología de OCR usan?</span>
-                <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
-              </summary>
-              <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">Usamos OCR con Google AI, una de las tecnologías de reconocimiento de texto más confiables del mercado, optimizada para boletas chilenas.</div>
-            </details>
+            {[
+              { q: '¿GastosNX determina si un gasto es deducible?', a: 'No. GastosNX no reemplaza a tu contador ni determina deducibilidad tributaria. Su objetivo es entregarte respaldo y orden documental para que tu contador pueda trabajar mejor.' },
+              { q: '¿Los documentos sirven ante el SII?', a: 'GastosNX entrega respaldo y orden documental compatible con los requisitos del SII. La validez tributaria final la determina tu contador según la normativa vigente.' },
+              { q: '¿Cuánto tarda el acceso?', a: 'El plan Free se activa de inmediato. Los planes Pro se activan en máximo 24 hrs hábiles tras confirmar el pago.' },
+              { q: '¿Puedo exportar a Excel/CSV?', a: 'Sí. El plan Pro incluye exportación a CSV y Excel con todos los gastos del período, listos para tu contador.' },
+              { q: '¿Cómo funciona el precio por usuario?', a: 'El plan Pro incluye hasta 3 usuarios base. Cada usuario adicional tiene un precio preferencial según el periodo elegido (anual o mes a mes).' },
+              { q: '¿Puedo agregar más de 3 usuarios?', a: 'Sí. Puedes agregar usuarios adicionales con precio preferencial: $2.500 c/u (plan anual) o $3.000 c/u (plan mes a mes). IVA incluido.' },
+              { q: '¿Qué diferencia hay entre pago anual y mes a mes?', a: 'El plan anual tiene un mejor precio por usuario ($3.300 vs $4.000) y se factura una vez al año. El plan mes a mes te da flexibilidad sin contrato, con un valor ligeramente mayor.' },
+              { q: '¿Qué tecnología de OCR usan?', a: 'Usamos OCR con Google AI, una de las tecnologías de reconocimiento de texto más confiables del mercado, optimizada para boletas chilenas.' },
+              { q: '¿GastosNX reemplaza al contador?', a: 'No. GastosNX le da a tu contador la información ordenada y respaldada que necesita para trabajar mejor. La revisión y el tratamiento tributario corresponden a él.' },
+            ].map((item, i) => (
+              <details key={i} className="group bg-white rounded-2xl border border-black/5 overflow-hidden">
+                <summary className="flex items-center justify-between cursor-pointer p-5 text-left">
+                  <span className="font-semibold text-neutral-900">{item.q}</span>
+                  <span className="text-emerald-600 group-open:rotate-45 transition-transform text-xl leading-none shrink-0 ml-4">+</span>
+                </summary>
+                <div className="px-5 pb-5 text-neutral-600 text-[15px] leading-relaxed">{item.a}</div>
+              </details>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ===== CIERRE ===== */}
+      {/* ===== 19. CTA FINAL ===== */}
       <section className="py-24 lg:py-28 bg-neutral-950 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <Image src="/images/cierre_cta.webp" alt="Boleta respaldada digitalmente con GastosNX" fill className="object-cover" />
-        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative hidden lg:block">
@@ -573,7 +930,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===== INSTAGRAM (Opción D: link + grid placeholder) ===== */}
+      {/* ===== INSTAGRAM ===== */}
       <section id="instagram" className="py-20 lg:py-24 bg-white border-t border-black/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -584,30 +941,14 @@ export default function LandingPage() {
             <p className="text-lg text-neutral-500 max-w-2xl mx-auto">Tips sobre respaldo de gastos, novedades del producto y casos de clientes reales.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-            <a href="https://www.instagram.com/nx_chile" target="_blank" rel="noopener noreferrer" className="group relative aspect-square rounded-2xl overflow-hidden border border-black/5 hover:shadow-lg transition-all">
-              <Image src="/images/instagram/post-1.jpeg" alt="Publicación GastosNX en Instagram" fill className="object-cover group-hover:scale-105 transition-transform" />
-              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Ver en Instagram
-              </div>
-            </a>
-            <a href="https://www.instagram.com/nx_chile" target="_blank" rel="noopener noreferrer" className="group relative aspect-square rounded-2xl overflow-hidden border border-black/5 hover:shadow-lg transition-all">
-              <Image src="/images/instagram/post-2.jpeg" alt="Publicación GastosNX en Instagram" fill className="object-cover group-hover:scale-105 transition-transform" />
-              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Ver en Instagram
-              </div>
-            </a>
-            <a href="https://www.instagram.com/nx_chile" target="_blank" rel="noopener noreferrer" className="group relative aspect-square rounded-2xl overflow-hidden border border-black/5 hover:shadow-lg transition-all">
-              <Image src="/images/instagram/post-3.jpeg" alt="Publicación GastosNX en Instagram" fill className="object-cover group-hover:scale-105 transition-transform" />
-              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Ver en Instagram
-              </div>
-            </a>
-            <a href="https://www.instagram.com/nx_chile" target="_blank" rel="noopener noreferrer" className="group relative aspect-square rounded-2xl overflow-hidden border border-black/5 hover:shadow-lg transition-all">
-              <Image src="/images/instagram/post-4.jpeg" alt="Publicación GastosNX en Instagram" fill className="object-cover group-hover:scale-105 transition-transform" />
-              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Ver en Instagram
-              </div>
-            </a>
+            {[1, 2, 3, 4].map((n) => (
+              <a key={n} href="https://www.instagram.com/nx_chile" target="_blank" rel="noopener noreferrer" className="group relative aspect-square rounded-2xl overflow-hidden border border-black/5 hover:shadow-lg transition-all">
+                <Image src={`/images/instagram/post-${n}.jpeg`} alt="Publicación GastosNX en Instagram" fill className="object-cover group-hover:scale-105 transition-transform" />
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  Ver en Instagram
+                </div>
+              </a>
+            ))}
           </div>
           <div className="text-center">
             <a href="https://www.instagram.com/nx_chile" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-sm font-semibold rounded-full hover:opacity-90 transition-opacity">
@@ -631,7 +972,7 @@ export default function LandingPage() {
                   className="h-11 w-auto object-contain brightness-0 invert"
                 />
               </div>
-              <p className="text-sm leading-relaxed text-neutral-500">GastosNX es el sistema que usan pymes y contadores en Chile para registrar, respaldar y descontar gastos operacionales menores en la Declaración de Renta anual. Compatible con los requisitos del SII. Desarrollado en Chile para la realidad tributaria chilena.</p>
+              <p className="text-sm leading-relaxed text-neutral-500">GastosNX es el sistema que usan pymes y contadores en Chile para registrar, respaldar y ordenar gastos operacionales menores. Compatible con los requisitos del SII. Desarrollado en Chile para la realidad tributaria chilena.</p>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm">Producto</h4>
@@ -669,7 +1010,7 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* ===== WHATSAPP FLOTANTE (Desktop + Mobile) ===== */}
+      {/* ===== WHATSAPP FLOTANTE ===== */}
       {showWhatsApp && (
         <a
           href={whatsappLink}
