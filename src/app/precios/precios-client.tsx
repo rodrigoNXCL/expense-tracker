@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  ArrowRight, Check, ChevronDown, FileText, Layers, Lock, MessageCircle,
-  Receipt, Shield, Wallet, Camera, Users, Building2, CircleDollarSign,
+  ArrowRight, Check, ChevronDown, FileText, Layers, MessageCircle,
+  Receipt, Wallet, Users, Building2, CircleDollarSign,
   ClipboardCheck, BookOpen,
 } from 'lucide-react'
 
@@ -16,7 +16,7 @@ const PLANS = [
     annual: 9900,
     annualTotal: 118800,
     monthly: 12900,
-    description: 'Para empresas que necesitan comenzar a controlar sus fondos y rendiciones de manera simple y ordenada.',
+    description: 'Controla fondos, gastos, respaldos, aprobaciones y saldos.',
     features: [
       'Fondos por rendir',
       'Registro de gastos',
@@ -35,12 +35,12 @@ const PLANS = [
   },
   {
     name: 'RindeNX Empresa',
-    tag: 'PARA CRECER',
+    tag: '',
     rendidores: 'Hasta 15 rendidores',
     annual: 19900,
     annualTotal: 238800,
     monthly: 24900,
-    description: 'Para empresas con varios trabajadores que reciben fondos y necesitan centralizar la revisión y control de sus rendiciones.',
+    description: 'Control centralizado para equipos con varios rendidores.',
     features: [
       'Todo lo de Pyme',
       'Hasta 15 rendidores',
@@ -53,12 +53,12 @@ const PLANS = [
   },
   {
     name: 'RindeNX Pro',
-    tag: 'PARA OPERAR',
+    tag: '',
     rendidores: 'Hasta 30 rendidores',
     annual: 34900,
     annualTotal: 418800,
     monthly: 44900,
-    description: 'Para empresas con mayor volumen de operaciones y múltiples personas realizando gastos por cuenta de la empresa.',
+    description: 'Para empresas con alto volumen de operaciones.',
     features: [
       'Todo lo de Empresa',
       'Hasta 30 rendidores',
@@ -70,12 +70,12 @@ const PLANS = [
   },
   {
     name: 'RindeNX +30',
-    tag: 'A MEDIDA',
+    tag: '',
     rendidores: 'Más de 30 rendidores',
     annual: 0,
     annualTotal: 0,
     monthly: 0,
-    description: 'Para empresas con mayor cantidad de rendidores o necesidades específicas de operación.',
+    description: 'Configuración a medida para necesidades específicas.',
     features: [
       'Más de 30 rendidores',
       'Configuración a medida',
@@ -126,17 +126,6 @@ const FAQ = [
   },
 ]
 
-const FLOW_STEPS = [
-  { label: 'Fondo entregado', icon: Wallet },
-  { label: 'Gastos', icon: Receipt },
-  { label: 'Respaldos', icon: FileText },
-  { label: 'Rendición', icon: ClipboardCheck },
-  { label: 'Revisión', icon: Users },
-  { label: 'Aprobación', icon: Check },
-  { label: 'Saldo', icon: CircleDollarSign },
-  { label: 'Contabilidad', icon: BookOpen },
-]
-
 const SECTORS = [
   'Construcción', 'Transporte', 'Agricultura', 'Servicios', 'Equipos en terreno', 'Ventas',
 ]
@@ -150,6 +139,27 @@ export default function PreciosClient() {
   const whatsappLink = `https://wa.me/56977412178?text=${whatsappMessage}`
   const whatsappAsesor = encodeURIComponent('Hola, vengo de rinde.nxchile.com/precios y necesito cotizar RindeNX para más de 30 rendidores.')
   const whatsappAsesorLink = `https://wa.me/56977412178?text=${whatsappAsesor}`
+
+  const handleBillingToggle = (isAnnual: boolean) => {
+    setAnnual(isAnnual)
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any
+      if (w.gtag) {
+        w.gtag('event', 'BillingToggle', { billing_type: isAnnual ? 'annual' : 'monthly' })
+      }
+    } catch {}
+  }
+
+  const handlePlanClick = (planName: string) => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any
+      if (w.gtag) {
+        w.gtag('event', 'PlanClick', { plan_name: planName })
+      }
+    } catch {}
+  }
 
   return (
     <main className="min-h-screen bg-white text-neutral-900 antialiased">
@@ -187,11 +197,11 @@ export default function PreciosClient() {
           <p className="text-lg sm:text-xl text-neutral-500 mb-8 max-w-2xl mx-auto leading-relaxed">
             Controla cada fondo que entregas, cada gasto que se rinde y cada saldo pendiente desde un solo lugar.
           </p>
-          <div className="mb-4">
+          <div className="mb-2">
             <span className="text-3xl sm:text-4xl font-bold text-neutral-900">Desde $9.900</span>
             <span className="text-lg text-neutral-500 ml-2">/ mes</span>
           </div>
-          <p className="text-sm text-neutral-500 mb-8">Precio preferente con pago anual.</p>
+          <p className="text-sm text-neutral-500 mb-8">Pagando anual.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20">
               Solicitar demostración <ArrowRight className="w-4 h-4" />
@@ -210,20 +220,20 @@ export default function PreciosClient() {
           <div className="flex flex-col items-center mb-12">
             <div className="inline-flex items-center bg-neutral-100 rounded-full p-1">
               <button
-                onClick={() => setAnnual(false)}
+                onClick={() => handleBillingToggle(false)}
                 className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${!annual ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
               >
                 Pago mensual
               </button>
               <button
-                onClick={() => setAnnual(true)}
+                onClick={() => handleBillingToggle(true)}
                 className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${annual ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
               >
                 Pago anual
               </button>
             </div>
             {annual && (
-              <p className="mt-3 text-sm font-medium text-amber-600">Ahorra con el pago anual</p>
+              <p className="mt-3 text-sm font-medium text-amber-600">Precio preferente con pago anual</p>
             )}
           </div>
 
@@ -245,7 +255,7 @@ export default function PreciosClient() {
                     {plan.tag}
                   </div>
                 )}
-                {!plan.highlighted && (
+                {!plan.highlighted && plan.tag && (
                   <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">{plan.tag}</p>
                 )}
                 <h3 className="text-lg font-bold text-neutral-900 mb-1">{plan.name}</h3>
@@ -260,7 +270,9 @@ export default function PreciosClient() {
                     <p className="text-3xl font-bold text-neutral-900">
                       ${annual ? plan.annual.toLocaleString('es-CL') : plan.monthly.toLocaleString('es-CL')}
                     </p>
-                    <p className="text-sm text-neutral-500">/ mes {annual ? '· Pago anual' : '· Pago mensual'}</p>
+                    <p className="text-sm text-neutral-500">
+                      / mes {annual ? '· Pago anual' : '· Pago mensual'}
+                    </p>
                     {annual && (
                       <p className="text-xs text-neutral-400 mt-1">
                         ${plan.annualTotal.toLocaleString('es-CL')} / año
@@ -272,7 +284,6 @@ export default function PreciosClient() {
                 <p className="text-sm text-neutral-500 mb-5 leading-relaxed">{plan.description}</p>
 
                 <div className="border-t border-black/5 pt-4 mb-6 flex-1">
-                  <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Qué incluye</p>
                   <ul className="space-y-2">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-start gap-2 text-sm text-neutral-600">
@@ -287,6 +298,7 @@ export default function PreciosClient() {
                   href={plan.custom ? whatsappAsesorLink : whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => handlePlanClick(plan.name)}
                   className={`block text-center px-5 py-3 rounded-xl text-sm font-semibold transition-all ${
                     plan.highlighted
                       ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-md shadow-amber-500/20'
@@ -319,22 +331,31 @@ export default function PreciosClient() {
               Una rendición no comienza cuando alguien sube una boleta. Comienza cuando la empresa entrega un fondo. RindeNX permite seguir ese fondo desde su asignación hasta la rendición, revisión, aprobación, saldo y entrega de información para contabilidad.
             </p>
           </div>
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {FLOW_STEPS.map((step, i) => (
-                <div key={i} className="relative">
-                  <div className="bg-white rounded-xl p-5 border border-black/5 text-center shadow-sm">
-                    <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center mx-auto mb-3">
-                      <step.icon className="w-5 h-5 text-amber-600" />
+          <div className="max-w-3xl mx-auto">
+            <div className="space-y-0">
+              {[
+                { label: 'Fondo entregado', value: '$200.000', icon: Wallet, color: 'bg-amber-500' },
+                { label: 'Gastos', value: '$137.500', icon: Receipt, color: 'bg-amber-500' },
+                { label: 'Respaldos', value: '3 documentos', icon: FileText, color: 'bg-amber-500' },
+                { label: 'Rendición', value: 'En revisión', icon: ClipboardCheck, color: 'bg-amber-500' },
+                { label: 'Saldo', value: '$62.500', icon: CircleDollarSign, color: 'bg-amber-500' },
+                { label: 'Contabilidad', value: 'Información lista', icon: BookOpen, color: 'bg-amber-500' },
+              ].map((step, i) => (
+                <div key={i} className="relative flex items-center gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-10 h-10 ${step.color} rounded-lg flex items-center justify-center`}>
+                      <step.icon className="w-5 h-5 text-white" />
                     </div>
-                    <p className="text-sm font-semibold text-neutral-900">{step.label}</p>
+                    {i < 5 && <div className="w-0.5 h-8 bg-amber-200" />}
                   </div>
-                  {i < FLOW_STEPS.length - 1 && i % 4 !== 3 && (
-                    <div className="hidden sm:block absolute top-1/2 -right-2 w-4 h-0.5 bg-amber-300" />
-                  )}
+                  <div className="bg-white rounded-xl px-5 py-3 border border-black/5 shadow-sm flex-1 mb-2">
+                    <p className="text-sm font-semibold text-neutral-900">{step.label}</p>
+                    <p className="text-sm text-neutral-500">{step.value}</p>
+                  </div>
                 </div>
               ))}
             </div>
+            <p className="text-xs text-neutral-400 mt-4 text-center">Ejemplo demostrativo</p>
           </div>
         </div>
       </section>
@@ -347,27 +368,26 @@ export default function PreciosClient() {
               El eslabón entre tu fondo y tu contador.
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">Administrador</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Entrega y controla el fondo.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">Rendidor</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Registra sus gastos y entrega respaldos.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">Contabilidad</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Recibe información ordenada para continuar el proceso.</p>
+          <div className="max-w-3xl mx-auto">
+            <div className="space-y-0">
+              {[
+                { role: 'Administrador', desc: 'Entrega y controla el fondo.', icon: Building2 },
+                { role: 'Rendidor', desc: 'Registra gastos y entrega respaldos.', icon: Users },
+                { role: 'Contabilidad', desc: 'Recibe información ordenada.', icon: BookOpen },
+              ].map((step, i) => (
+                <div key={i} className="relative flex items-center gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
+                      <step.icon className="w-5 h-5 text-white" />
+                    </div>
+                    {i < 2 && <div className="w-0.5 h-8 bg-amber-200" />}
+                  </div>
+                  <div className="bg-white rounded-xl px-5 py-3 border border-black/5 shadow-sm flex-1 mb-2">
+                    <p className="text-sm font-semibold text-neutral-900">{step.role}</p>
+                    <p className="text-sm text-neutral-500">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -410,32 +430,31 @@ export default function PreciosClient() {
           <div className="text-center mb-12 max-w-3xl mx-auto">
             <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-5 tracking-tight">RindeNX + GastosNX</h2>
           </div>
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-6 items-center">
-              <div className="bg-white rounded-2xl p-6 border border-amber-200/50 text-center shadow-sm">
-                <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <FileText className="w-6 h-6 text-white" />
+          <div className="max-w-3xl mx-auto">
+            <div className="space-y-0">
+              {[
+                { name: 'RindeNX', desc: 'Control de fondos y rendiciones', color: 'bg-amber-500', icon: FileText },
+                { name: 'GastosNX', desc: 'Organización de gastos y respaldos', color: 'bg-blue-500', icon: Layers },
+                { name: 'Contabilidad', desc: 'Información ordenada', color: 'bg-neutral-700', icon: BookOpen },
+              ].map((step, i) => (
+                <div key={i} className="relative flex items-center gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-10 h-10 ${step.color} rounded-lg flex items-center justify-center`}>
+                      <step.icon className="w-5 h-5 text-white" />
+                    </div>
+                    {i < 2 && <div className="w-0.5 h-8 bg-neutral-200" />}
+                  </div>
+                  <div className="bg-white rounded-xl px-5 py-3 border border-black/5 shadow-sm flex-1 mb-2">
+                    <p className="text-sm font-semibold text-neutral-900">{step.name}</p>
+                    <p className="text-sm text-neutral-500">{step.desc}</p>
+                  </div>
                 </div>
-                <p className="font-bold text-neutral-900 mb-1">RindeNX</p>
-                <p className="text-xs text-amber-600">Control de fondos y rendiciones</p>
-              </div>
-              <div className="flex justify-center">
-                <div className="w-12 h-12 bg-neutral-900 rounded-full flex items-center justify-center">
-                  <ArrowRight className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl p-6 border border-blue-200/50 text-center shadow-sm">
-                <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <Layers className="w-6 h-6 text-white" />
-                </div>
-                <p className="font-bold text-neutral-900 mb-1">GastosNX</p>
-                <p className="text-xs text-blue-600">Registro y organización de gastos</p>
-              </div>
+              ))}
             </div>
-            <p className="text-center text-neutral-500 text-sm mt-8 max-w-2xl mx-auto leading-relaxed">
-              RindeNX y GastosNX son soluciones independientes que pueden complementarse para cubrir distintos momentos del flujo administrativo.
+            <p className="text-sm text-neutral-500 text-center mt-6 leading-relaxed">
+              Soluciones independientes que pueden complementarse según las necesidades de tu empresa.
             </p>
-            <div className="text-center mt-6">
+            <div className="text-center mt-4">
               <a href="https://gastos.nxchile.com" target="_blank" rel="noopener noreferrer" className="text-amber-600 font-semibold text-sm hover:text-amber-700 transition-colors">
                 Conoce GastosNX →
               </a>
@@ -511,11 +530,9 @@ export default function PreciosClient() {
                   <span className="text-sm font-semibold text-neutral-900 pr-4">{faq.q}</span>
                   <ChevronDown className={`w-4 h-4 text-neutral-400 shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
                 </button>
-                {openFaq === i && (
-                  <div className="px-5 pb-5">
-                    <p className="text-sm text-neutral-500 leading-relaxed">{faq.a}</p>
-                  </div>
-                )}
+                <div className={`px-5 ${openFaq === i ? 'pb-5' : 'h-0 overflow-hidden'}`}>
+                  <p className="text-sm text-neutral-500 leading-relaxed">{faq.a}</p>
+                </div>
               </div>
             ))}
           </div>
