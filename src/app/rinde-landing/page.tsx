@@ -222,7 +222,7 @@ export default function RindeLandingPage() {
                   { step: 4, title: 'Revisar', desc: 'El administrador revisa cada gasto, verifica montos y comprobantes. Todo queda registrado con comentarios.', icon: Users },
                   { step: 5, title: 'Aprobar o rechazar', desc: 'Aprueba rendiciones cuadradas o rechaza las que tengan diferencias. La decisión queda trazada.', icon: Check },
                   { step: 6, title: 'Cuadrar', desc: 'El sistema calcula la diferencia contra el fondo asignado. Saldo a favor, saldo por devolver, todo claro.', icon: Layers },
-                  { step: 7, title: 'Generar asiento', desc: 'RindeNX genera automáticamente el asiento contable con Debe = Haber. Anticipo, saldo a favor y por devolver, listos.', icon: FileText },
+                  { step: 7, title: 'Cerrar y generar asiento', desc: 'Al cerrar la rendición, RindeNX genera la información y el asiento contable que acompaña la rendición para su proceso contable. Debe = Haber, siempre.', icon: FileText },
                 ].map((item, i) => (
                   <div key={i} className="relative flex items-start gap-6 pl-0">
                     <div className="relative z-10 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
@@ -374,8 +374,8 @@ export default function RindeLandingPage() {
             </div>
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Layers className="w-6 h-6 text-amber-600" /></div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Integración GastosNX</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Los gastos operacionales pasan a GastosNX para el respaldo tributario anual. Una sola cuenta, una sola empresa.</p>
+              <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Complemento con GastosNX</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed">Las boletas, vouchers y gastos menores de una rendición pueden pasar a GastosNX para quedar registrados y respaldados. Un complemento, no una obligación.</p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Lock className="w-6 h-6 text-amber-600" /></div>
@@ -390,61 +390,100 @@ export default function RindeLandingPage() {
       <section className="py-24 lg:py-28 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">RindeNX controla la rendición. GastosNX continúa el proceso.</h2>
-            <p className="text-lg text-neutral-500 leading-relaxed">Los gastos operacionales de una rendición pueden pasar a GastosNX para mantener el respaldo documental y facilitar el trabajo tributario posterior.</p>
+            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">RindeNX controla la rendición. GastosNX completa el registro del gasto.</h2>
+            <p className="text-lg text-neutral-500 leading-relaxed">RindeNX controla el dinero que entregas, cómo se utiliza y cómo se cierra cada rendición. Cuando dentro de una rendición aparecen documentos que no corresponden a facturas —como boletas, vouchers y otros gastos menores respaldados— esos gastos pueden pasar a GastosNX para quedar registrados y respaldados.</p>
           </div>
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              {/* RindeNX */}
-              <div className="bg-gradient-to-br from-amber-50 to-white rounded-3xl p-8 border border-amber-200/50">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-neutral-900">RindeNX</p>
-                    <p className="text-xs text-amber-600 font-medium">Control de fondos</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  {['Fondos asignados', 'Rendiciones con OCR', 'Aprobación y trazabilidad', 'Asiento contable automático'].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full" />
-                      <p className="text-neutral-700 text-sm">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Flecha */}
-              <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-12 h-12 bg-neutral-900 rounded-full items-center justify-center shadow-lg z-10">
-                <ArrowRight className="w-5 h-5 text-white" />
-              </div>
-
-              {/* GastosNX */}
-              <div className="bg-gradient-to-br from-blue-50 to-white rounded-3xl p-8 border border-blue-200/50">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                    <Layers className="w-6 h-6 text-white" />
+          {/* Flujo visual */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="bg-neutral-50 rounded-2xl p-8 border border-black/5">
+              <div className="flex flex-col items-center gap-4">
+                {/* Fondo entregado */}
+                <div className="bg-white rounded-xl px-6 py-3 border border-black/5 shadow-sm text-center w-full max-w-xs">
+                  <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Fondo entregado</p>
+                  <p className="text-lg font-bold text-neutral-900">$500.000</p>
+                </div>
+                <div className="w-0.5 h-6 bg-amber-300" />
+                {/* RindeNX */}
+                <div className="bg-amber-500 rounded-xl px-6 py-3 text-center w-full max-w-xs">
+                  <p className="text-sm font-bold text-white">RindeNX</p>
+                  <p className="text-xs text-amber-100">Control de rendición</p>
+                </div>
+                <div className="w-0.5 h-6 bg-amber-300" />
+                {/* Rendición */}
+                <div className="bg-white rounded-xl px-6 py-3 border border-black/5 shadow-sm text-center w-full max-w-xs">
+                  <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Rendición</p>
+                  <p className="text-sm text-neutral-600">Gastos registrados con respaldos</p>
+                </div>
+                <div className="w-0.5 h-6 bg-amber-300" />
+                {/* Split: Facturas | Otros gastos */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
+                  {/* Facturas */}
+                  <div className="bg-white rounded-xl p-5 border border-black/5 shadow-sm">
+                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Facturas</p>
+                    <p className="text-lg font-bold text-neutral-900 mb-1">$300.000</p>
+                    <p className="text-xs text-neutral-500">Flujo de información para contabilidad</p>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold text-neutral-900">GastosNX</p>
-                    <p className="text-xs text-blue-600 font-medium">Respaldo tributario</p>
+                  {/* Otros gastos */}
+                  <div className="bg-blue-50 rounded-xl p-5 border border-blue-200/50 shadow-sm">
+                    <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">Otros gastos</p>
+                    <p className="text-lg font-bold text-neutral-900 mb-1">$100.000</p>
+                    <p className="text-xs text-neutral-500 mb-3">Boletas / vouchers / gastos menores</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-0.5 h-4 bg-blue-300" />
+                      <p className="text-xs font-semibold text-blue-600">GastosNX</p>
+                    </div>
+                    <p className="text-xs text-neutral-500">Registro y respaldo</p>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  {['Respaldos documentales', 'Orden de gastos', 'Trabajo del contador', 'Cumplimiento tributario'].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      <p className="text-neutral-700 text-sm">{item}</p>
-                    </div>
-                  ))}
+                <div className="w-0.5 h-6 bg-amber-300" />
+                {/* Resultado */}
+                <div className="bg-white rounded-xl px-6 py-3 border border-black/5 shadow-sm text-center w-full max-w-xs">
+                  <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Saldo pendiente</p>
+                  <p className="text-lg font-bold text-amber-600">$100.000</p>
                 </div>
               </div>
             </div>
-            <div className="mt-12 text-center">
-              <p className="text-neutral-500 text-sm">Dos productos, un mismo ecosistema. Tus rendiciones fluyen directamente al respaldo tributario.</p>
+            <p className="text-xs text-neutral-400 mt-3 text-center">Ejemplo demostrativo</p>
+          </div>
+
+          {/* Todo gasto cuenta */}
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <h3 className="text-2xl font-bold text-neutral-900 mb-4">Todo gasto cuenta.</h3>
+            <p className="text-neutral-500 leading-relaxed">Tu empresa no solo tiene facturas. También tiene boletas, vouchers y gastos menores que ocurren todos los días. RindeNX los identifica dentro de la rendición y GastosNX permite mantener esos gastos registrados y respaldados.</p>
+          </div>
+
+          {/* Ejemplo concreto */}
+          <div className="max-w-3xl mx-auto mb-12">
+            <div className="bg-neutral-50 rounded-2xl p-8 border border-black/5">
+              <h4 className="text-lg font-bold text-neutral-900 mb-4">Ejemplo</h4>
+              <p className="text-sm text-neutral-600 mb-4">Un trabajador recibe <strong>$500.000</strong>. Durante la rendición presenta:</p>
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-neutral-600">$300.000 en facturas</span>
+                  <span className="text-xs text-neutral-400">→ contabilidad</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-neutral-600">$80.000 en boletas y vouchers</span>
+                  <span className="text-xs text-blue-500">→ GastosNX</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-neutral-600">$20.000 en otros gastos menores respaldados</span>
+                  <span className="text-xs text-blue-500">→ GastosNX</span>
+                </div>
+              </div>
+              <div className="border-t border-black/5 pt-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-neutral-900">RindeNX controla la rendición completa.</span>
+                  <span className="text-xs text-neutral-400">Saldo: $100.000</span>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Complemento, no obligatorio */}
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-neutral-500 text-sm leading-relaxed">RindeNX funciona de forma independiente. GastosNX es un complemento para ampliar el control de los gastos que no siguen el flujo de una factura.</p>
           </div>
         </div>
       </section>
