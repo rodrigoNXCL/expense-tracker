@@ -86,6 +86,7 @@ Propósito principal: capturar el respaldo de un gasto antes de que se pierda, o
 - ✅ **Detalle de rendición por rol (2026-09-14):** el rendidor ve solo lo que rindió (resumen, gastos y acciones de su rendición); la sección **Asiento Contable**, los **Documentos enviados a GastosNX (puente)** y la columna "Pasado a Gastos" quedan visibles únicamente para admins en `/rinde/rendiciones/[id]`.
 - ✅ **Landing RindeNX — upgrades para campaña comercial (2026-09-14):** rediseño completo de `src/app/rinde-landing/page.tsx` para campañas de publicidad. Cambios: (1) CTA unificado a **"Solicitar demostración"** (→ WhatsApp) en hero, admin section, sticky mobile y CTA final; (2) nuevo subtítulo de posicionamiento en hero; (3) nueva sección **"¿Tu empresa todavía funciona así?"** con 7 pain points; (4) **timeline de 7 pasos** (reemplaza 3 cards con imágenes); (5) nueva sección **demo visual** con 2 cards de fondo (en revisión $800k / aprobada $300k); (6) beneficios reformulados: "El fondo completo controlado de principio a fin"; (7) nueva sección **RindeNX + GastosNX** (ecosistema con diagrama); (8) **testimonios placeholder** con estructura Antes→Resultado (AC, RCC, San Andrés); (9) imports limpiados (`Clock` eliminado).
 - ✅ **Página de precios RindeNX (2026-09-14):** nueva ruta `/precios` (`src/app/precios/page.tsx` + `precios-client.tsx`). SEO completo (title, meta description, OG, structured data SoftwareApplication/Organization/FAQPage/BreadcrumbList, canonical). Selector mensual/anual, 4 planes (Pyme $9.900/$12.900, Empresa $19.900/$24.900, Pro $34.900/$44.900, +30 cotizar), flujos visuales (fondo→contabilidad, admin→rendidor→contabilidad, RindeNX→GastosNX), beneficios, sectores, FAQ 9 preguntas, CTA demo/WhatsApp. Responsive mobile-first.
+- ✅ **Landing → Precios linkage (2026-09-14):** la landing RindeNX ahora enlaza a `/precios` en 4 puntos: navbar ("Planes y precios"), hero CTA secundario ("Ver planes y precios"), CTA final ("Ver planes y precios") y footer (sección Producto).
 
 ---
 
@@ -114,6 +115,9 @@ src/
     rinde-landing/                          # Landing pública RindeNX (sin auth)
       page.tsx                              # Landing (Hero+CTA, Cómo funciona, Beneficios, Prueba social+contacto)
       layout.tsx                            # Metadata/OG propios de la landing
+    precios/                                # Página de precios RindeNX (sin auth)
+      page.tsx                              # Server component (SEO, structured data)
+      precios-client.tsx                    # Client component (selector, planes, FAQ)
     api/
       rinde/
         rendiciones/
@@ -600,7 +604,7 @@ Cada ADR en `DECISIONS.md` incluye el **contexto, la decisión, las alternativas
 - **Paleta:** ámbar/naranja (`amber-*`, `orange-*`) sobre neutros; contraste: secciones oscuras `neutral-950` y acentos `bg-amber-500`.
 - **Contacto:** `rinde@nxchile.com` + WhatsApp `+56 9 77412178` (mismo número que GastosNX, mensaje predefinido "vengo de rinde.nxchile.com").
 - **CTA principal:** "Solicitar demostración" → WhatsApp (`https://wa.me/56977412178`). RindeNX **no tiene registro público**: los usuarios los crea el admin en la hoja Usuarios.
-- **Cross-sell:** en la landing hay link a `https://gastos.nxchile.com` (y viceversa desde GastosNX) porque comparten cuenta y deploy.
+- **Cross-sell:** en la landing hay link a `https://gastos.nxchile.com` (y viceversa desde GastosNX) porque comparten cuenta y deploy. La landing enlaza a `/precios` (navbar, hero, CTA final, footer).
 
 ### OCR (proveedor único)
 
