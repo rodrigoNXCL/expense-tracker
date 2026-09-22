@@ -45,6 +45,7 @@ export function proxy(request: NextRequest) {
       return NextResponse.rewrite(new URL('/rinde-landing', request.url))
     case '/login':
     case '/rinde-landing':
+    case '/precios':
       return NextResponse.next()
   }
 
