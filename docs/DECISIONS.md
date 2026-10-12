@@ -342,6 +342,31 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 - **Consecuencias:** Landing más extensa que RindeNX (necesario para educación comercial). Mayor mantenimiento de la página principal. Mejor comprensión del producto por parte del visitante. Se eliminaron dependencias de imágenes de fondo (`problema_boletas.webp`, `cierre_cta.webp`) que ya no se usan.
 - **Referencias:** `src/app/page.tsx`, `CURRENT.md` §2 (cambios adicionales recientes), ADR-012.
 
+### ADR-013 — El proxy de subdominios interceptaba `/api/**` y rompía RindeNX en producción
+
+- **Fecha:** 2026-09-14
+- **Estado:** ✅ **Resuelto** (implementado y verificado)
+- **Contexto:** El proxy de `src/proxy.ts` (Next 16, antes `middleware`) enruta `rinde.nxchile.com` hacia la app RindeNX que vive en `src/app/rinde/`, reescribiendo con prefijo `/rinde` toda ruta no reconocida. Sin embargo, **las API routes no viven bajo `src/app/rinde/`**: están en `src/app/api/` y son **compartidas** por ambos productos (`/api/auth`, `/api/auth/me`, `/api/auth/logout`, `/api/rinde/**`, `/api/expenses`, `/api/get-company-config`, etc.). El rewrite final no las excluía, por lo que en el subdominio toda API se convertía en `/rinde/api/**`, ruta inexistente.
+- **Síntoma reportado:** login desde `rinde.nxchile.com` fallaba con `Unexpected token '<', "<!DOCTYPE "... is not valid JSON`.-origen: `src/app/login/page.tsx` ejecuta `await response.json()` sin validar `content-type`; recibía el HTML del 404.
+- **Alcance real (mayor al reportado):** no era solo el login. **Todas** las APIs devolvían `404 text/html` en el subdominio, por lo que RindeNX cargaba el shell del dashboard pero **sin datos**. `gastos.nxchile.com` nunca se vio afectado porque el proxy retorna temprano cuando el host no empieza con `rinde.`.
+- **Origen del defecto:** latente desde `c54ba0f` (creación del proxy); ningún commit posterior lo introdujo. El commit `4fd2800` (agregar `/precios`) solo añadió un caso al `switch` y no altera este comportamiento.
+- **Por qué no se detectó antes:** (1) en desarrollo local el proxy no se activa salvo que se envíe `Host: rinde.nxchile.com`; (2) la verificación registrada el 2026-09-08 cubrió **páginas** (`/`, `/login` → `200`) pero nunca llamadas API, por lo que el defecto pasó como "funcionando".
+- **Decisión (implementada):** agregar un passthrough explícito de `/api/` en el proxy, antes del rewrite final:
+  ```typescript
+  // API routes: viven en /api/* y son compartidas por ambos productos
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next()
+  }
+  ```
+  Es **aditivo**: no altera ninguna rama previa (`/`, `/landing`, `/login`, `/precios`, `/rinde**`, assets, rewrite final).
+- **Alternativas consideradas:**
+  1. *Mover las API de RindeNX bajo `src/app/rinde/api/`* — descartado: rompe el diseño compartido de endpoints entre productos, duplica rutas y exige cambiar todos los `fetch` del cliente.
+  2. *Excluir `api` en el `matcher` del proxy* — descartado: el `matcher` decide si el proxy corre, no qué ruta se sirve; excluirlo dejaría el rewrite igual y no resuelve el problema (además reduce la cobertura de pruebas futuras).
+  3. *Endurecer `login/page.tsx` validando `content-type` antes de `json()`* — **complementario, no sustituto**: mejora el mensaje de error para el usuario, pero no devuelve la API. Se deja como mejora de robustez futura.
+- **Consecuencias:** RindeNX vuelve a ser funcional en `rinde.nxchile.com`. Se formaliza la regla de que **cualquier ruta bajo `/api/` debe pasar sin prefijo** en subdominios con rewrite. Se agrega `PRUEBAS_LOCALES.md` §11 con pruebas que exigen el header `Host: rinde.nxchile.com`, porque sin él el proxy no se ejercita y la prueba pasa siempre. Sin credenciales reales para las pruebas: el POST usa un email ficticio y solo valida el formato de la respuesta.
+- **Verificación:** build en verde; APIs en el subdominio devuelven JSON (`401` sin sesión); `/api/auth` responde `{"error":"..."}` en `401` en lugar de HTML; páginas y assets que funcionaban conservan su código (`/`, `/precios`, `/login`, `/rinde-landing` → `200`; `/rinde`, `/rinde/fondos` → `307`; `/super-admin` → `404` por diseño).
+- **Referencias:** `src/proxy.ts`, `src/app/login/page.tsx`, `DEPLOY.md` §2.1, `PRUEBAS_LOCALES.md` §11, `CURRENT.md` §2.
+
 ### Nota sobre registro de nuevas inconsistencias
 
 A partir de ahora, cualquier nueva inconsistencia detectada se registrará con el formato ADR de la sección anterior y una referencia cruzada en `CURRENT.md` (sección "Observaciones / temas pendientes").

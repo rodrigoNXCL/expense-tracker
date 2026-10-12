@@ -49,6 +49,12 @@ export function proxy(request: NextRequest) {
       return NextResponse.next()
   }
 
+  // API routes: viven en /api/* y son compartidas por ambos productos
+  // (login, sesión, RindeNX y GastosNX). Deben pasar sin prefijo.
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next()
+  }
+
   // Rutas internas de la app RindeNX ya llegan con el prefijo /rinde
   if (pathname.startsWith('/rinde')) {
     return NextResponse.next()

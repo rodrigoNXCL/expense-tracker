@@ -326,6 +326,45 @@
 - [ ] Click en "Rechazar" con comentario
 - [ ] **Esperado:** el estado cambia a `rechazada`; el usuario ve el motivo y puede reiniciar/corregir
 
+### 11. Pruebas del proxy de subdominios (CRÍTICO)
+
+> ⚠️ **Por qué existe esta sección (2026-09-14):** el proxy reescribía `/api/**` a `/rinde/api/**`, que no existe. En `rinde.nxchile.com` **todas** las APIs devolvían `404` con HTML, y el login fallaba con `Unexpected token '<', "<!DOCTYPE "... is not valid JSON`. El bug era **latente desde `c54ba0f`** y no se detectaba porque en local el proxy no se activa sin host `rinde.` y porque las verificaciones anteriores solo cubrieron páginas (`200`), nunca APIs.
+>
+> **Regla:** toda prueba de subdominio debe enviar el header `Host: rinde.nxchile.com`. Sin él, el proxy no se ejercita y la prueba pasa siempre.
+
+#### 11.1. Preparación
+- [ ] Levantar el server de desarrollo: `npm run dev`
+- [ ] Detectar el puerto real en la salida (`Local: http://localhost:3000`; si está ocupado, Next usa 3001, etc.)
+- [ ] Definir `PORT` y `BASE=http://localhost:$PORT` para los comandos siguientes
+
+#### 11.2. APIs deben pasar SIN prefijo (regresión del bug)
+- [ ] `curl -s -o /dev/null -w "%{http_code}" -H "Host: rinde.nxchile.com" $BASE/api/auth/me`
+  - **Esperado:** `401` (o `200` con sesión) y `content-type: application/json`
+  - **Falla si:** `404` o `text/html` → el proxy está interceptando la API
+- [ ] Repetir para `/api/rinde/rendiciones`, `/api/rinde/fondos`, `/api/expenses`, `/api/get-company-config`
+  - **Esperado:** todas JSON (`401`/`200`/`404` JSON según el caso). **Nunca `404 text/html`.**
+- [ ] `curl -s -X POST -H "Host: rinde.nxchile.com" -H "Content-Type: application/json" -d '{"email":"prueba@inexistente.test","password":"x"}' $BASE/api/auth`
+  - **Esperado:** `{"error":"Email o contraseña incorrectos"}` con `401` JSON
+  - **Nunca** HTML. Con credenciales ficticias: no altera datos ni requiere cuenta real.
+
+#### 11.3. Comportamiento del aislamiento (no debe cambiar)
+- [ ] **Sin** header `Host`: `$BASE/api/auth/me` → `401` JSON (GastosNX intacto)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/` → `200` (landing pública)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/precios` → `200` (página de precios)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/login` → `200` (login compartido)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/rinde-landing` → `200`
+- [ ] `Host: rinde.nxchile.com` + `$BASE/rinde` → `307` (redirección de auth, esperado)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/rinde/fondos` → `307` (redirección de auth, esperado)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/super-admin` → `404` (no disponible desde `rinde.*`, por diseño)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/images/clients/ac_logo.png` → `200` (assets)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/manifest.json` → `200`
+
+#### 11.4. Verificación en producción (post-deploy, siempre)
+- [ ] `curl -s -o /dev/null -w "%{http_code}" https://rinde.nxchile.com/api/auth/me` → **401**, NO `404`
+- [ ] `curl -s -o /dev/null -w "%{http_code}" https://gastos.nxchile.com/api/auth/me` → **401** (sin regresión en GastosNX)
+- [ ] Login real desde `https://rinde.nxchile.com/login` completa y redirige a `/rinde`
+- [ ] `/rinde` carga el dashboard **con datos** (no solo el shell)
+
 ## Resumen de validaciones
 
 Antes de hacer deploy, todas estas pruebas deben estar ✅:

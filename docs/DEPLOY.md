@@ -86,9 +86,10 @@ export function proxy(request: NextRequest) {
 
   switch (pathname) {
     case '/': case '/landing': return NextResponse.rewrite(new URL('/rinde-landing', request.url))
-    case '/login': case '/rinde-landing': return NextResponse.next()
+    case '/login': case '/rinde-landing': case '/precios': return NextResponse.next()
   }
 
+  if (pathname.startsWith('/api/')) return NextResponse.next()      // CRÍTICO: APIs sin prefijo
   if (pathname.startsWith('/rinde')) return NextResponse.next()  // rutas internas de la app
   return NextResponse.rewrite(new URL(`/rinde${pathname}`, request.url)) // /dashboard → /rinde/dashboard
 }
@@ -101,9 +102,21 @@ export const config = {
 **Comportamiento en `rinde.nxchile.com`:**
 - `/` y `/landing`  → landing pública de RindeNX (`/rinde-landing`)
 - `/login`          → login compartido (mismo login que `gastos.nxchile.com`)
+- `/precios`        → página de planes y precios (SEO, pública)
+- `/api/**`         → **pasa directo** (las API routes viven en `src/app/api/`, compartidas por ambos productos)
 - `/rinde**`        → rutas internas pasan directo (p.ej. `/rinde`, `/rinde/fondos`)
 - otra ruta         → se reescribe con prefijo `/rinde` (p.ej. `/dashboard` → `/rinde/dashboard`)
 - `/super-admin**`  → no está disponible desde `rinde.*` (se administra desde `gastos.nxchile.com`)
+
+> 🔴 **CRÍTICO — `/api/**` debe pasar sin prefijo (corregido 2026-09-14):** las API routes viven en
+> `src/app/api/`, **no** en `src/app/rinde/api/`. Sin la línea `if (pathname.startsWith('/api/'))`,
+> el rewrite final las convertía en `/rinde/api/**` → `404` con cuerpo HTML. El síntoma visible era
+> `Unexpected token '<', "<!DOCTYPE "... is not valid JSON` al hacer login desde `rinde.nxchile.com`
+> (`src/app/login/page.tsx` hace `response.json()` sin validar `content-type`). El alcance real era
+> **todas** las APIs del subdominio, no solo el login: RindeNX cargaba el shell pero sin datos.
+> El bug era **latente desde `c54ba0f`** (origen del proxy) y no se detectó porque en local el proxy
+> no se activa sin host `rinde.*`, y porque las verificaciones previas solo cubrieron páginas.
+> Ver `PRUEBAS_LOCALES.md` §11 (con header `Host: rinde.nxchile.com`) y `DECISIONS.md` ADR-013.
 
 ### 2.2. Opción B: Reverse proxy con Nginx (Más limpio)
 
