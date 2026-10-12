@@ -265,20 +265,18 @@ export default function ExpenseForm({
             />
           </div>
 
-          {/* OCR Confidence */}
+          {/* Revisión manual: Google Vision en TEXT_DETECTION no entrega una
+              confianza real, por lo que no se muestra un porcentaje que
+              sería inventado. La responsabilidad es verificar los campos (ADR-005). */}
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-700">Confianza OCR</p>
-              <Badge variant={formData.confidence >= 80 ? 'success' : formData.confidence >= 60 ? 'warning' : 'destructive'}>
-                {formData.confidence.toFixed(0)}%
-              </Badge>
+              <p className="text-sm font-medium text-gray-700">Datos extraídos por OCR</p>
+              <Badge variant="warning">Por verificar</Badge>
             </div>
-            {formData.confidence < 60 && (
-              <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                Revisa bien los datos extraídos
-              </p>
-            )}
+            <p className="text-xs text-gray-600 mt-1.5 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              Revisa que monto, fecha y proveedor sean correctos antes de guardar
+            </p>
           </div>
         </div>
 

@@ -59,44 +59,29 @@ export default function LoginPage() {
     }
   }
 
-  // Web3Forms: Recuperación de contraseña
+  // Autoservicio de recuperación: el cliente recibe por correo un enlace
+  // firmado para fijar su nueva contraseña (sin intervención del admin).
   const handleRecoverySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormLoading(true)
     setFormSuccess(null)
 
     try {
-      const response = await fetch('https://api.web3forms.com/submit', {
+      const response = await fetch('/api/auth/reset-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
-          from_name: 'GastosNX - Recuperación',
-          email: 'gastos@nxchile.com',
-          subject: `🔐 Solicitud recuperación: ${recoveryForm.email}`,
-          message: `
-            Nueva solicitud de recuperación de contraseña:
-            
-            Email del usuario: ${recoveryForm.email}
-            Empresa: ${recoveryForm.empresa}
-            Fecha: ${new Date().toLocaleString('es-CL')}
-            
-            Acción requerida: Verificar usuario y enviar nueva contraseña.
-          `,
-          redirect: 'false',
-        }),
+        body: JSON.stringify({ email: recoveryForm.email }),
       })
 
-      const result = await response.json()
+      if (!response.ok) throw new Error('Error enviando solicitud')
 
-      if (result.success) {
-        setFormSuccess('✅ Solicitud enviada. Te contactaremos a la brevedad.')
-        setRecoveryForm({ email: '', empresa: '' })
-        setTimeout(() => setShowRecoveryModal(false), 3000)
-      } else {
-        throw new Error('Error enviando formulario')
-      }
-    } catch (err) {
+      // La API responde igual exista o no la cuenta, para no revelar qué
+      // correos tienen cuenta registrada.
+      setFormSuccess(
+        '✅ Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja.'
+      )
+      setRecoveryForm({ email: '', empresa: '' })
+    } catch {
       setError('Error enviando solicitud. Intenta nuevamente.')
     } finally {
       setFormLoading(false)

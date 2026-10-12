@@ -358,6 +358,21 @@
 - [ ] `Host: rinde.nxchile.com` + `$BASE/super-admin` → `404` (no disponible desde `rinde.*`, por diseño)
 - [ ] `Host: rinde.nxchile.com` + `$BASE/images/clients/ac_logo.png` → `200` (assets)
 - [ ] `Host: rinde.nxchile.com` + `$BASE/manifest.json` → `200`
+- [ ] `Host: rinde.nxchile.com` + `$BASE/reset-password?token=x` → `200` (recuperación de contraseña; **no** debe dar 404)
+- [ ] `Host: rinde.nxchile.com` + `$BASE/dashboard` → `307` (redirección de auth; **no** debe dar 404)
+
+#### 11.5. Recuperación de contraseña (autoservicio)
+- [ ] En `/login`, "¿Olvidaste tu contraseña?" con un correo **inexistente** → mensaje genérico (no revela si existe)
+- [ ] Con un correo **existente** → llega correo con enlace `/reset-password?token=…`
+- [ ] Abrir el enlace y fijar una contraseña de **< 8 caracteres** → error de validación
+- [ ] Fijar una contraseña válida → confirma y redirige al login
+- [ ] Iniciar sesión con la contraseña nueva → funciona
+- [ ] **Reutilizar el mismo enlace una segunda vez** → error (el token quedó invalidado al cambiar el hash)
+- [ ] Esperar más de 1 h (o manipular el token) → error "enlace venció o no es válido"
+
+#### 11.6. Verificación de hashing (opcional, sin tocar producción)
+- [ ] Confirmar que la hoja `Usuarios` **no** tiene contraseñas en texto plano: cada valor de la columna B debe cumplir `sha256:<salt>:<hash>` o ser un SHA-256 plano de 64 caracteres hex (legacy en transición).
+- [ ] Un usuario `legacy` que entra por primera vez queda migrado a formato con sal en su siguiente login.
 
 #### 11.4. Verificación en producción (post-deploy, siempre)
 - [ ] `curl -s -o /dev/null -w "%{http_code}" https://rinde.nxchile.com/api/auth/me` → **401**, NO `404`

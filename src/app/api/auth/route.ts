@@ -1,11 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createHash } from 'crypto'
 import { getSheets } from '@/lib/sheets'
 import { signSession, setSessionCookie } from '@/lib/session'
+import { verifyPassword, hashPassword, detectFormat } from '@/lib/password'
 
-// Hash con SHA256 (compatible con auth.ts del cliente)
-function hashPassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex')
+/**
+ * Migración transparente (ADR-001): si el valor almacenado usa el formato
+ * histórico SHA-256 sin sal, se reescribe con sal en el primer login exitoso.
+ * `rowNumber` es el número real de fila en la hoja (el rango se lee desde A2).
+ * Nunca debe impedir el login si la escritura falla.
+ */
+async function upgradeStoredHash(
+  email: string,
+  rowNumber: number,
+  password: string
+): Promise<void> {
+  try {
+    const sheets = await getSheets()
+    const spreadsheetId = process.env.GOOGLE_CONFIG_SHEET_ID
+    if (!spreadsheetId) return
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `Usuarios!B${rowNumber}`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [[hashPassword(password)]] },
+    })
+    console.log(`🔐 API Auth: hash migrado a formato con sal para ${email} (fila ${rowNumber})`)
+  } catch (err) {
+    console.warn(`⚠️ API Auth: no se pudo migrar el hash de ${email}:`, err)
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -48,20 +71,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Buscar usuario por email
-    const passwordHash = hashPassword(password)
-    const userRow = rows.find(row => {
+    // Buscar usuario por email.
+    // `rows` empieza en la fila 2 de la hoja, por eso el índice + 2.
+    const index = rows.findIndex((row) => {
       const [rowEmail, rowPassword] = row
       const emailMatch = rowEmail?.toLowerCase().trim() === email.toLowerCase().trim()
-      const passwordMatch = rowPassword === passwordHash || rowPassword === password
-      return emailMatch && passwordMatch
+      return emailMatch && verifyPassword(password, rowPassword)
     })
+    const userRow = index >= 0 ? rows[index] : undefined
 
     if (!userRow) {
       return NextResponse.json(
         { error: 'Email o contraseña incorrectos' },
         { status: 401 }
       )
+    }
+
+    // Migración transparente: si el hash venía en formato histórico, se
+    // actualiza a formato con sal sin interrumpir el login.
+    const storedFormat = detectFormat(userRow[1])
+    if (storedFormat === 'legacy') {
+      await upgradeStoredHash(email.trim().toLowerCase(), index + 2, password)
     }
 
     // Parsear datos del usuario (columnas de la hoja Usuarios)

@@ -49,21 +49,3 @@ export async function uploadReceiptImage(
   }
 }
 
-/**
- * Eliminar imagen de boleta
- * @param imageUrl - URL completa de la imagen
- */
-export async function deleteReceiptImage(imageUrl: string): Promise<void> {
-  try {
-    // Extraer el path de la URL
-    const urlParts = imageUrl.split('/receipts/')
-    if (urlParts.length < 2) return
-
-    const path = urlParts[1]
-
-    await supabase.storage.from('receipts').remove([path])
-    console.log(`✅ Imagen eliminada: ${path}`)
-  } catch (error) {
-    console.error('❌ Error eliminando imagen:', error)
-  }
-}

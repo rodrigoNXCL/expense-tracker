@@ -561,13 +561,15 @@ NEXT_PUBLIC_WEB3FORMS_KEY
 ## 11. Observaciones / temas pendientes conocidos
 
 > Las siguientes inconsistencias se encuentran **registradas como ADR en `docs/DECISIONS.md`**, ordenadas de mayor a menor importancia, cada una con sus pasos a corregir. Referencia cruzada del seguimiento: `DECISIONS.md`.
-> **Estado 2026-09-08:** ADR-002, ADR-003, ADR-004, ADR-007 y ADR-008 **resueltos**. Fases 1-8 del plan **completadas** (RindeNX desplegado y verificado en `rinde.nxchile.com`).
+> **Estado 2026-09-14:** ADR-001, ADR-002, ADR-003, ADR-004, ADR-005, ADR-006, ADR-007, ADR-008 y ADR-013 **resueltos**. Fases 1-8 del plan **completadas**. **Sin pendientes abiertos.**
 
 | # | ADR | Tema pendiente | Urgencia |
 |---|-----|----------------|----------|
-| 1 | **ADR-001** | Estrategia de hashing de contraseñas inconsistente e insegura (SHA-256 plano vs. `algo:salt:hash`; password en texto plano vía email; admin default `admin123`) | 🔴 Crítica (seguridad) |
-| 2 | **ADR-005** | Confianza de OCR fija en 95 (Google Vision no entrega confianza en TEXT_DETECTION) — valor no fiable | 🟢 Baja (UX) |
-| 3 | **ADR-006** | Código muerto / no usado: `api/user` (501), `lib/sheets-users.ts` vacío, `deleteReceiptImage` sin uso, assets de `layout.tsx` faltantes | 🟡 Baja (deuda técnica) |
+| — | — | **Sin pendientes.** ADR-001, ADR-005 y ADR-006 fueron resueltos el 2026-09-14. | — |
+
+✅ **ADR-001 (2026-09-14):** **Resuelto.** Hashing unificado con sal en `src/lib/password.ts` (`sha256:<salt>:<hash>`, salt criptográfico, `timingSafeEqual`). **Eliminado el fallback de contraseña en texto plano** que realmente autenticaba en producción (tanto en `api/auth` como en `api/super-admin/auth`). Los 5 usuarios que estaban en texto plano se migraron a la hoja; los 5 clientes con SHA-256 sin sal se migran solos en su próximo login (rehash-on-login, el fallo de escritura nunca bloquea el acceso). Contraseña fuera de los emails. `admin123` reemplazado por una aleatoria mostrada una sola vez. Generador de hash corregido. **Nuevo autoservicio de recuperación de contraseña** (`/api/auth/reset-request`, `/api/auth/reset-confirm`, página `/reset-password`) con token HMAC stateless: el cliente se recupera solo, sin depender de un admin. Ver `DECISIONS.md` ADR-001.
+✅ **ADR-005 (2026-09-14):** **Resuelto.** `api/ocr` ya no devuelve `confidence: 95` (Google Vision en `TEXT_DETECTION` no entrega ese dato): ahora devuelve `null`. La UI muestra "Texto reconocido · revisa los datos" y "Datos extraídos por OCR — Por verificar" en vez de un porcentaje inventado. `parseBoletaChilena` tolera `null` y normaliza a `0`.
+✅ **ADR-006 (2026-09-14):** **Resuelto.** Eliminados el stub `api/user` (501), el archivo vacío `lib/sheets-users.ts` y `deleteReceiptImage` (nunca invocado). Las 4 referencias Open Graph apuntaban a `og-image.jpg`, que **no existía** (404); se reapuntaron a `hero_principal.webp`.
 
 ✅ **ADR-002 (2026-08-10):** Sesión migrada a **JWT HS256 en cookie httpOnly** (`src/lib/session.ts`), endpoints `/api/auth/me` y `/api/auth/logout`, API routes leen `readSession`, cliente usa `loadSession()`. Eliminada la sesión manipulable de localStorage + `x-session`.
 ✅ **ADR-003 (2026-08-28):** **Resuelto** — Unificación de límites por plan, nueva estructura de precios por usuario ($3.300 anual / $4.000 mensual + extras), eliminación del plan Enterprise de la oferta pública, alineación de toda la UI pública. Ver `DECISIONS.md` ADR-003.

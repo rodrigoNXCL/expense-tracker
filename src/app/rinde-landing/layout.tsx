@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     url: 'https://rinde.nxchile.com',
     images: [
       {
-        url: 'https://rinde.nxchile.com/images/og-image.jpg',
+        url: 'https://rinde.nxchile.com/images/hero_principal.webp',
         width: 1200,
         height: 630,
         alt: 'RindeNX - Rendiciones cuadradas',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'RindeNX - Rendiciones cuadradas para fondos por rendir',
     description: 'Asigna fondos, rinde con OCR y obtén el asiento contable automático. Desarrollado por NXChile.',
-    images: ['https://rinde.nxchile.com/images/og-image.jpg'],
+    images: ['https://rinde.nxchile.com/images/hero_principal.webp'],
   },
   robots: {
     index: true,

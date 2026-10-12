@@ -11,16 +11,18 @@ export default function GeneradorHashPage() {
   const [hash, setHash] = useState('')
   const [copied, setCopied] = useState(false)
 
+  // El hash se genera en el servidor para usar la misma implementación que el
+  // login (salt criptográfico, formato `sha256:<salt>:<hash>`). Antes se hacía
+  // en el cliente con `Math.random()` y el formato podía no ser aceptado (ADR-001).
   const generateHash = async (pwd: string) => {
-    const salt = Math.random().toString(36).substring(2)
-    const hashBuffer = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(salt + pwd)
-    )
-    const hashValue = Array.from(new Uint8Array(hashBuffer))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('')
-    return `sha256:${salt}:${hashValue}`
+    const response = await fetch('/api/admin/hash-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd }),
+    })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.error || 'Error generando el hash')
+    return result.hash as string
   }
 
   const handleGenerate = async () => {

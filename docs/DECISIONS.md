@@ -30,7 +30,7 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 
 ### ADR-001 — Estrategia de hashing de contraseñas inconsistente e insegura
 - **Fecha:** 2026-08-09
-- **Estado:** Propuesta (pendiente de corrección)
+- **Estado:** ✅ **Resuelto** (2026-09-14) — ver resolución al final.
 - **Contexto:** Existen **dos mecanismos de hash incompatibles**:
   - Login real (`api/auth`, cliente `lib/auth.ts`): hash **SHA-256 plano** del password.
   - Herramientas/stubs (`admin/generador-hash`, `lib/password-utils.ts`): formato **`algo:salt:hash`** (SHA-256 con salt). El generador de hash produce hashes `sha256:<salt>:<hash>` que **NO son compatibles** con el login actual (que no aplica salt).
@@ -47,6 +47,17 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
   5. Cambiar el admin por defecto de `create-user-sheet` (eliminar `admin123`).
   6. Regenerar/limpiar los hashes existentes en la sheet `Usuarios`.
 - **Referencias:** `src/app/api/auth/route.ts`, `src/lib/auth.ts`, `src/lib/password-utils.ts`, `src/app/admin/generador-hash/page.tsx`, `src/app/api/admin/create-user-sheet/route.ts`, `src/app/api/admin/reset-password/...`.
+- **Resolución implementada (2026-09-14):**
+  1. **Librería única** `src/lib/password.ts`: `hashPassword()` produce `sha256:<salt>:<hash>` con salt criptográfico de 16 bytes (`randomBytes`); `verifyPassword()` acepta el formato con sal y el histórico SHA-256 plano; comparación con `timingSafeEqual`. `generatePassword()` para altas. Se eliminaron `lib/password-utils.ts` (nunca lo usó el login) y el `hashPassword` duplicado de `lib/auth.ts`, que ahora reexporta desde `lib/password.ts`.
+  2. **Fallback de texto plano eliminado.** `api/auth/route.ts` y `api/super-admin/auth/route.ts` ya no comparan `rowPassword === password`. Ese fallback era lo que realmente autenticaba en producción.
+  3. **Migración de la hoja.** Los 5 usuarios con contraseña en texto plano (`rodrigo@nxchile.com`, `admin@nxchile.cl`, `test@nxchile.cl`, `transrcc.cl@gmail.com`, `prueba@nxchile.com`) se migraron a `sha256:<salt>:<hash>` con script con backup y dry-run. Contraseña unificada por decisión del owner: `1234567`.
+  4. **Migración transparente (rehash-on-login).** `api/auth` y `api/super-admin/auth` detectan formato `legacy` y reescriben la fila con sal en el primer login exitoso, sin interrumpir la sesión. El fallo de escritura se captura y solo se registra: nunca bloquea el login. Cubre a los 5 clientes reales (San Andrés, Bastcon, RCC) que conservaban SHA-256 sin sal y cuyo texto plano no era recuperable.
+  5. **Generador de hash corregido.** `/admin/generador-hash` delega en `POST /api/admin/hash-password` (protegido, requiere rol admin/superadmin), que usa `lib/password.ts`. Antes generaba en el cliente con salt de `Math.random()` y un formato que el login podía rechazar.
+  6. **Contraseña fuera del correo.** `api/registro/free` ya no incluye `Password:` en el email de Web3Forms.
+  7. **`admin123` eliminado.** `create-user-sheet` genera una contraseña aleatoria de 14 caracteres, la hashea y la devuelve **una sola vez** en la respuesta; la hoja solo guarda el hash.
+  8. **Autoservicio de recuperación de contraseña (nuevo).** Antes el modal de recuperación solo enviaba un email a NXChile y dependía de que un admin respondiera. Ahora: `POST /api/auth/reset-request` valida el correo, genera un **token stateless HMAC** (email + expiración de 1 h) firmado con `AUTH_SECRET` y envía el enlace por correo; `POST /api/auth/reset-confirm` valida el token y escribe el hash con sal; página `/reset-password?token=…` para fijar la nueva contraseña (mínimo 8 caracteres). Al ser stateless **no requiere columnas nuevas en la hoja** ni estado que limpiar. `reset-request` responde siempre `{ ok: true }` para no revelar qué correos tienen cuenta.
+- **Verificación:** 16/16 pruebas unitarias de `hashPassword`/`verifyPassword`/`detectFormat` (incluye rechazo de texto plano y aceptación de legacy). Login real verificado para los 4 usuarios migrados y rechazo de contraseña incorrecta (401). `reset-request` devuelve `{ ok: true }` tanto para correo existente como inexistente; `reset-confirm` rechaza token inválido (400).
+- **Referencias post-resolución:** `src/lib/password.ts`, `src/app/api/auth/{route,reset-request,reset-confirm}`, `src/app/api/super-admin/auth/route.ts`, `src/app/api/admin/hash-password/route.ts`, `src/app/reset-password/page.tsx`, `src/app/login/page.tsx`, `src/app/admin/generador-hash/page.tsx`, `src/app/api/admin/create-user-sheet/route.ts`, `src/app/api/registro/free/route.ts`.
 
 ---
 
@@ -116,7 +127,7 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 
 ### ADR-005 — Confianza de OCR no fiable (valor fijo)
 - **Fecha:** 2026-08-09
-- **Estado:** Propuesta (pendiente de corrección)
+- **Estado:** ✅ **Resuelto** (2026-09-14) — ver resolución al final.
 - **Contexto:** En `api/ocr` (Google Cloud Vision) el campo `confidence` se fija en **95** de forma fija, porque Google Vision no entrega confianza en `TEXT_DETECTION`. Ese valor se usa luego para colorear badges ("Confianza OCR") y para mensajes de advertencia, dando una falsa sensación de precisión.
 - **Decisión (pendiente):** El `ocr_confidence` no debe reflejar un valor inventado. Evaluar una heurística de confianza derivada del parseo (p. ej. completitud de campos extraídos por `lib/parser.ts`) o marcar el valor como no disponible.
 - **Alternativas consideradas:** usar la confianza de documento de Vision (no disponible en este modo); calcular un índice de completitud del parseo.
@@ -126,12 +137,19 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
   2. Calcular un índice de confianza basado en cuántos campos clave (`proveedor`, `monto`, `fecha`, `rut`) se extrajeron en el parseo.
   3. Ajustar la UI (`ExpenseForm`) para reflejar ese índice o un estado "no disponible".
 - **Referencias:** `src/app/api/ocr/route.ts`, `src/components/ExpenseForm.tsx`, `src/lib/parser.ts`.
+- **Resolución implementada (2026-09-14):** se eligió la opción "marcar como no disponible" por ser la honesta y de menor riesgo.
+  1. `api/ocr` ya no fija `confidence = 95`; devuelve `confidence: null` porque Vision en `TEXT_DETECTION` no entrega ese dato.
+  2. `lib/parser.ts`: `parseBoletaChilena` acepta `number | null` y normaliza a `0` ("no disponible"), para no propagar `null` como si fuera una medición.
+  3. `captura/page.tsx`: el badge "OCR 95%" se reemplaza por "Texto reconocido · revisa los datos".
+  4. `components/ExpenseForm.tsx`: el badge de "Confianza OCR" con porcentaje y su alerta condicionada se reemplazan por "Datos extraídos por OCR — Por verificar", con instrucción de revisar monto, fecha y proveedor.
+  5. `save-expense` sigue escribiendo `ocr_confidence` con `|| 0`, por lo que la columna `ocr_confidence` de la hoja `Gastos` se mantiene válida (`0` = no disponible).
+- **Consecuencia:** la UI ya no muestra un número inventado; la responsabilidad de verificar los campos queda explícita para el usuario. No se implementó el índice de completitud del parseo porque añade complejidad sin valor real: el usuario revisa igual.
 
 ---
 
 ### ADR-006 — Endpoints y librerías no utilizadas (código muerto)
 - **Fecha:** 2026-08-09
-- **Estado:** Propuesta (pendiente de corrección)
+- **Estado:** ✅ **Resuelto** (2026-09-14) — ver resolución al final.
 - **Contexto:** Existen elementos sin uso funcional que confunden el estado del proyecto:
   - `api/user` es un stub que retorna **501 Not implemented**.
   - `lib/sheets-users.ts` está **vacío**.
@@ -146,6 +164,12 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
   3. Decidir si se implementa el borrado de imágenes y vincularlo a un flujo (ej. eliminar gasto).
   4. Verificar que los assets referenciados en `layout.tsx` existan en `public/images`.
 - **Referencias:** `src/app/api/user/route.ts`, `src/lib/sheets-users.ts`, `src/lib/storage.ts`, `src/app/layout.tsx`.
+- **Resolución implementada (2026-09-14):** se optó por eliminar en lugar de implementar, salvo el punto 4.
+  1. `api/user` **eliminado** (era un stub 501 sin consumidores; la sesión se expone en `/api/auth/me`, ADR-002).
+  2. `lib/sheets-users.ts` **eliminado** (archivo vacío, sin imports en todo el proyecto).
+  3. `deleteReceiptImage` **eliminado** de `lib/storage.ts`. No existía flujo de borrado de imágenes que lo invocara; el borrado de gastos no borra el comprobante de Supabase, por lo que mantener la función sin uso solo sugería una capacidad inexistente. **Deuda consciente:** si en el futuro se implementa el borrado de imágenes, hay que reincorporar la función y conectarla a ese flujo.
+  4. Assets de `layout.tsx`: `og-image.jpg` estaba referenciado en 4 lugares (`layout.tsx` ×2, `rinde-landing/layout.tsx` ×2) pero **no existía** en `public/images/`, por lo que las metaetiquetas Open Graph apuntaban a un 404. Reapuntadas a `hero_principal.webp`, que sí existe.
+- **Consecuencias:** superficie de código menor y documentación coherente con el estado real. Se eliminan rutas de API públicas (`/api/user` pasaba de 501 a 404).
 
 ---
 

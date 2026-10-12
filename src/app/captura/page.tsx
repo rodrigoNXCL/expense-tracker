@@ -361,9 +361,12 @@ export default function CapturaPage() {
                 <h2 className="text-xl font-bold text-gray-900">Revisar Datos</h2>
                 <p className="text-sm text-gray-500">Verifica que los datos sean correctos</p>
               </div>
-              <Badge variant={ocrResult && ocrResult.confidence >= 80 ? 'success' : 'warning'} className="inline-flex items-center gap-1">
+              {/* No se muestra un porcentaje de confianza: Google Vision en
+                  TEXT_DETECTION no devuelve confianza real, así que cualquier
+                  número sería inventado (ADR-005). */}
+              <Badge variant="success" className="inline-flex items-center gap-1">
                 <Sparkles className="w-3 h-3" />
-                OCR {ocrResult ? `${ocrResult.confidence.toFixed(0)}%` : ''}
+                Texto reconocido · revisa los datos
               </Badge>
             </div>
             <ExpenseForm

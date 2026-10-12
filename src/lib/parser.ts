@@ -7,12 +7,13 @@ export interface ParsedExpense {
   boletaNumero: string
   tipoDocumento: 'boleta' | 'factura' | 'voucher' | 'sin_comprobante'
   rawText: string
+  /** Ver ADR-005: Google Vision no entrega confianza real; 0 = no disponible. */
   confidence: number
   categoria?: string
   notas?: string
 }
 
-export function parseBoletaChilena(ocrText: string, confidence: number): ParsedExpense {
+export function parseBoletaChilena(ocrText: string, confidence?: number | null): ParsedExpense {
   // Normalizar texto: unificar saltos de línea y espacios
   const normalized = ocrText
     .replace(/\r\n/g, '\n')
@@ -158,7 +159,7 @@ export function parseBoletaChilena(ocrText: string, confidence: number): ParsedE
 
   console.log('✅ Parseado:', { proveedor, rut, monto, fecha, boletaNumero, tipoDocumento })
 
-  return { fecha, rut, proveedor, monto, giro, boletaNumero, tipoDocumento, rawText: ocrText, confidence }
+  return { fecha, rut, proveedor, monto, giro, boletaNumero, tipoDocumento, rawText: ocrText, confidence: confidence ?? 0 }
 }
 
 // ===== HELPERS =====

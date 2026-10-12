@@ -10,14 +10,9 @@ export interface UserSession {
   tipo_usuario: 'gastos' | 'rinde' | 'ambos'
 }
 
-// Hash simple para passwords (SHA256)
-export async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(password)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-}
+// Hash de contraseñas. La implementación vive en `lib/password.ts` (con sal) y
+// se reexporta aquí para no romper los imports existentes (ADR-001).
+export { hashPassword, verifyPassword, generatePassword } from '@/lib/password'
 
 // Validar usuario contra Google Sheets
 export async function validateUser(email: string, password: string): Promise<UserSession | null> {

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     url: 'https://gastos.nxchile.com',
     images: [
       {
-        url: 'https://gastos.nxchile.com/images/og-image.jpg',
+        url: 'https://gastos.nxchile.com/images/hero_principal.webp',
         width: 1200,
         height: 630,
         alt: 'GastosNX - Guarda y organiza gastos',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
     description: 'Guarda y organiza gastos desde el celular antes de que se pierdan. Para pymes y contadores en Chile.',
-    images: ['https://gastos.nxchile.com/images/og-image.jpg'],
+    images: ['https://gastos.nxchile.com/images/hero_principal.webp'],
   },
   
   manifest: '/manifest.json',

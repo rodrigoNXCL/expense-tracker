@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSheets } from '@/lib/sheets'
+import { hashPassword, generatePassword } from '@/lib/password'
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,10 +78,14 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Agregar usuario admin por defecto
+    // Agregar usuario admin por defecto con contraseña aleatoria y hasheada.
+    // Ya no se usa una contraseña fija conocida (`admin123`): se genera una
+    // al azar y se devuelve una sola vez por la respuesta para que el admin
+    // la guarde. La hoja nunca almacena la contraseña en texto plano (ADR-001).
+    const generatedPassword = generatePassword(14)
     const adminUser = [
       'admin@nxchile.cl',
-      'admin123', // ← CAMBIAR después del primer login
+      hashPassword(generatedPassword),
       'NXChile',
       'admin',
       9999,
@@ -102,10 +107,17 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Hoja Usuarios creada exitosamente')
 
+    // La contraseña se devuelve una sola vez aquí y nunca se vuelve a mostrar:
+    // en la hoja solo queda el hash con sal.
     return NextResponse.json({
       message: '✅ Hoja Usuarios creada',
       sheetId: newSheetId,
       headers,
+      adminEmail: 'admin@nxchile.cl',
+      adminPassword: generatedPassword,
+      aviso:
+        'Guarda esta contraseña ahora: no se vuelve a mostrar. ' +
+        'Puedes recuperarla después con "Olvidé mi contraseña" en el login.',
     })
   } catch (error) {
     console.error('❌ Error creando hoja:', error instanceof Error ? error.message : error)

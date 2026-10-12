@@ -72,9 +72,12 @@ export async function POST(request: NextRequest) {
 
     // Extraer texto completo
     const fullText = data.responses[0].textAnnotations[0].description
-    const confidence = 95 // Google Vision no retorna confidence en TEXT_DETECTION
+    // Google Cloud Vision en TEXT_DETECTION NO entrega un puntaje de confianza
+    // por palabra. Se devuelve `null` para que la UI no muestre un porcentaje
+    // inventado; la revisión de los datos queda a cargo del usuario (ADR-005).
+    const confidence: number | null = null
 
-    console.log(`✅ Google Cloud Vision: ${confidence}% confianza`)
+    console.log(`✅ Google Cloud Vision: texto extraído (sin puntaje de confianza disponible)`)
     console.log(`📄 Texto extraído:`, fullText.substring(0, 300))
 
     return NextResponse.json({ 

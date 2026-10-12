@@ -43,10 +43,19 @@ export function proxy(request: NextRequest) {
     case '/':
     case '/landing':
       return NextResponse.rewrite(new URL('/rinde-landing', request.url))
+    // Rutas públicas que existen en la raíz de la app y no deben llevar
+    // el prefijo /rinde (si no, el rewrite final las deja en 404).
     case '/login':
     case '/rinde-landing':
     case '/precios':
+    case '/reset-password':
       return NextResponse.next()
+  }
+
+  // Alias: el dashboard de RindeNX vive en /rinde, no en /rinde/dashboard.
+  // Sin esto, /dashboard en el subdominio caería en el rewrite final y daría 404.
+  if (pathname === '/dashboard') {
+    return NextResponse.rewrite(new URL('/rinde', request.url))
   }
 
   // API routes: viven en /api/* y son compartidas por ambos productos

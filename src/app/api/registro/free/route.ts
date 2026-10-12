@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { hashPassword } from '@/lib/auth'
+import { hashPassword } from '@/lib/password'
 import { getSheets } from '@/lib/sheets'
 
 async function getSheetsClient() {
@@ -116,8 +116,11 @@ export async function POST(request: NextRequest) {
             Email: ${email}
             Empresa: ${empresa_nombre}
             Plan: Free
-            Password: ${password}
             Fecha: ${new Date().toLocaleString('es-CL')}
+
+            La contraseña NO se incluye en este correo por seguridad.
+            Usa "Olvidé mi contraseña" en la pantalla de login, o
+            genera un hash en /admin/generador-hash para fijarla manualmente.
             
             ⚠️ ACCIONES REQUERIDAS:
             1. Guarda esta password en un lugar seguro
