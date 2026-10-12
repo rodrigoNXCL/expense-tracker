@@ -9,6 +9,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://gastos.nxchile.com'),
   title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
   description: 'Guarda y organiza gastos desde el celular antes de que se pierdan. Pensado para pymes y contadores en Chile. Prueba gratis.',
   keywords: ['gastos operacionales', 'pymes Chile', 'contadores Chile', 'respaldo gastos', 'ordenar boletas', 'control de gastos'],
@@ -47,6 +48,15 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  // El canonical se resuelve por layout. Este layout raíz sirve a
+  // gastos.nxchile.com, que es el dominio principal del repositorio.
+  // RindeNX lo sobrescribe en app/rinde-landing/layout.tsx y app/precios.
+  // No declarar aquí un <link rel="canonical"> fijo: el layout raíz también
+  // lo heredan las páginas de RindeNX y terminaban canonizadas hacia
+  // gastos.nxchile.com, lo que impide indexarlas correctamente.
+  alternates: {
+    canonical: '/',
+  },
   icons: {
     icon: '/favicon.ico',
     apple: '/icon-192.png',
@@ -56,8 +66,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Sin maximumScale/userScalable: bloquear el zoom impide leer el contenido
+  // en móvil y rompe accesibilidad (WCAG 1.4.4).
   themeColor: '#10b981'
 }
 
@@ -69,7 +79,6 @@ export default function RootLayout({
   return (
     <html lang="es-CL" className={inter.variable}>
       <head>
-        <link rel="canonical" href="https://gastos.nxchile.com" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

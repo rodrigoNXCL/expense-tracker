@@ -50,6 +50,10 @@ export function proxy(request: NextRequest) {
     case '/precios':
     case '/reset-password':
     case '/mi-cuenta':
+    // Archivos de SEO generados por host: sin esto, el rewrite final los
+    // mandaría a /rinde/robots.txt y /rinde/sitemap.xml (404).
+    case '/robots.txt':
+    case '/sitemap.xml':
       return NextResponse.next()
   }
 

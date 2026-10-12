@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   description: 'Digitaliza los fondos por rendir de tu empresa: asigna fondos, rinde gastos con OCR y obtén el asiento contable automático. Desarrollado por NXChile.',
   keywords: ['rendiciones', 'fondos por rendir', 'caja chica', 'asiento contable', 'Chile', 'NXChile', 'rendimiento de cuentas'],
   authors: [{ name: 'NXChile' }],
+  // Canonical propio: el layout raíz lo declara hacia gastos.nxchile.com, y
+  // sin esto la landing de RindeNX se canonizaría contra el dominio hermano.
+  alternates: {
+    canonical: 'https://rinde.nxchile.com',
+  },
   openGraph: {
     title: 'RindeNX - Rendiciones cuadradas para fondos por rendir',
     description: 'Asigna fondos, rinde con OCR y obtén el asiento contable automático. Desarrollado por NXChile.',
@@ -40,8 +45,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Sin maximumScale/userScalable: bloquear el zoom impide leer el contenido
+  // en móvil y rompe accesibilidad (WCAG 1.4.4).
   themeColor: '#f59e0b',
 }
 

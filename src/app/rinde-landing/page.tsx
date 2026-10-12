@@ -140,10 +140,10 @@ export default function RindeLandingPage() {
                   </div>
                 </div>
                 <div className="mt-5 pt-4 border-t border-black/5 flex items-center justify-between">
-                  <p className="text-xs text-neutral-500">Asiento contable automático</p>
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600">
-                    <Check className="w-3.5 h-3.5" /> Debe = Haber
-                  </span>
+<p className="text-xs text-neutral-500">Detalle del asiento por cuenta</p>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600">
+                      <Check className="w-3.5 h-3.5" /> Listo para tu contador
+                    </span>
                 </div>
               </div>
             </div>
@@ -222,7 +222,7 @@ export default function RindeLandingPage() {
                   { step: 4, title: 'Revisar', desc: 'El administrador revisa cada gasto, verifica montos y comprobantes. Todo queda registrado con comentarios.', icon: Users },
                   { step: 5, title: 'Aprobar o rechazar', desc: 'Aprueba rendiciones cuadradas o rechaza las que tengan diferencias. La decisión queda trazada.', icon: Check },
                   { step: 6, title: 'Cuadrar', desc: 'El sistema calcula la diferencia contra el fondo asignado. Saldo a favor, saldo por devolver, todo claro.', icon: Layers },
-                  { step: 7, title: 'Cerrar y generar asiento', desc: 'Al cerrar la rendición, RindeNX genera la información y el asiento contable que acompaña la rendición para su proceso contable. Debe = Haber, siempre.', icon: FileText },
+                  { step: 7, title: 'Cerrar y generar asiento', desc: 'Al cerrar la rendición, RindeNX genera el detalle de la información contable que acompaña la rendición, listo para que tu contador lo revise y valide.', icon: FileText },
                 ].map((item, i) => (
                   <div key={i} className="relative flex items-start gap-6 pl-0">
                     <div className="relative z-10 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
@@ -331,10 +331,10 @@ export default function RindeLandingPage() {
                 </div>
               </div>
               <div className="mt-5 pt-4 border-t border-black/5 flex items-center justify-between">
-                <p className="text-xs text-neutral-500">Asiento contable generado</p>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600">
-                  <Check className="w-3.5 h-3.5" /> Debe = Haber
-                </span>
+<p className="text-xs text-neutral-500">Detalle del asiento por cuenta</p>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600">
+                    <Check className="w-3.5 h-3.5" /> Listo para tu contador
+                  </span>
               </div>
             </div>
           </div>
@@ -370,7 +370,7 @@ export default function RindeLandingPage() {
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Check className="w-6 h-6 text-amber-600" /></div>
               <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Asiento automático</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Al aprobar, RindeNX genera el asiento con Debe = Haber: anticipo, saldo a favor y saldo por devolver, sin errores.</p>
+              <p className="text-neutral-500 text-sm leading-relaxed">Al aprobar, RindeNX genera una propuesta de asiento con el detalle de anticipo, saldo a favor y saldo por devolver. El cuadre contable y el tratamiento de cada operación los valida tu contador.</p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Layers className="w-6 h-6 text-amber-600" /></div>
@@ -492,8 +492,8 @@ export default function RindeLandingPage() {
       <section className="py-24 lg:py-28 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">Lo que dicen quienes ya cuadran.</h2>
-            <p className="text-lg text-neutral-500 leading-relaxed">Empresas chilenas que pasaron del caos al control con RindeNX.</p>
+            <h2 className="text-3xl lg:text-5xl font-bold text-neutral-900 mb-5 tracking-tight">Empresas que ya controlan sus fondos con RindeNX</h2>
+            <p className="text-lg text-neutral-500 leading-relaxed">Así cambió su forma de seguir un fondo, del antes al después.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Testimonio 1 */}
@@ -511,10 +511,10 @@ export default function RindeLandingPage() {
               </div>
               <div className="mb-5">
                 <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Ahora</p>
-                <p className="text-neutral-600 text-sm leading-relaxed">Las rendiciones llegan cuadradas el mismo mes. Todo está en RindeNX, con OCR y asiento automático.</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">El fondo asignado, los gastos y el respaldo quedan en un solo lugar, con el estado de cada rendición siempre visible.</p>
               </div>
               <div className="pt-4 border-t border-neutral-100">
-                <p className="text-sm font-semibold text-amber-600">Resultado: 80% menos tiempo administrativo</p>
+                <p className="text-sm font-semibold text-amber-600">El fondo y sus rendiciones se siguen desde un solo lugar</p>
               </div>
             </div>
 
@@ -533,10 +533,10 @@ export default function RindeLandingPage() {
               </div>
               <div className="mb-5">
                 <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Ahora</p>
-                <p className="text-neutral-600 text-sm leading-relaxed">Todo está en RindeNX. El contador recibe la rendición completa, con respaldos y asiento listo.</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">El contador recibe la rendición con sus gastos, respaldos y saldos asociados, sin tener que perseguir comprobantes.</p>
               </div>
               <div className="pt-4 border-t border-neutral-100">
-                <p className="text-sm font-semibold text-amber-600">Resultado: Contador trabaja 60% más rápido</p>
+                <p className="text-sm font-semibold text-amber-600">La rendición llega ordenada y con sus respaldos</p>
               </div>
             </div>
 
@@ -555,10 +555,10 @@ export default function RindeLandingPage() {
               </div>
               <div className="mb-5">
                 <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Ahora</p>
-                <p className="text-neutral-600 text-sm leading-relaxed">Vemos todos los fondos en un solo panel. Cada rendición está controlada desde que se asigna hasta que se aprueba.</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">El fondo se controla desde que se asigna hasta que la rendición se aprueba, con el saldo pendiente siempre a la vista.</p>
               </div>
               <div className="pt-4 border-t border-neutral-100">
-                <p className="text-sm font-semibold text-amber-600">Resultado: Control total, 0 sorpresas</p>
+                <p className="text-sm font-semibold text-amber-600">Cada fondo queda con su rendición y su saldo</p>
               </div>
             </div>
           </div>
@@ -613,6 +613,48 @@ export default function RindeLandingPage() {
               ¿Buscas respaldo de gastos tributarios? Conoce GastosNX →
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* ===== PREGUNTAS FRECUENTES ===== */}
+      <section className="py-20 lg:py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-10 tracking-tight text-center">
+            Preguntas frecuentes
+          </h2>
+          <div className="space-y-8">
+            {[
+              {
+                q: '¿RindeNX reemplaza a mi contador?',
+                a: 'No. RindeNX organiza el fondo entregado, los gastos, los respaldos y el estado de cada rendición. La revisión contable y las decisiones tributarias siguen correspondiendo a tu contador.',
+              },
+              {
+                q: '¿RindeNX determina si un gasto es deducible?',
+                a: 'No. RindeNX no determina deducibilidad ni tratamiento tributario, y no reemplaza el criterio profesional del contador. El tratamiento de cada operación depende de los antecedentes y requisitos aplicables.',
+              },
+              {
+                q: '¿Quién puede cargar una rendición?',
+                a: 'La persona a la que se le asignó el fondo. El administrador revisa, aprueba o rechaza, dejando el motivo registrado.',
+              },
+              {
+                q: '¿Qué pasa si el rendidor gasta más que el fondo asignado?',
+                a: 'Queda registrado como sobre-rendición. El sistema calcula la diferencia y la deja visible para que la resuelvas al aprobar, en lugar de bloquear el gasto.',
+              },
+              {
+                q: '¿Puedo usar RindeNX sin GastosNX?',
+                a: 'Sí. Son productos independientes. GastosNX es un complemento opcional para los gastos menores que no siguen el flujo de una factura.',
+              },
+            ].map((item, i) => (
+              <div key={i} className="border-b border-black/5 pb-6 last:border-0">
+                <h3 className="text-base font-semibold text-neutral-900 mb-2">{item.q}</h3>
+                <p className="text-neutral-500 text-[15px] leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-neutral-400 mt-8 text-center">
+            RindeNX es una herramienta de control y registro operacional. No reemplaza al
+            contador ni determina el tratamiento tributario de las operaciones.
+          </p>
         </div>
       </section>
 
