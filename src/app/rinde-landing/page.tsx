@@ -60,14 +60,32 @@ export default function RindeLandingPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Producto de NXChile · Fondos por rendir
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-bold text-neutral-900 mb-6 leading-[1.05] tracking-tight">
-                Rendiciones que llegan
-                <br className="hidden sm:block" />
-                <span className="text-amber-600"> cuadradas, todos los meses.</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-neutral-900 mb-4 leading-[1.05] tracking-tight">
+                Controla tus <span className="text-amber-600">fondos por rendir</span> de principio a fin
               </h1>
-              <p className="text-lg sm:text-xl text-neutral-500 mb-10 max-w-xl leading-relaxed">
-                Controla cada fondo que entregas, cada gasto que se rinde y cada saldo pendiente, desde un solo lugar.
+              <p className="text-xl sm:text-2xl font-semibold text-neutral-700 mb-5">
+                Rendiciones que llegan cuadradas, todos los meses.
               </p>
+              <p className="text-lg text-neutral-500 mb-8 max-w-xl leading-relaxed">
+                Registra los gastos y respaldos de cada fondo, revisa y aprueba las
+                rendiciones, y conoce el saldo pendiente de cada responsable desde un
+                solo lugar.
+              </p>
+              {/* Qué hace, en tres pasos legibles */}
+              <ul className="mb-10 space-y-2.5 text-left max-w-xl">
+                {[
+                  'Asignas un fondo a quien lo rinde',
+                  'Registra cada gasto con su comprobante',
+                  'Revisas, apruebas y ves el saldo que queda',
+                ].map((t, i) => (
+                  <li key={i} className="flex items-start gap-3 text-neutral-700">
+                    <span className="mt-0.5 w-5 h-5 shrink-0 bg-amber-100 text-amber-700 rounded-full text-[11px] font-bold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    <span className="text-[15px] leading-relaxed">{t}</span>
+                  </li>
+                ))}
+              </ul>
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-7 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25">
                   Solicitar demostración <ArrowRight className="w-4 h-4" />
@@ -775,6 +793,11 @@ export default function RindeLandingPage() {
           <div className="pt-8 border-t border-white/10 text-center text-sm">
             <p className="mb-2 text-neutral-500">RindeNX no reemplaza al contador ni determina tratamiento tributario. Su objetivo es entregar orden, trazabilidad y asientos cuadrados.</p>
             <p className="text-neutral-500">© 2026 RindeNX by NXChile. Todos los derechos reservados.</p>
+            <p className="mt-3">
+              <a href="/privacidad" className="text-neutral-500 underline hover:text-white transition-colors">
+                Política de privacidad y tratamiento de datos
+              </a>
+            </p>
           </div>
         </div>
       </footer>

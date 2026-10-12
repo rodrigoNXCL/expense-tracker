@@ -109,9 +109,21 @@ Trabajo de auditoría previa y corrección quirúrgica sobre las landings públi
 - **RindeNX no tenía FAQ** mientras GastosNX sí (y su FAQ ya decía correctamente que no determina deducibilidad). Se añadió FAQ de 5 preguntas a RindeNX, incluyendo: no reemplaza al contador, no determina deducibilidad, quién carga la rendición, qué pasa ante sobre-rendición y que GastosNX es opcional. Con disclaimer de registro operacional.
 
 **Pendientes de decisión de negocio (no implementados):**
-- Instalar GA4 u otra analítica (bloquea toda medición de conversión).
-- Declarar o no si los precios de RindeNX incluyen IVA.
-- Política de privacidad y condiciones de contratación (hoy inexistentes).
+- Declarar o no si los precios de RindeNX incluyen IVA (no se modificó el texto de `/precios`).
+- Condiciones de contratación (hoy inexistentes). La política de privacidad **sí** se implementó.
+
+### Utilidad explícita en las landings + privacidad (2026-09-14)
+
+Segunda iteración de la auditoría: los H1 de ambas landings eran **ganchos de conversión**, no descripciones literales del producto. RindeNX no decía "fondos por rendir" en su H1 y GastosNX no decía "registro de gastos"; un visitante que solo leyera el titular no sabía qué era cada producto.
+
+- **H1 ahora literal y diferenciado:**
+  - RindeNX: "Controla tus **fondos por rendir** de principio a fin"
+  - GastosNX: "Registra tus **gastos operacionales** y conserva cada respaldo"
+  - **El gancho original no se perdió:** "Rendiciones que llegan cuadradas, todos los meses." (RindeNX) y "¿Dónde quedan los gastos que no son factura?" (GastosNX) se conservan como línea prominente bajo el H1.
+- **Bloque "qué hace" de 3 pasos** en ambos heroes, para que la utilidad se entienda en segundos sin displazar el CTA.
+- Se mantiene **un solo `<h1>` por página** (verificado).
+- **Política de privacidad y tratamiento de datos** (`src/app/privacidad/page.tsx`), redactada a partir del comportamiento **verificado en código**: hojas en Google Sheets aisladas por empresa, imágenes en Supabase Storage, envío de la imagen a Google Cloud Vision para OCR, cookie `gx_session` httpOnly con vigencia de 7 días, avisos por Web3Forms sin incluir contraseñas, y aclaración de que no se almacenan datos bancarios. Enlada desde el pie de ambas landings y agregada al proxy.
+- **GA4 preparado pero inactivo:** `src/app/layout.tsx` inyecta gtag **solo** si existe `NEXT_PUBLIC_GA4_ID`. Sin esa variable no se carga ningún script (verificado: 0 scripts). Al configurar el ID, los eventos `BillingToggle` y `PlanClick` de `/precios` —hoy código muerto por falta de gtag— pasan a registrarse.
 
 **Deuda consciente:** los `no-explicit-any` y `no-unused-vars` del lint siguen abiertos; no afectan la medición ni confiabilidad.
 - ✅ **Landing GastosNX — rediseño explicativo con flujos (2026-09-22):** reescritura completa de `src/app/page.tsx` (landing principal) según directriz de "explicación visual y flujos". Cambios: (1) hero reformulado: "¿Dónde quedan los gastos que no son factura?"; (2) nueva sección **Problema** con flujo visual "Lo que pasa hoy" vs "Lo que debería paso" (7 pasos cada uno, fondo negro); (3) sección **Explicación simple** "Todo gasto cuenta"; (4) **Flujo principal** central con 5 etapas (Gasto→Captura→Registro→Respaldo→Historial) usando iconos y colores; (5) **Ejemplo real** de peaje $8.500 con los 6 campos que captura GastosNX; (6) **Antes vs Después** comparativo lado a lado; (7) **Dashboard mockup real** con stats ($1.245.800), desglose por categoría y registros recientes; (8) **Tipos de gastos** (8 categorías con iconos); (9) **Flujo mensual** timeline día 1→30; (10) **Flujo anual** 12 meses con acumulación; (11) **RindeNX→GastosNX** separación factura vs boleta/voucher; (12) **Caso completo** rendición con fondo $500k y 5 gastos; (13) **Beneficios por perfil** (empresa, admin, trabajador, contador); (14) **Contabilidad/revisión** con mockup de exportación; (15) **Declaración de Renta** como consecuencia del orden; (16) **Clientes reales** logos; (17) **Planes** Free+Pro; (18) **FAQ** 9 preguntas; (19) **CTA final** + contadores + Instagram. Principios: sin ilustraciones abstractas, flujos con CSS puro, dashboard con datos reales, el dato y el flujo son el diseño. Se eliminaron: imagen `problema_boletas.webp` de fondo, imagen `hero_principal.webp` en sección problema, sección "Solución/features" original con 6 cards genéricas, imagen `cierre_cta.webp` de fondo.

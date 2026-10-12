@@ -53,12 +53,32 @@ export default function LandingPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 Producto de NXChile · Tecnología operacional
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-bold text-neutral-900 mb-6 leading-[1.05] tracking-tight">
-                ¿Dónde quedan los gastos que no son factura?
+              <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-neutral-900 mb-4 leading-[1.05] tracking-tight">
+                Registra tus <span className="text-emerald-600">gastos operacionales</span> y conserva cada respaldo
               </h1>
-              <p className="text-lg sm:text-xl text-neutral-500 mb-10 max-w-xl leading-relaxed">
-                Peajes, estacionamientos, colaciones, vouchers. Gastos reales que tu empresa hace todos los días. GastosNX los registra, respalda y ordena para que nunca más se pierdan.
+              <p className="text-xl sm:text-2xl font-semibold text-neutral-700 mb-5">
+                ¿Dónde quedan los gastos que no son factura?
               </p>
+              <p className="text-lg text-neutral-500 mb-8 max-w-xl leading-relaxed">
+                Peajes, estacionamientos, colaciones, vouchers. Gastos reales que tu empresa
+                hace todos los días. GastosNX los registra, respalda y ordena para que nunca
+                más se pierdan.
+              </p>
+              {/* Qué hace, en tres pasos legibles */}
+              <ul className="mb-10 space-y-2.5 text-left max-w-xl">
+                {[
+                  'Fotografías la boleta y el texto se lee solo',
+                  'Queda registrado con su documento asociado',
+                  'Lo ordenas y se lo entregas listo a tu contador',
+                ].map((t, i) => (
+                  <li key={i} className="flex items-start gap-3 text-neutral-700">
+                    <span className="mt-0.5 w-5 h-5 shrink-0 bg-emerald-100 text-emerald-700 rounded-full text-[11px] font-bold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    <span className="text-[15px] leading-relaxed">{t}</span>
+                  </li>
+                ))}
+              </ul>
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button onClick={() => router.push('/registro/free')} className="w-full sm:w-auto px-7 py-3.5 bg-neutral-900 text-white text-base font-semibold rounded-full hover:bg-neutral-700 transition-all inline-flex items-center justify-center gap-2">
                   Prueba Gratis <ArrowRight className="w-4 h-4" />
@@ -993,6 +1013,11 @@ export default function LandingPage() {
           </div>
           <div className="pt-8 border-t border-white/10 text-center text-sm">
             <p className="mb-2 text-neutral-500">GastosNX no reemplaza al contador ni determina deducibilidad tributaria. Su objetivo es ayudarte a mantener respaldo y orden documental.</p>
+            <p className="mb-3 text-neutral-500">
+              <a href="/privacidad" className="underline hover:text-neutral-300 transition-colors">
+                Política de privacidad y tratamiento de datos
+              </a>
+            </p>
             <p className="text-neutral-500">© 2026 GastosNX by NXChile. Todos los derechos reservados.</p>
           </div>
         </div>

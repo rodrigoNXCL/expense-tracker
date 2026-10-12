@@ -8,6 +8,18 @@ const inter = Inter({
   variable: '--font-inter'
 })
 
+/**
+ * Google Analytics 4 (opcional).
+ *
+ * Se carga solo si existe `NEXT_PUBLIC_GA4_ID`. Sin esa variable no se inyecta
+ * ningún script: la landing funciona igual y sin dependencias externas.
+ *
+ * Con el ID configurado, los eventos que ya dispara la página de precios
+ * (`BillingToggle`, `PlanClick`) pasan a registrarse. Esos eventos hoy existen
+ * en el código pero nunca se disparan porque no había ningún gtag cargado.
+ */
+const GA4_ID = process.env.NEXT_PUBLIC_GA4_ID
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://gastos.nxchile.com'),
   title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
@@ -84,6 +96,19 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="GastosNX" />
+        {GA4_ID && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function.gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA4_ID}');`,
+              }}
+            />
+          </>
+        )}
       </head>
       <body className="font-sans antialiased min-h-screen">
         {children}
