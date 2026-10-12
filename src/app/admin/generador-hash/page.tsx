@@ -84,15 +84,26 @@ export default function GeneradorHashPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
               <h3 className="font-semibold text-blue-900 mb-2">📋 Instrucciones:</h3>
               <ol className="space-y-1 text-sm text-blue-800">
-                <li>1. Escribe la contraseña que quieres asignar</li>
+                <li>1. Escribe la contraseña que quieres asignar (texto plano)</li>
                 <li>2. Click en "Generar Hash"</li>
                 <li>3. Copia el hash generado</li>
                 <li>4. Ve a la Google Sheet "Usuarios"</li>
-                <li>5. Busca al usuario</li>
-                <li>6. Pega el hash en la columna C (Contraseña)</li>
+                <li>5. Busca al usuario por su correo (columna A)</li>
+                <li>6. Pega el hash en la <strong>columna B</strong> (password_hash)</li>
                 <li>7. Guarda la sheet</li>
-                <li>8. Envía la contraseña al usuario por email</li>
               </ol>
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-sm mt-3">
+                <p className="font-semibold mb-1">Importante</p>
+                <p>
+                  En la hoja se pega el <strong>hash</strong>, pero el usuario{' '}
+                  <strong>ingresa con la contraseña que escribiste en el paso 1</strong>, nunca con
+                  el hash. El hash es solo el valor almacenado.
+                </p>
+                <p className="mt-2">
+                  Si el usuario no puede entrar, revisa que el hash esté en la columna B y que
+                  la fila tenga el formato <code className="font-mono text-xs">sha256:…</code>.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, Plus, FileText, CheckCircle, Clock, XCircle,
-  TrendingUp, Loader2, LogOut, ArrowRight, Wallet, Shield, Layers, Receipt
+  TrendingUp, Loader2, LogOut, ArrowRight, Wallet, Shield, Layers, Receipt, KeyRound
 } from 'lucide-react'
 import type { SessionPayload } from '@/lib/session'
 
@@ -209,6 +209,15 @@ export default function RindeDashboardClient({ session }: Props) {
               )}
 
               <div className="h-4 w-[1px] bg-slate-200 hidden sm:block" />
+
+              <button
+                onClick={() => router.push('/mi-cuenta')}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-amber-700 hover:bg-amber-50/80 border border-slate-200 hover:border-amber-200 rounded-lg transition-all"
+                title="Cambiar contraseña"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-amber-600" />
+                Mi cuenta
+              </button>
 
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-medium text-slate-700">{session.email}</p>

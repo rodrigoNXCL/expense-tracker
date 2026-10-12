@@ -49,6 +49,7 @@ export function proxy(request: NextRequest) {
     case '/rinde-landing':
     case '/precios':
     case '/reset-password':
+    case '/mi-cuenta':
       return NextResponse.next()
   }
 

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import {
   User, Shield, BarChart3, DollarSign, Camera, Download,
   LogOut, Building, CheckCircle, AlertTriangle, XCircle,
-  Eye, Receipt, TrendingUp, Wallet, Loader2, X, FileText
+  Eye, Receipt, TrendingUp, Wallet, Loader2, X, FileText, KeyRound
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -188,6 +188,10 @@ export default function DashboardPage() {
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                 <span className="text-sm text-gray-700 font-medium">{user.email}</span>
               </div>
+              <Button variant="ghost" size="sm" onClick={() => router.push('/mi-cuenta')} className="text-gray-600 hover:text-emerald-600">
+                <KeyRound className="h-4 w-4 mr-2" />
+                Mi cuenta
+              </Button>
               <Button variant="ghost" size="sm" onClick={handleLogout} className="text-gray-600 hover:text-emerald-600">
                 <LogOut className="h-4 w-4 mr-2" />
                 Salir
