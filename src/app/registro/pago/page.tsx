@@ -193,6 +193,9 @@ Acción requerida:
                 <p className="text-xs text-gray-600">3 usuarios = <strong>${planActual.totalMensualMensual.toLocaleString('es-CL')} / mes</strong></p>
                 <p className="text-xs text-gray-500">Usuario extra: ${planActual.precioUsuarioExtraMensual.toLocaleString('es-CL')} c/u</p>
               </div>
+              <p className="text-xs text-gray-600 mt-3 text-center">
+                Todos los precios son <strong>IVA incluido</strong>.
+              </p>
             </div>
 
             {/* Info de Facturación */}

@@ -89,6 +89,10 @@ const PLANS = [
 
 const FAQ = [
   {
+    q: '¿Los precios incluyen IVA?',
+    a: 'Sí. Todos los precios publicados en esta página son IVA incluido. Por ejemplo, el plan Pyme con pago anual es de $9.900 mensuales con IVA incluido, que se facturan como $118.800 al año.',
+  },
+  {
     q: '¿Cuánto cuesta RindeNX?',
     a: 'RindeNX comienza en $9.900 mensuales con pago anual y hasta 5 rendidores incluidos. Para quienes prefieren pagar mes a mes, el plan Pyme tiene un valor de $12.900 mensuales.',
   },
@@ -201,7 +205,7 @@ export default function PreciosClient() {
             <span className="text-3xl sm:text-4xl font-bold text-neutral-900">Desde $9.900</span>
             <span className="text-lg text-neutral-500 ml-2">/ mes</span>
           </div>
-          <p className="text-sm text-neutral-500 mb-8">Pagando anual.</p>
+          <p className="text-sm text-neutral-500 mb-8">Pagando anual · <strong>IVA incluido</strong></p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-amber-500 text-white text-base font-semibold rounded-full hover:bg-amber-600 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20">
               Solicitar demostración <ArrowRight className="w-4 h-4" />
@@ -273,6 +277,7 @@ export default function PreciosClient() {
                     <p className="text-sm text-neutral-500">
                       / mes {annual ? '· Pago anual' : '· Pago mensual'}
                     </p>
+                    <p className="text-xs text-neutral-400 mt-0.5">IVA incluido</p>
                     {annual && (
                       <p className="text-xs text-neutral-400 mt-1">
                         ${plan.annualTotal.toLocaleString('es-CL')} / año
@@ -314,7 +319,7 @@ export default function PreciosClient() {
           {/* Explicación */}
           <div className="mt-12 text-center max-w-2xl mx-auto">
             <p className="text-neutral-500 text-sm leading-relaxed">
-              Elige cómo pagar. Con el pago anual accedes al precio preferente de RindeNX. Si prefieres comenzar mes a mes, puedes hacerlo con la tarifa mensual correspondiente.
+              Todos los precios indicados son <strong className="text-neutral-700">IVA incluido</strong>. Elige cómo pagar: con el pago anual accedes al precio preferente de RindeNX. Si prefieres comenzar mes a mes, puedes hacerlo con la tarifa mensual correspondiente.
             </p>
           </div>
         </div>

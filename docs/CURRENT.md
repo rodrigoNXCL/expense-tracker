@@ -109,7 +109,6 @@ Trabajo de auditoría previa y corrección quirúrgica sobre las landings públi
 - **RindeNX no tenía FAQ** mientras GastosNX sí (y su FAQ ya decía correctamente que no determina deducibilidad). Se añadió FAQ de 5 preguntas a RindeNX, incluyendo: no reemplaza al contador, no determina deducibilidad, quién carga la rendición, qué pasa ante sobre-rendición y que GastosNX es opcional. Con disclaimer de registro operacional.
 
 **Pendientes de decisión de negocio (no implementados):**
-- Declarar o no si los precios de RindeNX incluyen IVA (no se modificó el texto de `/precios`).
 - Condiciones de contratación (hoy inexistentes). La política de privacidad **sí** se implementó.
 
 ### Utilidad explícita en las landings + privacidad (2026-09-14)
@@ -126,6 +125,19 @@ Segunda iteración de la auditoría: los H1 de ambas landings eran **ganchos de 
 - **GA4 preparado pero inactivo:** `src/app/layout.tsx` inyecta gtag **solo** si existe `NEXT_PUBLIC_GA4_ID`. Sin esa variable no se carga ningún script (verificado: 0 scripts). Al configurar el ID, los eventos `BillingToggle` y `PlanClick` de `/precios` —hoy código muerto por falta de gtag— pasan a registrarse.
 
 **Deuda consciente:** los `no-explicit-any` y `no-unused-vars` del lint siguen abiertos; no afectan la medición ni confiabilidad.
+
+### Precios con IVA incluido (2026-09-14)
+
+Confirmación del responsable de negocio: **todos los precios publicados son IVA incluido** en ambos productos. Se declaró en los puntos donde efectivamente se muestran los precios:
+
+- **RindeNX `/precios`:** hero ("Desde $9.900 / mes · **IVA incluido**"), cada tarjeta de plan (bajo el precio), texto explicativo bajo las tarjetas, y **nueva FAQ** "¿Los precios incluyen IVA?". La pregunta se replicó en el **JSON-LD** (`FAQPage`), que quedó validado: 10 preguntas, parseo correcto.
+- **GastosNX landing:** se quitó el "IVA incluido" repetido en dos líneas sueltas y se concentró en **una declaración única** bajo los precios, más **nueva FAQ** "¿Los precios incluyen IVA?".
+- **GastosNX `/registro/pago`:** declaración bajo el desglose de precios, que es donde el cliente ve el monto antes de contratar.
+
+> ℹ️ **Consistencia:** antes "IVA incluido" solo aparecía en GastosNX y únicamente en la FAQ de usuarios
+> adicionales. RindeNX no lo declaraba en ningún punto, pese a publicar precios. Ahora ambos productos
+> lo declaran en todos los lugares donde se muestra un precio. No se modificó ninguna cifra: solo se
+> agregó la declaración que corresponde.
 - ✅ **Landing GastosNX — rediseño explicativo con flujos (2026-09-22):** reescritura completa de `src/app/page.tsx` (landing principal) según directriz de "explicación visual y flujos". Cambios: (1) hero reformulado: "¿Dónde quedan los gastos que no son factura?"; (2) nueva sección **Problema** con flujo visual "Lo que pasa hoy" vs "Lo que debería paso" (7 pasos cada uno, fondo negro); (3) sección **Explicación simple** "Todo gasto cuenta"; (4) **Flujo principal** central con 5 etapas (Gasto→Captura→Registro→Respaldo→Historial) usando iconos y colores; (5) **Ejemplo real** de peaje $8.500 con los 6 campos que captura GastosNX; (6) **Antes vs Después** comparativo lado a lado; (7) **Dashboard mockup real** con stats ($1.245.800), desglose por categoría y registros recientes; (8) **Tipos de gastos** (8 categorías con iconos); (9) **Flujo mensual** timeline día 1→30; (10) **Flujo anual** 12 meses con acumulación; (11) **RindeNX→GastosNX** separación factura vs boleta/voucher; (12) **Caso completo** rendición con fondo $500k y 5 gastos; (13) **Beneficios por perfil** (empresa, admin, trabajador, contador); (14) **Contabilidad/revisión** con mockup de exportación; (15) **Declaración de Renta** como consecuencia del orden; (16) **Clientes reales** logos; (17) **Planes** Free+Pro; (18) **FAQ** 9 preguntas; (19) **CTA final** + contadores + Instagram. Principios: sin ilustraciones abstractas, flujos con CSS puro, dashboard con datos reales, el dato y el flujo son el diseño. Se eliminaron: imagen `problema_boletas.webp` de fondo, imagen `hero_principal.webp` en sección problema, sección "Solución/features" original con 6 cards genéricas, imagen `cierre_cta.webp` de fondo.
 
 ---

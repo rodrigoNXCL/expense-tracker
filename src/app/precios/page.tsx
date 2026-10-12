@@ -91,6 +91,14 @@ const structuredData = {
       mainEntity: [
         {
           '@type': 'Question',
+          name: '¿Los precios incluyen IVA?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Sí. Todos los precios publicados en esta página son IVA incluido. Por ejemplo, el plan Pyme con pago anual es de $9.900 mensuales con IVA incluido, que se facturan como $118.800 al año.',
+          },
+        },
+        {
+          '@type': 'Question',
           name: '¿Cuánto cuesta RindeNX?',
           acceptedAnswer: {
             '@type': 'Answer',

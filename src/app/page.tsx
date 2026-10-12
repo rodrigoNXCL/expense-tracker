@@ -789,8 +789,8 @@ export default function LandingPage() {
                     <span className="text-3xl font-bold text-white tracking-tight">$3.300</span>
                     <span className="text-neutral-300 text-sm">/ usuario / mes</span>
                   </div>
-                  <p className="text-xs text-neutral-300">Hasta 3 usuarios incluidos → <span className="font-semibold text-white">$9.900 / mes total</span></p>
-                  <p className="text-xs text-neutral-400 mt-1">Usuario adicional: $2.500 c/u · IVA incluido</p>
+                  <p className="text-xs text-emerald-300">Hasta 3 usuarios incluidos → <span className="font-semibold text-white">$9.900 / mes total</span></p>
+                  <p className="text-xs text-neutral-400 mt-1">Usuario adicional: $2.500 c/u</p>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                   <p className="text-xs text-neutral-400 font-semibold mb-1">PAGO MES A MES</p>
@@ -799,7 +799,7 @@ export default function LandingPage() {
                     <span className="text-neutral-300 text-sm">/ usuario / mes</span>
                   </div>
                   <p className="text-xs text-neutral-300">Hasta 3 usuarios incluidos → <span className="font-semibold text-white">$12.000 / mes total</span></p>
-                  <p className="text-xs text-neutral-400 mt-1">Usuario adicional: $3.000 c/u · IVA incluido</p>
+                  <p className="text-xs text-neutral-400 mt-1">Usuario adicional: $3.000 c/u</p>
                 </div>
               </div>
               <ul className="space-y-3 mb-6 flex-1">
@@ -811,7 +811,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-3 text-neutral-200 text-[15px]"><Check className="w-5 h-5 text-emerald-400 shrink-0" /><span>Soporte prioritario</span></li>
               </ul>
               <button onClick={() => router.push('/registro/pago?plan=pro')} className="w-full px-6 py-3.5 bg-white text-neutral-900 text-[15px] font-semibold rounded-full hover:bg-emerald-50 transition-colors">Elegir Pro</button>
-              <p className="text-xs text-emerald-300 text-center mt-3">El plan anual sale más conveniente. Cada usuario adicional tiene precio preferencial.</p>
+              <p className="text-xs text-emerald-300 text-center mt-3">Todos los precios son <strong>IVA incluido</strong>. El plan anual sale más conveniente y cada usuario adicional tiene precio preferencial.</p>
             </div>
           </div>
           <div className="text-center mt-14 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 rounded-2xl max-w-3xl mx-auto">
@@ -834,6 +834,7 @@ export default function LandingPage() {
               { q: '¿Cuánto tarda el acceso?', a: 'El plan Free se activa de inmediato. Los planes Pro se activan en máximo 24 hrs hábiles tras confirmar el pago.' },
               { q: '¿Puedo exportar a Excel/CSV?', a: 'Sí. El plan Pro incluye exportación a CSV y Excel con todos los gastos del período, listos para tu contador.' },
               { q: '¿Cómo funciona el precio por usuario?', a: 'El plan Pro incluye hasta 3 usuarios base. Cada usuario adicional tiene un precio preferencial según el periodo elegido (anual o mes a mes).' },
+              { q: '¿Los precios incluyen IVA?', a: 'Sí. Todos los precios de los planes Pro son IVA incluido. El plan Free no tiene costo.' },
               { q: '¿Puedo agregar más de 3 usuarios?', a: 'Sí. Puedes agregar usuarios adicionales con precio preferencial: $2.500 c/u (plan anual) o $3.000 c/u (plan mes a mes). IVA incluido.' },
               { q: '¿Qué diferencia hay entre pago anual y mes a mes?', a: 'El plan anual tiene un mejor precio por usuario ($3.300 vs $4.000) y se factura una vez al año. El plan mes a mes te da flexibilidad sin contrato, con un valor ligeramente mayor.' },
               { q: '¿Qué tecnología de OCR usan?', a: 'Usamos OCR con Google AI, una de las tecnologías de reconocimiento de texto más confiables del mercado, optimizada para boletas chilenas.' },
