@@ -110,6 +110,7 @@ Trabajo de auditoría previa y corrección quirúrgica sobre las landings públi
 
 **Pendientes de decisión de negocio (no implementados):**
 - Condiciones de contratación (hoy inexistentes). La política de privacidad **sí** se implementó.
+- Identificador de GA4 (el gtag ya queda preparado y condicionado a `NEXT_PUBLIC_GA4_ID`; el owner lo verá más adelante).
 
 ### Utilidad explícita en las landings + privacidad (2026-09-14)
 
@@ -125,6 +126,29 @@ Segunda iteración de la auditoría: los H1 de ambas landings eran **ganchos de 
 - **GA4 preparado pero inactivo:** `src/app/layout.tsx` inyecta gtag **solo** si existe `NEXT_PUBLIC_GA4_ID`. Sin esa variable no se carga ningún script (verificado: 0 scripts). Al configurar el ID, los eventos `BillingToggle` y `PlanClick` de `/precios` —hoy código muerto por falta de gtag— pasan a registrarse.
 
 **Deuda consciente:** los `no-explicit-any` y `no-unused-vars` del lint siguen abiertos; no afectan la medición ni confiabilidad.
+
+### Cierre SEO: títulos, imagen OG y cross-sell (2026-09-14)
+
+Última iteración de la auditoría, aplicada por indicación del owner. Sin tocar funcionalidad operativa ni autenticada.
+
+**Títulos y meta descriptions** — alineados con los H1 literales ya modificados y diferenciados entre productos (requisito anti-canibalización):
+
+| Página | Title |
+|---|---|
+| RindeNX | `Software de Rendición de Gastos y Fondos por Rendir \| RindeNX` |
+| RindeNX `/precios` | `RindeNX \| Precios de software de rendiciones de gastos` |
+| GastosNX | `Control de Gastos Operacionales y Boletas para Empresas \| GastosNX` |
+
+> ⚠️ **Deuda consciente:** la base maestra recomienda *no* reemplazar un título con mejor rendimiento
+> sin Search Console. **No hay acceso a Search Console**, así que estos títulos se aplicaron por
+> coherencia con el H1 y por eliminación de canibalización entre productos, **no** por medición.
+> Conviene reevaluarlos cuando exista la línea base real.
+
+**Imagen Open Graph de RindeNX (bug corregido).** RindeNX reutilizaba `hero_principal.webp`, que es una **foto de marca de GastosNX**: al compartir un enlace de RindeNX en redes o en WhatsApp se veía el producto hermano. Se creó `src/app/rinde-landing/opengraph-image.tsx` con `next/og` (**incluido en Next, sin dependencias nuevas**) y Next inyecta la etiqueta `og:image` automáticamente. Verificado: responde `200 image/png`, 66 KB. Las referencias a `hero_principal.webp` se quitaron del layout de RindeNX.
+
+**Cross-sell en ambos sentidos.** GastosNX **mencionaba** RindeNX en el texto pero **no lo enlazaba**: no existía ni una URL a `rinde.nxchile.com` en toda la landing, lo que además desperdiciaba el anchor para SEO. Se agregó enlace contextual con texto descriptivo y la aclaración de que son productos independientes. Verificado: 1 enlace en cada dirección.
+
+**Claim sin respaldo retirado.** El badge **"MÁS POPULAR"** del plan Pro de GastosNX afirmaba una preferencia que no está respaldada por datos. Reemplazado por **"RECOMENDADO"**, que es una recomendación editorial y no una afirmación de Uso real. (El mismo criterio se aplicó antes a los testimonios con métricas inventadas.)
 
 ### Precios con IVA incluido (2026-09-14)
 

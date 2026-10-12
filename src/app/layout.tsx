@@ -22,14 +22,14 @@ const GA4_ID = process.env.NEXT_PUBLIC_GA4_ID
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://gastos.nxchile.com'),
-  title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
-  description: 'Guarda y organiza gastos desde el celular antes de que se pierdan. Pensado para pymes y contadores en Chile. Prueba gratis.',
+  title: 'Control de Gastos Operacionales y Boletas para Empresas | GastosNX',
+  description: 'Registra boletas, vouchers y gastos operacionales desde el celular. Conserva los respaldos, organiza la información y facilita la revisión de tu contador.',
   keywords: ['gastos operacionales', 'pymes Chile', 'contadores Chile', 'respaldo gastos', 'ordenar boletas', 'control de gastos'],
   authors: [{ name: 'NXChile' }],
   
   openGraph: {
-    title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
-    description: 'Guarda y organiza gastos desde el celular antes de que se pierdan. Para pymes y contadores en Chile.',
+    title: 'GastosNX | Control de gastos operacionales y boletas para empresas',
+    description: 'Registra boletas, vouchers y gastos operacionales desde el celular. Conserva los respaldos y facilita la revisión de tu contador.',
     type: 'website',
     locale: 'es_CL',
     siteName: 'GastosNX',
@@ -45,8 +45,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'GastosNX - Guarda y organiza gastos antes de que se pierdan',
-    description: 'Guarda y organiza gastos desde el celular antes de que se pierdan. Para pymes y contadores en Chile.',
+    title: 'GastosNX | Control de gastos operacionales y boletas para empresas',
+    description: 'Registra boletas, vouchers y gastos operacionales desde el celular. Conserva los respaldos y facilita la revisión de tu contador.',
     images: ['https://gastos.nxchile.com/images/hero_principal.webp'],
   },
   

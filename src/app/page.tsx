@@ -501,6 +501,19 @@ export default function LandingPage() {
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-4 tracking-tight">¿Qué pasa con los gastos que aparecen en una rendición?</h2>
             <p className="text-lg text-neutral-500 max-w-2xl mx-auto">RindeNX controla el fondo y cierra la rendición. Los gastos que no siguen el flujo de una factura pueden pasar a GastosNX. Así el gasto no queda fuera del registro de la empresa.</p>
+            <p className="text-sm text-neutral-500 max-w-2xl mx-auto mt-4">
+              ¿Entregas dinero a trabajadores y necesitas saber cómo se utilizó y cuánto
+              queda pendiente?{' '}
+              <a
+                href="https://rinde.nxchile.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-700 font-semibold underline underline-offset-2 hover:text-amber-800 transition-colors"
+              >
+                Conoce RindeNX, que controla los fondos por rendir
+              </a>
+              . Son productos independientes: puedes usar uno sin el otro.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -777,7 +790,7 @@ export default function LandingPage() {
             </div>
             {/* Plan Pro */}
             <div className="bg-neutral-900 rounded-3xl p-8 text-white relative shadow-2xl shadow-black/20 flex flex-col">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-xs font-semibold tracking-wide">MÁS POPULAR</div>
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-xs font-semibold tracking-wide">RECOMENDADO</div>
               <div className="mb-6">
                 <h3 className="text-xl font-semibold text-white mb-1">Pro</h3>
                 <p className="text-neutral-400 text-sm">Para pymes que quieren mantener sus gastos registrados y ordenados durante todo el año.</p>

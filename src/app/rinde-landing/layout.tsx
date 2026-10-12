@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
-  title: 'RindeNX - Rendiciones cuadradas para fondos por rendir',
-  description: 'Digitaliza los fondos por rendir de tu empresa: asigna fondos, rinde gastos con OCR y obtén el asiento contable automático. Desarrollado por NXChile.',
+  title: 'Software de Rendición de Gastos y Fondos por Rendir | RindeNX',
+  description:
+    'Controla fondos por rendir, registra gastos con respaldo, revisa rendiciones y calcula saldos pendientes. Simplifica el cierre operativo y contable con RindeNX.',
   keywords: ['rendiciones', 'fondos por rendir', 'caja chica', 'asiento contable', 'Chile', 'NXChile', 'rendimiento de cuentas'],
   authors: [{ name: 'NXChile' }],
   // Canonical propio: el layout raíz lo declara hacia gastos.nxchile.com, y
@@ -11,26 +12,19 @@ export const metadata: Metadata = {
     canonical: 'https://rinde.nxchile.com',
   },
   openGraph: {
-    title: 'RindeNX - Rendiciones cuadradas para fondos por rendir',
-    description: 'Asigna fondos, rinde con OCR y obtén el asiento contable automático. Desarrollado por NXChile.',
+    title: 'RindeNX | Software de rendición de gastos para empresas',
+    description: 'Controla fondos por rendir, registra gastos con respaldo, revisa rendiciones y calcula saldos pendientes.',
     type: 'website',
     locale: 'es_CL',
     siteName: 'RindeNX',
     url: 'https://rinde.nxchile.com',
-    images: [
-      {
-        url: 'https://rinde.nxchile.com/images/hero_principal.webp',
-        width: 1200,
-        height: 630,
-        alt: 'RindeNX - Rendiciones cuadradas',
-      },
-    ],
+    // La imagen la genera `opengraph-image.tsx` (específica de RindeNX).
+    // Antes se reutilizaba hero_principal.webp, que es una foto de GastosNX.
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'RindeNX - Rendiciones cuadradas para fondos por rendir',
-    description: 'Asigna fondos, rinde con OCR y obtén el asiento contable automático. Desarrollado por NXChile.',
-    images: ['https://rinde.nxchile.com/images/hero_principal.webp'],
+    title: 'RindeNX | Software de rendición de gastos para empresas',
+    description: 'Controla fondos por rendir, registra gastos con respaldo, revisa rendiciones y calcula saldos pendientes.',
   },
   robots: {
     index: true,
