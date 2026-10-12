@@ -1,0 +1,73 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e60]:
+    - navigation [ref=f4e61]:
+      - generic [ref=f4e63]:
+        - generic [ref=f4e64]:
+          - button "Volver a GastosNX" [ref=f4e65]
+          - generic [ref=f4e72]:
+            - generic [ref=f4e73]:
+              - heading "RindeNX" [level=1] [ref=f4e74]
+              - generic [ref=f4e75]: Administrador
+            - paragraph [ref=f4e76]: NXChile
+        - generic [ref=f4e77]:
+          - button "Puente GastosNX" [ref=f4e78]
+          - paragraph [ref=f4e85]: admin@nxchile.cl
+          - button "Cerrar sesión" [ref=f4e86]
+    - main [ref=f4e90]:
+      - generic [ref=f4e91]:
+        - generic [ref=f4e93]:
+          - paragraph [ref=f4e94]: Fondos Activos
+          - paragraph [ref=f4e95]: "1"
+          - paragraph [ref=f4e96]: "Total asignado: $10.000"
+        - generic [ref=f4e102]:
+          - paragraph [ref=f4e103]: Saldo Disponible
+          - paragraph [ref=f4e104]: $0
+          - paragraph [ref=f4e107]: Comprometido $10.000 (100%)
+        - generic [ref=f4e113]:
+          - paragraph [ref=f4e114]: Por Revisar / Abiertas
+          - paragraph [ref=f4e115]: "0"
+          - paragraph [ref=f4e116]: Sin rendiciones pendientes
+        - generic [ref=f4e122]:
+          - paragraph [ref=f4e123]: Rendiciones Aprobadas
+          - paragraph [ref=f4e124]: "1"
+          - paragraph [ref=f4e125]: "Total contabilizado: $10.500"
+      - generic [ref=f4e130]:
+        - generic [ref=f4e131]:
+          - generic [ref=f4e132]:
+            - button "Fondos en Curso 1" [ref=f4e158]:
+              - text: Fondos en Curso
+              - generic [ref=f4e137]: "1"
+            - button "Rendiciones de Equipo 1" [ref=f4e159]:
+              - text: Rendiciones de Equipo
+              - generic [ref=f4e142]: "1"
+          - button "Asignar Nuevo Fondo" [ref=f4e144]
+        - generic [ref=f4e160]:
+          - generic [ref=f4e161]:
+            - generic [ref=f4e162]:
+              - generic [ref=f4e163]: prueba@nxchile.com
+              - generic [ref=f4e164]: En curso
+            - paragraph [ref=f4e165]: viaje chillan
+            - generic [ref=f4e166]:
+              - generic [ref=f4e167]:
+                - generic [ref=f4e168]:
+                  - paragraph [ref=f4e169]: Saldo Disponible
+                  - paragraph [ref=f4e170]: $0
+                - generic [ref=f4e171]:
+                  - paragraph [ref=f4e172]: Asignado
+                  - paragraph [ref=f4e173]: $10.000
+              - generic [ref=f4e174]:
+                - generic [ref=f4e175]:
+                  - generic [ref=f4e176]: Avance de la rendición vs fondo
+                  - generic [ref=f4e177]: 100%
+                - paragraph [ref=f4e180]:
+                  - text: Rendido
+                  - generic [ref=f4e181]: $10.500
+                  - text: de $10.000
+                - paragraph [ref=f4e182]: Aprobado/descontado $10.000
+                - paragraph [ref=f4e183]: Sobre-rendido +$500 — saldo a favor a reembolsar
+          - button "Gestionar Fondos →" [ref=f4e185]
+  - link "Contactar por WhatsApp" [ref=f4e46] [cursor=pointer]:
+    - /url: https://wa.me/56977412178?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20GastosNX
+    - generic [ref=f4e49]: ¿Necesitas ayuda?
+  - button "Open Next.js Dev Tools" [ref=f4e55] [cursor=pointer]
+  - alert [ref=f4e59]

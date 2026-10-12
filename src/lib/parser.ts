@@ -28,7 +28,7 @@ export function parseBoletaChilena(ocrText: string, confidence?: number | null):
   // Detectar si es voucher de tarjeta o factura
   const esVoucher = /TARJETA\s*(DE\s*)?DEBITO|VALIDO COMO BOLETA|MONTO\s*(DE\s*)?COMPRA|OPERACION|AUTORIZACION/i.test(fullText)
   const esFactura = /FACTURA\b/i.test(fullText) && !esVoucher
-  let tipoDocumento: ParsedExpense['tipoDocumento'] = esFactura ? 'factura' : esVoucher ? 'voucher' : 'boleta'
+  const tipoDocumento: ParsedExpense['tipoDocumento'] = esFactura ? 'factura' : esVoucher ? 'voucher' : 'boleta'
 
   // ===== 1. FECHA =====
   let fecha = new Date().toISOString().split('T')[0]

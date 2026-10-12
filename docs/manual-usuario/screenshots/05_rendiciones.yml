@@ -1,0 +1,6 @@
+- generic [active] [ref=f7e1]:
+  - link "Contactar por WhatsApp" [ref=f7e5] [cursor=pointer]:
+    - /url: https://wa.me/56977412178?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20GastosNX
+    - generic [ref=f7e8]: ¿Necesitas ayuda?
+  - button "Open Next.js Dev Tools" [ref=f7e14] [cursor=pointer]
+  - alert [ref=f7e18]

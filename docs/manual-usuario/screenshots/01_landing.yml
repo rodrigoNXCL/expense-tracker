@@ -1,0 +1,220 @@
+- generic [active] [ref=f3e1]:
+  - main [ref=f3e2]:
+    - navigation [ref=f3e3]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]: RindeNX
+        - generic [ref=f3e12]:
+          - button "Iniciar Sesión" [ref=f3e13]
+          - link "GastosNX →" [ref=f3e14] [cursor=pointer]:
+            - /url: https://gastos.nxchile.com
+          - button "Ingresar" [ref=f3e15]
+    - generic [ref=f3e18]:
+      - generic [ref=f3e19]:
+        - generic [ref=f3e20]: Producto de NXChile · Fondos por rendir
+        - heading "Rendiciones que llegan cuadradas, todos los meses." [level=1] [ref=f3e22]
+        - paragraph [ref=f3e23]: "RindeNX digitaliza los fondos por rendir de tu empresa: asigna fondos, registra gastos con OCR y genera el asiento contable de forma automática. Desarrollado por NXChile."
+        - generic [ref=f3e24]:
+          - button "Ingresar a mi cuenta" [ref=f3e25]
+          - link "Pedir acceso para mi empresa" [ref=f3e28] [cursor=pointer]:
+            - /url: https://wa.me/56977412178?text=Hola%2C%20vengo%20de%20rinde.nxchile.com%20y%20quiero%20saber%20m%C3%A1s%20sobre%20RindeNX%20para%20mi%20empresa.
+      - generic [ref=f3e30]:
+        - generic [ref=f3e37]:
+          - paragraph [ref=f3e38]: RindeNX
+          - paragraph [ref=f3e39]: Fondos por rendir · Agosto
+        - generic [ref=f3e44]:
+          - generic [ref=f3e45]:
+            - paragraph [ref=f3e46]: Fondo asignado
+            - paragraph [ref=f3e47]: $200.000
+          - generic [ref=f3e48]:
+            - paragraph [ref=f3e49]: Saldo por rendir
+            - paragraph [ref=f3e50]: $56.300
+        - generic [ref=f3e51]:
+          - generic [ref=f3e52]:
+            - generic [ref=f3e57]:
+              - paragraph [ref=f3e58]: Boleta Supermercado
+              - paragraph [ref=f3e59]: 15 ago · $48.700
+            - generic [ref=f3e60]: Imputada
+          - generic [ref=f3e61]:
+            - generic [ref=f3e66]:
+              - paragraph [ref=f3e67]: Factura Gasolineras
+              - paragraph [ref=f3e68]: 14 ago · $65.000
+            - generic [ref=f3e69]: Imputada
+          - generic [ref=f3e70]:
+            - generic [ref=f3e75]:
+              - paragraph [ref=f3e76]: Voucher peaje
+              - paragraph [ref=f3e77]: 13 ago · $5.000
+            - generic [ref=f3e78]: Imputada
+        - generic [ref=f3e79]:
+          - paragraph [ref=f3e80]: Asiento contable automático
+          - generic [ref=f3e81]: Debe = Haber
+    - generic [ref=f3e85]:
+      - paragraph [ref=f3e86]: Empresas que ya cuadran sus rendiciones con NXChile
+      - generic [ref=f3e87]:
+        - img "AC Constructores y Consultores" [ref=f3e89]
+        - img "RCC Servicios EIRL" [ref=f3e91]
+        - img "Transportes San Andrés SPA" [ref=f3e93]
+        - img "Bastcon" [ref=f3e95]
+    - generic [ref=f3e97]:
+      - generic [ref=f3e98]:
+        - heading "El eslabón que faltaba entre tu fondo y tu contador." [level=2] [ref=f3e99]
+        - paragraph [ref=f3e100]: RindeNX no reemplaza a tu contador. Le entrega una rendición ordenada, respaldada y siempre cuadrada — sin boleta perdida, sin saldo que quede sin explicar.
+      - generic [ref=f3e101]:
+        - generic [ref=f3e102]:
+          - img "Fondo asignado a un rendidor dentro de RindeNX" [ref=f3e104]
+          - generic [ref=f3e105]: "1"
+          - heading "Se asigna un fondo, no un gasto suelto" [level=3] [ref=f3e106]
+          - paragraph [ref=f3e107]: El administrador entrega un fondo de caja o cupo de gasto a cada rendidor. Una rendición por fondo. Nada de montos huérfanos.
+        - generic [ref=f3e108]:
+          - img "Rendidor fotografiando una boleta con OCR dentro de RindeNX" [ref=f3e110]
+          - generic [ref=f3e111]: "2"
+          - heading "Cada gasto se rinde con su respaldo" [level=3] [ref=f3e112]
+          - paragraph [ref=f3e113]: El rendidor registra boletas, facturas y vouchers con OCR o manualmente. Cada gasto queda imputado a su rendición con imagen y trazabilidad.
+        - generic [ref=f3e114]:
+          - img "Rendición cerrada, aprobada y convertida en asiento contable en RindeNX" [ref=f3e116]
+          - generic [ref=f3e117]: "3"
+          - heading "Se cierra, se aprueba y el asiento sale solo" [level=3] [ref=f3e118]
+          - paragraph [ref=f3e119]: El sistema calcula la diferencia contra el fondo asignado y genera el asiento automáticamente. Debe = Haber. Anticipo, saldo a favor y por devolver, actualizados.
+    - generic [ref=f3e121]:
+      - generic [ref=f3e122]:
+        - heading "Fin a las rendiciones que nunca cuadran." [level=2] [ref=f3e126]
+        - paragraph [ref=f3e127]: RindeNX está hecho para pymes y contadores que necesitan controlar fondos por rendir sin planillas desactualizadas ni correos persiguiendo comprobantes.
+      - generic [ref=f3e128]:
+        - generic [ref=f3e129]:
+          - heading "Un fondo, una rendición" [level=3] [ref=f3e134]
+          - paragraph [ref=f3e135]: Siempre sabes qué fondo está en manos de quién, cuánto se ha rendido y cuánto falta por justificar.
+        - generic [ref=f3e136]:
+          - heading "Registro con OCR, en el momento" [level=3] [ref=f3e141]
+          - paragraph [ref=f3e142]: Boletas, facturas y vouchers se leen solos. El rendidor registra al instante y deja el respaldo digital para siempre.
+        - generic [ref=f3e143]:
+          - heading "Asiento cuadrado automático" [level=3] [ref=f3e147]
+          - paragraph [ref=f3e148]: "Al aprobar, RindeNX genera el asiento de la rendición con Debe = Haber: anticipo, saldo a favor y saldo por devolver, sin errores de tipeo."
+        - generic [ref=f3e149]:
+          - heading "Estados claros de punta a punta" [level=3] [ref=f3e154]
+          - paragraph [ref=f3e155]: Abierta, terminada, en revisión, aprobada o rechazada. Cada rendición sabe exactamente dónde está y qué le falta.
+        - generic [ref=f3e156]:
+          - heading "Puente con GastosNX" [level=3] [ref=f3e162]
+          - paragraph [ref=f3e163]: Los gastos operacionales de la rendición pueden pasar a GastosNX para el respaldo tributario anual. Una sola cuenta, una sola empresa.
+        - generic [ref=f3e164]:
+          - heading "Trazabilidad y control" [level=3] [ref=f3e169]
+          - paragraph [ref=f3e170]: "Todo queda registrado: quién asignó el fondo, quién rinde, quién aprueba y con qué comentarios. Auditoría lista para revisión."
+    - generic [ref=f3e171]:
+      - img "Fondo de la sección de contacto de RindeNX" [ref=f3e173]
+      - generic [ref=f3e174]:
+        - generic [ref=f3e175]:
+          - generic [ref=f3e176]: Producto oficial de NXChile
+          - heading "Llega al cierre con todo cuadrado." [level=2] [ref=f3e177]
+          - paragraph [ref=f3e178]: Cada fondo por rendir que pasa por RindeNX vuelve como una rendición ordenada, un asiento contable listo y un saldo sin preguntas pendientes.
+          - generic [ref=f3e179]:
+            - button "Ingresar a mi cuenta" [ref=f3e180]
+            - button "Probar con mis rendidores" [ref=f3e183]
+          - paragraph [ref=f3e184]: 💬 ¿Dudas? Escríbenos por WhatsApp y te mostramos el sistema.
+        - generic [ref=f3e185]:
+          - link "💬 WhatsApp directo +56 9 7741 2178" [ref=f3e186] [cursor=pointer]:
+            - /url: https://wa.me/56977412178?text=Hola%2C%20vengo%20de%20rinde.nxchile.com%20y%20quiero%20saber%20m%C3%A1s%20sobre%20RindeNX%20para%20mi%20empresa.
+            - generic [ref=f3e187]: 💬
+            - paragraph [ref=f3e188]: WhatsApp directo
+            - paragraph [ref=f3e189]: +56 9 7741 2178
+          - link "📧 Escríbenos rinde@nxchile.com" [ref=f3e190] [cursor=pointer]:
+            - /url: mailto:rinde@nxchile.com?subject=Solicito%20acceso%20a%20RindeNX
+            - generic [ref=f3e191]: 📧
+            - paragraph [ref=f3e192]: Escríbenos
+            - paragraph [ref=f3e193]: rinde@nxchile.com
+          - button "🔐 Ya soy usuario Entro a mi cuenta" [ref=f3e194]:
+            - generic [ref=f3e195]: 🔐
+            - paragraph [ref=f3e196]: Ya soy usuario
+            - paragraph [ref=f3e197]: Entro a mi cuenta
+        - link "¿Buscas respaldo de gastos tributarios? Conoce GastosNX →" [ref=f3e199] [cursor=pointer]:
+          - /url: https://gastos.nxchile.com
+    - generic [ref=f3e202]:
+      - generic [ref=f3e203]:
+        - generic [ref=f3e204]: Para administradores y contadores
+        - heading "Deja de perseguir rendiciones. Revisa todo desde un panel." [level=2] [ref=f3e210]
+        - paragraph [ref=f3e211]: RindeNX te entrega cada fondo por rendir con su saldo, cada gasto con su comprobante y cada asiento listo para tu sistema contable.
+        - list [ref=f3e212]:
+          - listitem [ref=f3e213]:
+            - generic [ref=f3e216]:
+              - strong [ref=f3e217]: "Diferencia contra el fondo:"
+              - text: el saldo en contra o a favor se calcula al instante.
+          - listitem [ref=f3e218]:
+            - generic [ref=f3e221]:
+              - strong [ref=f3e222]: "Aprobación con comentarios:"
+              - text: rechaza o aprueba dejando la instrucción registrada.
+          - listitem [ref=f3e223]:
+            - generic [ref=f3e226]:
+              - strong [ref=f3e227]: "Asiento automático:"
+              - text: anticipo, saldo a favor y saldo por devolver con Debe igual a Haber.
+          - listitem [ref=f3e228]:
+            - generic [ref=f3e231]:
+              - strong [ref=f3e232]: "Cuentas configurables por empresa:"
+              - text: el asiento se adapta a tu plan de cuentas.
+        - generic [ref=f3e233]:
+          - link "Solicitar acceso para mi empresa" [ref=f3e234] [cursor=pointer]:
+            - /url: https://wa.me/56977412178?text=Hola%2C%20vengo%20de%20rinde.nxchile.com%20y%20quiero%20saber%20m%C3%A1s%20sobre%20RindeNX%20para%20mi%20empresa.
+          - button "Soy administrador, entrar" [ref=f3e239]
+      - generic [ref=f3e246]:
+        - generic [ref=f3e252]:
+          - paragraph [ref=f3e253]: Panel del administrador
+          - paragraph [ref=f3e254]: Estado de fondos por rendir
+        - generic [ref=f3e255]:
+          - generic [ref=f3e256]:
+            - generic [ref=f3e257]:
+              - generic [ref=f3e258]: AC
+              - generic [ref=f3e259]:
+                - paragraph [ref=f3e260]: AC Constructores
+                - paragraph [ref=f3e261]: Fondo $500.000 · Rendido $421.000
+            - generic [ref=f3e262]: En revisión
+          - generic [ref=f3e263]:
+            - generic [ref=f3e264]:
+              - generic [ref=f3e265]: RC
+              - generic [ref=f3e266]:
+                - paragraph [ref=f3e267]: RCC Servicios
+                - paragraph [ref=f3e268]: Fondo $300.000 · Rendido $300.000
+            - generic [ref=f3e269]: Aprobada
+          - generic [ref=f3e270]:
+            - generic [ref=f3e271]:
+              - generic [ref=f3e272]: TS
+              - generic [ref=f3e273]:
+                - paragraph [ref=f3e274]: Transportes San Andrés
+                - paragraph [ref=f3e275]: Fondo $800.000 · Rendido $655.000
+            - generic [ref=f3e276]: Saldo en contra
+        - generic [ref=f3e277]:
+          - paragraph [ref=f3e278]: Ejemplo visual · Vista previa del panel
+          - generic [ref=f3e279]: Asientos generados
+    - generic [ref=f3e283]:
+      - generic [ref=f3e284]:
+        - generic [ref=f3e285]:
+          - generic [ref=f3e286]: RindeNX
+          - paragraph [ref=f3e292]: RindeNX es el sistema que usan pymes y contadores para controlar fondos por rendir, digitalizar rendiciones y generar asientos contables automáticos. Desarrollado en Chile por NXChile.
+        - generic [ref=f3e293]:
+          - heading "Producto" [level=4] [ref=f3e294]
+          - list [ref=f3e295]:
+            - listitem [ref=f3e296]:
+              - button "Cómo funciona" [ref=f3e297]
+            - listitem [ref=f3e298]:
+              - button "Iniciar Sesión" [ref=f3e299]
+            - listitem [ref=f3e300]:
+              - link "GastosNX — gastos tributarios" [ref=f3e301] [cursor=pointer]:
+                - /url: https://gastos.nxchile.com
+        - generic [ref=f3e302]:
+          - heading "Contacto" [level=4] [ref=f3e303]
+          - list [ref=f3e304]:
+            - listitem [ref=f3e305]:
+              - link "rinde@nxchile.com" [ref=f3e306] [cursor=pointer]:
+                - /url: mailto:rinde@nxchile.com
+            - listitem [ref=f3e307]:
+              - link "WhatsApp +56 9 7741 2178" [ref=f3e308] [cursor=pointer]:
+                - /url: https://wa.me/56977412178?text=Hola%2C%20vengo%20de%20rinde.nxchile.com%20y%20quiero%20saber%20m%C3%A1s%20sobre%20RindeNX%20para%20mi%20empresa.
+            - listitem [ref=f3e309]:
+              - link "nxchile.com" [ref=f3e310] [cursor=pointer]:
+                - /url: https://www.nxchile.com
+      - generic [ref=f3e311]:
+        - paragraph [ref=f3e312]: RindeNX no reemplaza al contador ni determina tratamiento tributario. Su objetivo es entregar orden, trazabilidad y asientos cuadrados.
+        - paragraph [ref=f3e313]: © 2026 RindeNX by NXChile. Todos los derechos reservados.
+    - link "Contactar por WhatsApp" [ref=f3e314] [cursor=pointer]:
+      - /url: https://wa.me/56977412178?text=Hola%2C%20vengo%20de%20rinde.nxchile.com%20y%20quiero%20saber%20m%C3%A1s%20sobre%20RindeNX%20para%20mi%20empresa.
+      - generic: ¿Dudas? Escríbenos
+  - link "Contactar por WhatsApp" [ref=f3e317] [cursor=pointer]:
+    - /url: https://wa.me/56977412178?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20GastosNX
+    - generic [ref=f3e320]: ¿Necesitas ayuda?
+  - button "Open Next.js Dev Tools" [ref=f3e326] [cursor=pointer]
+  - alert [ref=f3e330]

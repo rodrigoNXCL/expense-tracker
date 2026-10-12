@@ -1,0 +1,70 @@
+- generic [active] [ref=f10e1]:
+  - generic [ref=f10e50]:
+    - navigation [ref=f10e51]:
+      - generic [ref=f10e53]:
+        - generic [ref=f10e59]:
+          - generic [ref=f10e60]:
+            - heading "RindeNX" [level=1] [ref=f10e61]
+            - generic [ref=f10e62]: Rendidor
+          - paragraph [ref=f10e63]: NXChile
+        - generic [ref=f10e64]:
+          - paragraph [ref=f10e67]: prueba@nxchile.com
+          - button "Cerrar sesión" [ref=f10e68]
+    - main [ref=f10e72]:
+      - generic [ref=f10e73]:
+        - generic [ref=f10e75]:
+          - paragraph [ref=f10e76]: Fondos Activos
+          - paragraph [ref=f10e77]: "1"
+          - paragraph [ref=f10e78]: "Total asignado: $10.000"
+        - generic [ref=f10e84]:
+          - paragraph [ref=f10e85]: Saldo Disponible
+          - paragraph [ref=f10e86]: $0
+          - paragraph [ref=f10e89]: Comprometido $10.000 (100%)
+        - generic [ref=f10e95]:
+          - paragraph [ref=f10e96]: Por Revisar / Abiertas
+          - paragraph [ref=f10e97]: "0"
+          - paragraph [ref=f10e98]: Sin rendiciones pendientes
+        - generic [ref=f10e104]:
+          - paragraph [ref=f10e105]: Rendiciones Aprobadas
+          - paragraph [ref=f10e106]: "1"
+          - paragraph [ref=f10e107]: "Total contabilizado: $10.500"
+      - generic [ref=f10e112]:
+        - generic [ref=f10e113]:
+          - generic [ref=f10e114]:
+            - button "Mis Fondos Activos 1" [ref=f10e142]:
+              - text: Mis Fondos Activos
+              - generic [ref=f10e119]: "1"
+            - button "Mis Rendiciones 1" [ref=f10e143]:
+              - text: Mis Rendiciones
+              - generic [ref=f10e124]: "1"
+          - button "Nueva Rendición" [ref=f10e126]
+        - generic [ref=f10e144]:
+          - generic [ref=f10e145]:
+            - generic [ref=f10e146]:
+              - generic [ref=f10e147]: prueba@nxchile.com
+              - generic [ref=f10e148]: En curso
+            - paragraph [ref=f10e149]: viaje chillan
+            - generic [ref=f10e150]:
+              - generic [ref=f10e151]:
+                - generic [ref=f10e152]:
+                  - paragraph [ref=f10e153]: Saldo Disponible
+                  - paragraph [ref=f10e154]: $0
+                - generic [ref=f10e155]:
+                  - paragraph [ref=f10e156]: Asignado
+                  - paragraph [ref=f10e157]: $10.000
+              - generic [ref=f10e158]:
+                - generic [ref=f10e159]:
+                  - generic [ref=f10e160]: Avance de la rendición vs fondo
+                  - generic [ref=f10e161]: 100%
+                - paragraph [ref=f10e164]:
+                  - text: Rendido
+                  - generic [ref=f10e165]: $10.500
+                  - text: de $10.000
+                - paragraph [ref=f10e166]: Aprobado/descontado $10.000
+                - paragraph [ref=f10e167]: Sobre-rendido +$500 — saldo a favor a reembolsar
+          - button "Rendir contra este Fondo" [ref=f10e169]
+  - link "Contactar por WhatsApp" [ref=f10e46] [cursor=pointer]:
+    - /url: https://wa.me/56977412178?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20GastosNX
+    - generic [ref=f10e49]: ¿Necesitas ayuda?
+  - button "Open Next.js Dev Tools" [ref=f10e137] [cursor=pointer]
+  - alert [ref=f10e141]

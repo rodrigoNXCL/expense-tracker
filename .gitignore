@@ -51,3 +51,11 @@ revision_*.txt
 
 # Logs
 *.log
+
+# Tooling local de assistants (no pertenece al producto)
+.playwright-mcp/
+opencode.json
+
+# Notas internas de sesiones de análisis (el manual sí se versiona)
+docs/manual-usuario/HALLAZGOS.md
+docs/manual-usuario/INVENTARIO.md

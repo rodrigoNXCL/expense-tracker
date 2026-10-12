@@ -15,7 +15,6 @@ import { createHash, randomBytes, timingSafeEqual } from 'crypto'
 
 const ALGO = 'sha256'
 const SALT_BYTES = 16
-const SALT_CHARS = SALT_BYTES * 2
 const HASH_CHARS = 64
 const SALTED_RE = new RegExp(`^${ALGO}:[^:]+:[0-9a-f]{${HASH_CHARS}}$`, 'i')
 const LEGACY_PLAIN_RE = new RegExp(`^[0-9a-f]{${HASH_CHARS}}$`, 'i')

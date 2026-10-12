@@ -1,0 +1,22 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - navigation [ref=f8e3]:
+      - generic [ref=f8e6]:
+        - button [ref=f8e7]
+        - generic [ref=f8e10]:
+          - heading "Nuevo Gasto" [level=1] [ref=f8e11]
+          - paragraph [ref=f8e12]: Agregar comprobante a la rendición
+    - generic [ref=f8e14]:
+      - generic [ref=f8e20]:
+        - heading "Capturar Comprobante" [level=2] [ref=f8e21]
+        - paragraph [ref=f8e22]: Fotografía la boleta, factura o voucher para leerla con OCR
+      - generic [ref=f8e23]:
+        - button "Capturar Boleta Usa la cámara o sube una foto" [ref=f8e24]:
+          - generic [ref=f8e29]: Capturar Boleta
+          - generic [ref=f8e30]: Usa la cámara o sube una foto
+        - paragraph [ref=f8e31]: Foto nítida y derecha = mejor lectura del OCR
+  - link "Contactar por WhatsApp" [ref=f8e32] [cursor=pointer]:
+    - /url: https://wa.me/56977412178?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20GastosNX
+    - generic [ref=f8e35]: ¿Necesitas ayuda?
+  - button "Open Next.js Dev Tools" [ref=f8e41] [cursor=pointer]
+  - alert [ref=f8e45]

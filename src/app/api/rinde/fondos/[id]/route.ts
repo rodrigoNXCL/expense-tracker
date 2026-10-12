@@ -46,7 +46,7 @@ export async function PATCH(
     const fondo = rows[rowIndex]
     const rowNumber = rowIndex + 2
 
-    let updatedRow = [...fondo]
+    const updatedRow = [...fondo]
     if (accion === 'cerrar') {
       updatedRow[6] = 'cerrado'
     } else if (accion === 'reabrir') {

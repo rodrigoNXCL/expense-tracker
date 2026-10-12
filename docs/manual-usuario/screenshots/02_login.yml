@@ -1,0 +1,36 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e3]:
+    - generic [ref=f4e4]:
+      - img "GastosNX" [ref=f4e6]
+      - generic [ref=f4e7]:
+        - heading "Inicia sesión" [level=1] [ref=f4e8]
+        - paragraph [ref=f4e9]: Controla tus gastos de forma inteligente
+      - generic [ref=f4e10]: Compatible con el SII de Chile
+    - generic [ref=f4e13]:
+      - generic [ref=f4e14]:
+        - generic [ref=f4e16]:
+          - text: Correo electrónico
+          - textbox "Correo electrónico" [ref=f4e17]:
+            - /placeholder: tu@empresa.cl
+        - generic [ref=f4e22]:
+          - text: Contraseña
+          - textbox "Contraseña" [ref=f4e23]:
+            - /placeholder: ••••••••
+        - generic [ref=f4e27]:
+          - generic [ref=f4e28] [cursor=pointer]:
+            - checkbox "Recordarme" [ref=f4e29]
+            - generic [ref=f4e30]: Recordarme
+          - button "¿Olvidaste tu contraseña?" [ref=f4e31]
+        - button "Iniciar sesión" [ref=f4e32]
+      - generic [ref=f4e36]: ¿Nuevo en GastosNX?
+      - button "Crear cuenta Gratis →" [ref=f4e41]
+    - generic [ref=f4e42]:
+      - paragraph [ref=f4e43]:
+        - text: ¿Necesitas ayuda?
+        - button "Contacta al Administrador" [ref=f4e44]
+      - paragraph [ref=f4e45]: v0.8.0 • GastosNX by NXChile
+  - link "Contactar por WhatsApp" [ref=f4e46] [cursor=pointer]:
+    - /url: https://wa.me/56977412178?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20GastosNX
+    - generic [ref=f4e49]: ¿Necesitas ayuda?
+  - button "Open Next.js Dev Tools" [ref=f4e55] [cursor=pointer]
+  - alert [ref=f4e59]

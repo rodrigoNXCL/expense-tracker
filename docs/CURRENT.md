@@ -571,6 +571,46 @@ NEXT_PUBLIC_WEB3FORMS_KEY
 ✅ **ADR-005 (2026-09-14):** **Resuelto.** `api/ocr` ya no devuelve `confidence: 95` (Google Vision en `TEXT_DETECTION` no entrega ese dato): ahora devuelve `null`. La UI muestra "Texto reconocido · revisa los datos" y "Datos extraídos por OCR — Por verificar" en vez de un porcentaje inventado. `parseBoletaChilena` tolera `null` y normaliza a `0`.
 ✅ **ADR-006 (2026-09-14):** **Resuelto.** Eliminados el stub `api/user` (501), el archivo vacío `lib/sheets-users.ts` y `deleteReceiptImage` (nunca invocado). Las 4 referencias Open Graph apuntaban a `og-image.jpg`, que **no existía** (404); se reapuntaron a `hero_principal.webp`.
 
+### Seguimiento posterior a ADR-001 — migración de hashes legacy
+
+> **Decisión del owner (2026-09-14):** Opción A. Se acepta que los hashes históricos
+> SHA-256 **sin sal** sigan existiendo hasta que cada usuario entre por primera vez.
+> `verifyPassword()` mantiene la rama `legacy` a propósito: si se retirara antes de que
+> los 5 migren, esos clientes perderían el acceso.
+
+**Estado actual de la hoja `Usuarios` (10 cuentas):**
+
+| Formato | Cuentas | Estado |
+|---|---|---|
+| `sha256:<sal>:<hash>` (con sal) | `rodrigo@nxchile.com`, `admin@nxchile.cl`, `test@nxchile.cl`, `transrcc.cl@gmail.com`, `prueba@nxchile.com` | ✅ migrados |
+| SHA-256 plano de 64 hex (sin sal) | `marcelo@sanandres.cl`, `marita@sanandres.cl`, `luis@sanandres.cl`, `l.avila.leonel@hotmail.com`, `nata.luengo@gmail.com` | ⏳ migrarán en su próximo login |
+
+**Cómo verificar que terminó la migración:** leer `Usuarios!B:B` y comprobar que **las 10**
+filas tengan el formato `sha256:<sal>:<hash>`. Basta con que ninguna valor sea un hex de 64
+caracteres pelado. Cada login de un usuario legacy reescribe su fila automáticamente.
+
+**Qué hacer si en ~30 días siguen igual** (no es urgente, es un control):
+1. Pedir a esos 5 usuarios que restablezcan su contraseña con el autoservicio nuevo
+   (`/login` → "¿Olvidaste tu contraseña?"). Quedan con sal de inmediato, sin que NXChile
+   necesite conocer sus contraseñas actuales.
+2. Verificar de nuevo el formato.
+3. Solo cuando las 10 filas estén con sal, retirar la rama `legacy` de
+   `src/lib/password.ts` para que el código quede en un solo formato.
+
+**Riesgo mientras dure la transición:** un hash SHA-256 sin sal se puede romper *offline*
+con diccionario sin tocar el sistema (a diferencia de un intento online, que queda
+registrado). El tamaño de la ventana depende de cuándo entren los usuarios, no del código.
+
+**Deuda consciente adicional (no es un bug):** SHA-256 es una función rápida y no está
+diseñada para contraseñas. El estándar recomendado es una función lenta (scrypt, argon2id,
+bcrypt). Se mantiene SHA-256 con sal porque ya resuelve los problemas críticos detectados
+(texto plano, ausencia de sal, doble implementación). Si se decide migrar a **scrypt**
+(`crypto.scrypt`, ya disponible en el core de Node sin dependencias nuevas), el momento
+más barato es ahora, con 10 usuarios; hacerlo con cientos exigiría rehashear toda la base.
+En ese caso el prefijo pasaría a `scrypt:…` y `verify()` aceptaría ambos formatos.
+
+---
+
 ✅ **ADR-002 (2026-08-10):** Sesión migrada a **JWT HS256 en cookie httpOnly** (`src/lib/session.ts`), endpoints `/api/auth/me` y `/api/auth/logout`, API routes leen `readSession`, cliente usa `loadSession()`. Eliminada la sesión manipulable de localStorage + `x-session`.
 ✅ **ADR-003 (2026-08-28):** **Resuelto** — Unificación de límites por plan, nueva estructura de precios por usuario ($3.300 anual / $4.000 mensual + extras), eliminación del plan Enterprise de la oferta pública, alineación de toda la UI pública. Ver `DECISIONS.md` ADR-003.
 ✅ **ADR-004 (2026-08-10):** Centralizado el cliente de Google Sheets en `src/lib/sheets.ts` (`getSheets(readOnly?)`), con soporte de ambos formatos de credenciales.

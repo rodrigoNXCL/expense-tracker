@@ -1,0 +1,376 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e5]:
+        - img "Logotipo GastosNX" [ref=e6]
+        - generic [ref=e7]:
+          - button "Iniciar Sesión" [ref=e8]
+          - button "Ver Planes" [ref=e9]
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]: Producto de NXChile · Tecnología operacional
+        - heading "Deja de perder gastos operacionales antes de la Declaración de Renta." [level=1] [ref=e16]
+        - paragraph [ref=e17]: Captura boletas desde el celular, organízalas automáticamente y entrégalas listas a tu contador. Desarrollado por NXChile.
+        - generic [ref=e18]:
+          - button "Prueba Gratis" [ref=e19]
+          - button "Ver Planes" [ref=e22]
+      - img "Usuario fotografiando una boleta con GastosNX antes de que se pierda" [ref=e25]
+    - generic [ref=e27]:
+      - paragraph [ref=e28]: Empresas y contadores que ya ordenan sus gastos con GastosNX
+      - generic [ref=e29]:
+        - img "AC Constructores y Consultores" [ref=e31]
+        - img "RCC Servicios EIRL" [ref=e33]
+        - img "Transportes San Andrés SPA" [ref=e35]
+        - img "Bastcon" [ref=e37]
+    - paragraph [ref=e40]: Pensado para pymes y contadores que necesitan dejar atrás el caos de las boletas.
+    - generic [ref=e42]:
+      - generic [ref=e43]:
+        - heading "El eslabón que faltaba entre tu operación y tu contador." [level=2] [ref=e44]
+        - paragraph [ref=e45]: GastosNX no reemplaza a tu contador. Le da todo lo que necesita para revisar tu operación sin perder tiempo. Sin boletas perdidas. Sin gastos que quedaron fuera.
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - img "Usuario capturando un gasto con GastosNX desde el celular" [ref=e49]
+          - generic [ref=e50]: "1"
+          - heading "Captura en el momento" [level=3] [ref=e51]
+          - paragraph [ref=e52]: En el estacionamiento, en el restaurant, en la ferretería. Saca la foto en el momento. GastosNX lee la boleta y la registra sola. Ahorras tiempo y nunca más persigues un voucher.
+        - generic [ref=e53]:
+          - img "Respaldo digital de gastos operacionales guardados desde el celular" [ref=e55]
+          - generic [ref=e56]: "2"
+          - heading "Respaldo automático en la nube" [level=3] [ref=e57]
+          - paragraph [ref=e58]: El sistema lo clasifica por tipo de gasto, lo guarda con trazabilidad completa y lo deja disponible para cuando lo necesites. Trazabilidad real, lista para el SII.
+        - generic [ref=e59]:
+          - img "Vista del dashboard de GastosNX con exportación de gastos en CSV y Excel" [ref=e61]
+          - generic [ref=e62]: "3"
+          - heading "Tu contador recibe todo ordenado" [level=3] [ref=e63]
+          - paragraph [ref=e64]: Exporta todos los gastos del período con un clic. Llega con todo ordenado por categoría y fecha. Menos horas de revisión, más orden para el cierre.
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - generic [ref=e67]: Demo en 40 segundos
+          - heading "Míralo funcionando" [level=3] [ref=e70]
+          - paragraph [ref=e71]: Sin registro, sin configuración. Solo lo que hace GastosNX por tu pyme.
+        - iframe [ref=e73]:
+          - generic [ref=f1e1]:
+            - generic "Reproductor de video de YouTube" [ref=f1e3]
+            - generic [ref=f1e6]:
+              - link "YouTube Shorts" [ref=f1e14] [cursor=pointer]
+              - generic [ref=f1e21]:
+                - generic [ref=f1e23]:
+                  - button "Ir al canal" [ref=f1e26] [cursor=pointer]
+                  - link "nxChile" [ref=f1e31] [cursor=pointer]:
+                    - /url: /@nxChile_COM
+                - heading "Manual uso GastosSII de nxChile.com" [level=1] [ref=f1e34]
+              - generic:
+                - generic [ref=f1e35] [cursor=pointer]
+                - button "Reproducir video" [ref=f1e39] [cursor=pointer]
+    - generic [ref=e74]:
+      - img "Boletas y vouchers sin respaldo en escritorio de empresa" [ref=e76]
+      - generic [ref=e77]:
+        - heading "Un gasto sin respaldo suele perderse en el proceso." [level=2] [ref=e78]
+        - paragraph [ref=e79]: "El peaje, el estacionamiento, la colación de trabajo, los materiales del día: todos son gastos reales. Todos son gastos que conviene guardar y ordenar. Pero sin respaldo, el SII no los reconoce.Cuando llega la Declaración de Renta, esos gastos no existen. Y tu empresa paga impuestos sobre una base que debería ser menor. Eso no es mala suerte — es falta de sistema."
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - heading "Hecho para los que mueven Chile todos los días." [level=2] [ref=e86]
+        - paragraph [ref=e87]: GastosNX está diseñado para pymes y contadores chilenos que necesitan registrar gastos menores operacionales y mantener el orden antes del cierre. Sin depender de papel. Sin carpetas improvisadas. Sin perder un peso que te corresponde recuperar.
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - heading "Captura en segundos, donde estés" [level=3] [ref=e94]
+          - paragraph [ref=e95]: Fotografía la boleta en el momento. Sin esperar llegar a la oficina. Sin perder el respaldo.
+        - generic [ref=e96]:
+          - heading "Respaldo digital con trazabilidad" [level=3] [ref=e100]
+          - paragraph [ref=e101]: Cada documento guardado en la nube con trazabilidad completa. Documentos guardados y disponibles para revisión.
+        - generic [ref=e102]:
+          - heading "Acceso inmediato para ti y tu contador" [level=3] [ref=e107]
+          - paragraph [ref=e108]: Cualquier boleta en menos de 10 segundos. Sin llamar a nadie. Sin buscar en carpetas.
+        - generic [ref=e109]:
+          - heading "Historial listo para declaración de renta" [level=3] [ref=e114]
+          - paragraph [ref=e115]: Todos tus gastos ordenados por tipo, monto y fecha. Exactamente como lo necesita tu contador.
+        - generic [ref=e116]:
+          - heading "Exportación directa para tu contador" [level=3] [ref=e120]
+          - paragraph [ref=e121]: Un clic y tienes todos los gastos del período en Excel o CSV. Tu contador llega con todo listo.
+        - generic [ref=e122]:
+          - heading "Menos papeles. Más orden." [level=3] [ref=e127]
+          - paragraph [ref=e128]: Cada boleta que antes se perdía, ahora está respaldada. Y eso se traduce en llegar a tu contador con todo más claro y ordenado.
+    - generic [ref=e130]:
+      - heading "Si el gasto existe, debería quedar respaldado." [level=2] [ref=e134]
+      - paragraph [ref=e135]: GastosNX está diseñado para empresas y contribuyentes que necesitan registrar gastos operacionales menores y mantener el orden antes del cierre. Si el gasto queda guardado y ordenado, tu contador puede revisarlo con más facilidad. Nosotros nos encargamos de que siempre tengas ese respaldo.
+    - generic [ref=e137]:
+      - generic [ref=e138]:
+        - heading "¿Qué gastos puedes guardar con GastosNX?" [level=2] [ref=e139]
+        - paragraph [ref=e140]: En Chile, los gastos operacionales menores son importantes de registrar. GastosNX te ayuda a capturarlos todos, sin que ninguno quede fuera de tu declaración.
+      - generic [ref=e141]:
+        - generic [ref=e142]:
+          - generic [ref=e143]: 🛣️
+          - generic [ref=e144]:
+            - heading "Peajes" [level=3] [ref=e145]
+            - paragraph [ref=e146]: Gastos de peaje que conviene respaldar en el momento. Fotografía el voucher y nunca más pierdas ese respaldo.
+        - generic [ref=e147]:
+          - generic [ref=e148]: 🅿️
+          - generic [ref=e149]:
+            - heading "Estacionamientos" [level=3] [ref=e150]
+            - paragraph [ref=e151]: Estacionamientos y gastos diarios que conviene respaldar en el momento. Respalda cada ticket antes de que se borre.
+        - generic [ref=e152]:
+          - generic [ref=e153]: 🛒
+          - generic [ref=e154]:
+            - heading "Compras menores" [level=3] [ref=e155]
+            - paragraph [ref=e156]: Materiales, insumos y compras menores suman más de lo que crees al cierre tributario.
+        - generic [ref=e157]:
+          - generic [ref=e158]: 📄
+          - generic [ref=e159]:
+            - heading "Vouchers" [level=3] [ref=e160]
+            - paragraph [ref=e161]: Vouchers digitalizados y con trazabilidad. Válidos ante cualquier revisión.
+        - generic [ref=e162]:
+          - generic [ref=e163]: ☕
+          - generic [ref=e164]:
+            - heading "Colaciones" [level=3] [ref=e165]
+            - paragraph [ref=e166]: Colaciones y gastos diarios que muchas veces se olvidan si no se registran a tiempo.
+        - generic [ref=e167]:
+          - generic [ref=e168]: 📦
+          - generic [ref=e169]:
+            - heading "Gastos operacionales diarios" [level=3] [ref=e170]
+            - paragraph [ref=e171]: Cada gasto operacional del día, respaldado y listo para descontarlo en tu Declaración de Renta.
+    - generic [ref=e173]:
+      - generic [ref=e174]:
+        - heading "Elige tu plan. Empieza a recuperar lo que estabas perdiendo." [level=2] [ref=e175]
+        - paragraph [ref=e176]: El costo del plan se recupera con el primer gasto deducible que no pierdas. Sin tarjeta para empezar.
+      - generic [ref=e177]:
+        - generic [ref=e178]:
+          - generic [ref=e179]:
+            - heading "Free" [level=3] [ref=e180]
+            - paragraph [ref=e181]: Pruébalo con tus propios gastos reales. Sin tarjeta, sin compromiso.
+          - generic [ref=e182]: $0/mes
+          - list [ref=e183]:
+            - listitem [ref=e184]:
+              - strong [ref=e188]: 1 usuario
+            - listitem [ref=e189]:
+              - strong [ref=e193]: 10 boletas / mes
+            - listitem [ref=e194]:
+              - generic [ref=e197]:
+                - strong [ref=e198]: OCR con Google AI
+                - text: (mismo que Pro)
+            - listitem [ref=e199]:
+              - generic [ref=e202]: Dashboard básico
+            - listitem [ref=e203]:
+              - generic [ref=e206]: Export CSV
+          - button "Empezar gratis sin tarjeta" [ref=e207]
+          - paragraph [ref=e208]: Ideal para probar el sistema con tus primeros gastos.
+        - generic [ref=e209]:
+          - generic [ref=e210]: MÁS POPULAR
+          - generic [ref=e211]:
+            - heading "Pro" [level=3] [ref=e212]
+            - paragraph [ref=e213]: Para pymes que quieren cerrar el año pagando menos.
+          - generic [ref=e214]:
+            - generic [ref=e215]:
+              - paragraph [ref=e216]: PAGO ANUAL · Recomendado
+              - generic [ref=e217]:
+                - generic [ref=e218]: $3.300
+                - generic [ref=e219]: / usuario / mes
+              - paragraph [ref=e220]: Hasta 3 usuarios incluidos → $9.900 / mes total
+              - paragraph [ref=e221]: "Usuario adicional: $2.500 c/u · IVA incluido"
+            - generic [ref=e222]:
+              - paragraph [ref=e223]: PAGO MES A MES
+              - generic [ref=e224]:
+                - generic [ref=e225]: $4.000
+                - generic [ref=e226]: / usuario / mes
+              - paragraph [ref=e227]: Hasta 3 usuarios incluidos → $12.000 / mes total
+              - paragraph [ref=e228]: "Usuario adicional: $3.000 c/u · IVA incluido"
+          - list [ref=e229]:
+            - listitem [ref=e230]:
+              - generic [ref=e233]:
+                - text: Hasta
+                - strong [ref=e234]: 3 usuarios base + adicionales
+            - listitem [ref=e235]:
+              - strong [ref=e239]: 500 boletas / mes
+            - listitem [ref=e240]:
+              - generic [ref=e243]: OCR con Google AI
+            - listitem [ref=e244]:
+              - generic [ref=e247]: Dashboard avanzado
+            - listitem [ref=e248]:
+              - generic [ref=e251]: Export CSV + Excel
+            - listitem [ref=e252]:
+              - generic [ref=e255]: Soporte prioritario
+          - button "Elegir Pro" [ref=e256]
+          - paragraph [ref=e257]: El plan anual sale más conveniente. Cada usuario adicional tiene precio preferencial.
+      - paragraph [ref=e259]:
+        - text: 💡
+        - strong [ref=e260]: El costo del plan se recupera con el primer gasto deducible que no pierdas.
+        - text: Cada semana sin GastosNX es una semana de respaldos que ya no puedes recuperar.
+    - generic [ref=e262]:
+      - generic [ref=e263]: Producto oficial de NXChile
+      - heading "GastosNX es un producto de NXChile." [level=2] [ref=e264]
+      - paragraph [ref=e265]: Tecnología operacional para empresas chilenas. Compatible con los requisitos del SII · OCR con Google AI · Desarrollado en Chile para la realidad tributaria chilena.
+      - generic [ref=e266]:
+        - generic [ref=e267]:
+          - generic [ref=e268]: 🏛️
+          - paragraph [ref=e269]: Compatible con SII
+          - paragraph [ref=e270]: Respaldo documental ordenado
+        - generic [ref=e271]:
+          - generic [ref=e272]: 🤖
+          - paragraph [ref=e273]: OCR con Google AI
+          - paragraph [ref=e274]: Lectura automática de boletas
+        - generic [ref=e275]:
+          - generic [ref=e276]: 🇨🇱
+          - paragraph [ref=e277]: Hecho en Chile
+          - paragraph [ref=e278]: Para la realidad local
+      - link "Conoce NXChile →" [ref=e280] [cursor=pointer]:
+        - /url: https://www.nxchile.com
+    - generic [ref=e282]:
+      - generic [ref=e283]:
+        - heading "Preguntas frecuentes" [level=2] [ref=e284]
+        - paragraph [ref=e285]: Lo que más nos preguntan antes de empezar.
+      - generic [ref=e286]:
+        - group [ref=e287]:
+          - generic "¿GastosNX determina si un gasto es deducible? +" [ref=e288] [cursor=pointer]:
+            - generic [ref=e289]: ¿GastosNX determina si un gasto es deducible?
+            - generic [ref=e290]: +
+        - group [ref=e291]:
+          - generic "¿Los documentos sirven ante el SII? +" [ref=e292] [cursor=pointer]:
+            - generic [ref=e293]: ¿Los documentos sirven ante el SII?
+            - generic [ref=e294]: +
+        - group [ref=e295]:
+          - generic "¿Cuánto tarda el acceso? +" [ref=e296] [cursor=pointer]:
+            - generic [ref=e297]: ¿Cuánto tarda el acceso?
+            - generic [ref=e298]: +
+        - group [ref=e299]:
+          - generic "¿Puedo exportar a Excel/CSV? +" [ref=e300] [cursor=pointer]:
+            - generic [ref=e301]: ¿Puedo exportar a Excel/CSV?
+            - generic [ref=e302]: +
+        - group [ref=e303]:
+          - generic "¿Cómo funciona el precio por usuario? +" [ref=e304] [cursor=pointer]:
+            - generic [ref=e305]: ¿Cómo funciona el precio por usuario?
+            - generic [ref=e306]: +
+        - group [ref=e307]:
+          - generic "¿Puedo agregar más de 3 usuarios? +" [ref=e308] [cursor=pointer]:
+            - generic [ref=e309]: ¿Puedo agregar más de 3 usuarios?
+            - generic [ref=e310]: +
+        - group [ref=e311]:
+          - generic "¿Qué diferencia hay entre pago anual y mes a mes? +" [ref=e312] [cursor=pointer]:
+            - generic [ref=e313]: ¿Qué diferencia hay entre pago anual y mes a mes?
+            - generic [ref=e314]: +
+        - group [ref=e315]:
+          - generic "¿Qué tecnología de OCR usan? +" [ref=e316] [cursor=pointer]:
+            - generic [ref=e317]: ¿Qué tecnología de OCR usan?
+            - generic [ref=e318]: +
+    - generic [ref=e319]:
+      - img "Boleta respaldada digitalmente con GastosNX" [ref=e321]
+      - generic [ref=e323]:
+        - img "Dueño de pyme chilena con control de gastos en su celular" [ref=e326]
+        - generic [ref=e327]:
+          - heading "Llega a tu contador con todo. Paga solo lo que te corresponde." [level=2] [ref=e328]
+          - paragraph [ref=e329]: Cada gasto que registras hoy puede volver mañana como ahorro real en tu declaración. GastosNX es la herramienta que conecta tu operación con tu contador — para que ningún gasto válido quede fuera de tu renta.
+          - generic [ref=e330]:
+            - button "Comenzar ahora" [ref=e331]
+            - button "Ver Planes" [ref=e334]
+          - paragraph [ref=e335]: ⏱️ Recibirás tus accesos en máximo 24 hrs hábiles
+    - generic [ref=e338]:
+      - generic [ref=e339]:
+        - generic [ref=e340]: Para contadores
+        - heading "Recibe los gastos de tus clientes ya ordenados." [level=2] [ref=e344]
+        - paragraph [ref=e345]: GastosNX te entrega la información de tus clientes lista para revisar. Sin Excel, sin correos con fotos, sin perseguir boletas. Solo un export limpio al cierre de cada mes.
+        - list [ref=e346]:
+          - listitem [ref=e347]:
+            - generic [ref=e350]:
+              - strong [ref=e351]: "Menos horas de revisión:"
+              - text: todo llega categorizado y con fecha.
+          - listitem [ref=e352]:
+            - generic [ref=e355]:
+              - strong [ref=e356]: "Respaldo trazable:"
+              - text: cada boleta con su imagen original disponible.
+          - listitem [ref=e357]:
+            - generic [ref=e360]:
+              - strong [ref=e361]: "Exportación directa:"
+              - text: CSV o Excel, listo para tu software contable.
+          - listitem [ref=e362]:
+            - generic [ref=e365]:
+              - strong [ref=e366]: "Cero costo para el contador:"
+              - text: tu cliente paga, tú recibes.
+        - generic [ref=e367]:
+          - link "Solicitar acceso demo contador" [ref=e368] [cursor=pointer]:
+            - /url: mailto:gastos@nxchile.com?subject=Solicito%20acceso%20demo%20contador
+          - link "Quiero recomendar GastosNX" [ref=e374] [cursor=pointer]:
+            - /url: mailto:gastos@nxchile.com?subject=Quiero%20recomendar%20GastosNX
+      - generic [ref=e376]:
+        - generic [ref=e382]:
+          - paragraph [ref=e383]: Panel del contador
+          - paragraph [ref=e384]: Recepción de gastos
+        - generic [ref=e385]:
+          - generic [ref=e386]:
+            - generic [ref=e387]:
+              - generic [ref=e388]: AC
+              - generic [ref=e389]:
+                - paragraph [ref=e390]: AC Constructores
+                - paragraph [ref=e391]: 47 boletas · Agosto
+            - generic [ref=e392]: Listo
+          - generic [ref=e393]:
+            - generic [ref=e394]:
+              - generic [ref=e395]: RC
+              - generic [ref=e396]:
+                - paragraph [ref=e397]: RCC Servicios
+                - paragraph [ref=e398]: 23 boletas · Agosto
+            - generic [ref=e399]: Listo
+          - generic [ref=e400]:
+            - generic [ref=e401]:
+              - generic [ref=e402]: TS
+              - generic [ref=e403]:
+                - paragraph [ref=e404]: Transportes San Andrés
+                - paragraph [ref=e405]: 12 boletas · Agosto
+            - generic [ref=e406]: Listo
+        - paragraph [ref=e408]: Ejemplo visual · Vista previa del panel
+    - generic [ref=e410]:
+      - generic [ref=e411]:
+        - generic [ref=e412]: Síguenos en Instagram
+        - heading "@nx_chile en Instagram" [level=2] [ref=e413]
+        - paragraph [ref=e414]: Tips sobre respaldo de gastos, novedades del producto y casos de clientes reales.
+      - generic [ref=e415]:
+        - link "Publicación GastosNX en Instagram Ver en Instagram" [ref=e416] [cursor=pointer]:
+          - /url: https://www.instagram.com/nx_chile
+          - img "Publicación GastosNX en Instagram" [ref=e417]
+          - generic [ref=e418]: Ver en Instagram
+        - link "Publicación GastosNX en Instagram Ver en Instagram" [ref=e419] [cursor=pointer]:
+          - /url: https://www.instagram.com/nx_chile
+          - img "Publicación GastosNX en Instagram" [ref=e420]
+          - generic [ref=e421]: Ver en Instagram
+        - link "Publicación GastosNX en Instagram Ver en Instagram" [ref=e422] [cursor=pointer]:
+          - /url: https://www.instagram.com/nx_chile
+          - img "Publicación GastosNX en Instagram" [ref=e423]
+          - generic [ref=e424]: Ver en Instagram
+        - link "Publicación GastosNX en Instagram Ver en Instagram" [ref=e425] [cursor=pointer]:
+          - /url: https://www.instagram.com/nx_chile
+          - img "Publicación GastosNX en Instagram" [ref=e426]
+          - generic [ref=e427]: Ver en Instagram
+      - link "Ver @nx_chile en Instagram →" [ref=e429] [cursor=pointer]:
+        - /url: https://www.instagram.com/nx_chile
+    - generic [ref=e431]:
+      - generic [ref=e432]:
+        - generic [ref=e433]:
+          - img "Logotipo GastosNX" [ref=e435]
+          - paragraph [ref=e436]: GastosNX es el sistema que usan pymes y contadores en Chile para registrar, respaldar y descontar gastos operacionales menores en la Declaración de Renta anual. Compatible con los requisitos del SII. Desarrollado en Chile para la realidad tributaria chilena.
+        - generic [ref=e437]:
+          - heading "Producto" [level=4] [ref=e438]
+          - list [ref=e439]:
+            - listitem [ref=e440]:
+              - button "Planes y precios" [ref=e441]
+            - listitem [ref=e442]:
+              - button "Prueba gratuita" [ref=e443]
+            - listitem [ref=e444]:
+              - button "Manual de Uso" [ref=e445]
+            - listitem [ref=e446]:
+              - button "Cómo funciona" [ref=e447]
+        - generic [ref=e448]:
+          - heading "Empresa" [level=4] [ref=e449]
+          - list [ref=e450]:
+            - listitem [ref=e451]:
+              - link "gastos@nxchile.com" [ref=e452] [cursor=pointer]:
+                - /url: mailto:gastos@nxchile.com
+            - listitem [ref=e453]:
+              - button "Iniciar Sesión" [ref=e454]
+      - generic [ref=e455]:
+        - paragraph [ref=e456]: GastosNX no reemplaza al contador ni determina deducibilidad tributaria. Su objetivo es ayudarte a mantener respaldo y orden documental.
+        - paragraph [ref=e457]: © 2026 GastosNX by NXChile. Todos los derechos reservados.
+    - link "Contactar por WhatsApp" [ref=e458] [cursor=pointer]:
+      - /url: https://wa.me/56977412178?text=Hola%2C%20vengo%20de%20gastos.nxchile.com%20y%20quiero%20saber%20m%C3%A1s%20sobre%20GastosNX%20para%20mi%20empresa.
+      - generic: ¿Dudas? Escríbenos
+  - link "Contactar por WhatsApp" [ref=e461] [cursor=pointer]:
+    - /url: https://wa.me/56977412178?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20GastosNX
+    - generic [ref=e464]: ¿Necesitas ayuda?
+  - button "Open Next.js Dev Tools" [ref=e470] [cursor=pointer]
+  - alert [ref=e474]

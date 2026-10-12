@@ -1,0 +1,76 @@
+- generic [active] [ref=f9e1]:
+  - generic [ref=f9e2]:
+    - navigation [ref=f9e3]:
+      - generic [ref=f9e6]:
+        - button [ref=f9e7]
+        - generic [ref=f9e13]:
+          - heading "Puente de Documentos" [level=1] [ref=f9e14]
+          - paragraph [ref=f9e15]: RindeNX → GastosNX
+    - generic [ref=f9e16]:
+      - generic [ref=f9e17]:
+        - heading "Documentos traspasados a GastosNX" [level=2] [ref=f9e18]
+        - paragraph [ref=f9e19]: Gastos menores aprobados en tus rendiciones que se replicaron en la línea de Gastos
+      - generic [ref=f9e20]:
+        - generic [ref=f9e23]:
+          - paragraph [ref=f9e24]: Documentos
+          - paragraph [ref=f9e25]: "2"
+        - generic [ref=f9e31]:
+          - paragraph [ref=f9e32]: Monto Total
+          - paragraph [ref=f9e33]: $10.500
+        - generic [ref=f9e38]:
+          - paragraph [ref=f9e39]: Rendiciones
+          - paragraph [ref=f9e40]: "1"
+      - generic [ref=f9e45]:
+        - textbox "Buscar por proveedor, RUT o categoría..." [ref=f9e46]
+        - combobox [ref=f9e47]:
+          - option "Todas las rendiciones" [selected]
+          - option "RND-1789409303734-AAO6I"
+      - table [ref=f9e63]:
+        - rowgroup [ref=f9e64]:
+          - row [ref=f9e65]:
+            - columnheader "Fecha" [ref=f9e66]
+            - columnheader "Proveedor" [ref=f9e67]
+            - columnheader "RUT" [ref=f9e68]
+            - columnheader "Categoría" [ref=f9e69]
+            - columnheader "Monto" [ref=f9e70]
+            - columnheader "Rendición" [ref=f9e71]
+            - columnheader "Pasado el" [ref=f9e72]
+            - columnheader "Aprobado por" [ref=f9e73]
+        - rowgroup [ref=f9e74]:
+          - row [ref=f9e75]:
+            - cell "2018-05-29" [ref=f9e76]
+            - cell "COLDARTE SA." [ref=f9e77]
+            - cell "99900900-9" [ref=f9e78]
+            - cell "hospedaje" [ref=f9e79]
+            - cell "$9.500" [ref=f9e80]
+            - cell [ref=f9e81]:
+              - button "RND-1789" [ref=f9e82]
+            - cell "14-09-26, 3:13 p. m." [ref=f9e88]
+            - cell "admin@nxchile.cl" [ref=f9e89]
+          - row [ref=f9e90]:
+            - cell "2026-09-14" [ref=f9e91]
+            - cell "R16.568.660-1" [ref=f9e92]
+            - cell "16568660-1" [ref=f9e93]
+            - cell "colación" [ref=f9e94]
+            - cell "$1.000" [ref=f9e95]
+            - cell [ref=f9e96]:
+              - button "RND-1789" [ref=f9e97]
+            - cell "14-09-26, 3:13 p. m." [ref=f9e103]
+            - cell "admin@nxchile.cl" [ref=f9e104]
+        - rowgroup [ref=f9e105]:
+          - row [ref=f9e106]:
+            - cell "Total filtrado:" [ref=f9e107]
+            - cell "$10.500" [ref=f9e108]
+            - cell [ref=f9e109]
+      - generic [ref=f9e51]:
+        - paragraph [ref=f9e52]: ¿Cómo funciona el puente?
+        - list [ref=f9e53]:
+          - listitem [ref=f9e54]: • Al aprobar una rendición, el admin puede seleccionar qué gastos pasan a GastosNX
+          - listitem [ref=f9e55]: • Solo los gastos seleccionados se duplican en la hoja de Gastos
+          - listitem [ref=f9e56]: • Cada traspaso queda registrado con su rendición original y la fecha de aprobación
+          - listitem [ref=f9e57]: "• La dirección es única: RindeNX → GastosNX (nunca al revés)"
+  - link "Contactar por WhatsApp" [ref=f9e58] [cursor=pointer]:
+    - /url: https://wa.me/56977412178?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20GastosNX
+    - generic [ref=f9e61]: ¿Necesitas ayuda?
+  - button "Open Next.js Dev Tools" [ref=f9e115] [cursor=pointer]
+  - alert [ref=f9e119]
