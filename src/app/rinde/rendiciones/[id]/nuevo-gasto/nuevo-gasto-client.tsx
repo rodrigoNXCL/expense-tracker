@@ -272,13 +272,9 @@ export default function NuevoGastoClient({ session, rendicionId }: Props) {
                 <p className="text-xs text-slate-500">Corrige lo que el OCR no leyó correctamente</p>
               </div>
               {ocrResult && (
-                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                  ocrResult.confidence >= 80
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
-                    : 'bg-amber-50 text-amber-700 border-amber-200/60'
-                }`}>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-amber-50 text-amber-700 border-amber-200/60">
                   <Sparkles className="w-3 h-3" />
-                  OCR {ocrResult.confidence.toFixed(0)}%
+                  Texto reconocido · por verificar
                 </span>
               )}
             </div>

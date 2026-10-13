@@ -47,10 +47,14 @@ export default function LoginPage() {
       // ADR-002: la cookie httpOnly ya fue seteada por el servidor.
       // Guardamos solo para el caché en memoria del cliente.
       saveSession(result.user)
+      // Usuarios con tipo 'gastos' acceden al dashboard de GastosNX. Si el login
+      // ocurre desde rinde.nxchile.com, un redirect relativo (/dashboard) caeria
+      // en el loop del proxy (/rinde/dashboard -> /rinde -> redirect -> loop).
+      // Se usa la URL absoluta para evitar eso (ADR-013).
       if (result.user.tipo_usuario === 'rinde' || result.user.tipo_usuario === 'ambos') {
         router.push('/rinde')
       } else {
-        router.push('/dashboard')
+        router.push('https://gastos.nxchile.com/dashboard')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')

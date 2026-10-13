@@ -150,6 +150,14 @@ Segunda iteración de la auditoría: los H1 de ambas landings eran **ganchos de 
 
 **Claim sin respaldo retirado.** El badge **"MÁS POPULAR"** del plan Pro de GastosNX afirmaba una preferencia que no está respaldada por datos. Reemplazado por **"RECOMENDADO"**, que es una recomendación editorial y no una afirmación de Uso real. (El mismo criterio se aplicó antes a los testimonios con métricas inventadas.)
 
+### Bugs de producción corregidos tras la auditoría (2026-09-14)
+
+1. **OCR roto: `Cannot read properties of null (reading 'toFixed')`.** El cambio de ADR-005 (dejar de inventar un 95% de confianza y devolver `null`) dejó dos llamadas sin guardia:
+   - `src/lib/ocr.ts`: `result.confidence.toFixed(0)` en el log. **Iba a romper en GastosNX** (ruta `/captura`).
+   - `src/app/rinde/rendiciones/[id]/nuevo-gasto/nuevo-gasto-client.tsx`: badge `OCR {confidence.toFixed(0)}%` **y** la comparación `confidence >= 80`. **Iba a romper en RindeNX** (ruta de nuevo gasto).
+   Se corrigieron ambos: el tipo `OcrResult.confidence` pasó a `number | null`, el log formatea solo si hay valor, y el badge muestra 'Texto reconocido · por verificar' (mismo criterio honesto que GastosNX, sin número inventado). Verificado contra imagen real: la API devuelve `confidence: null` y el flujo ya no lanza.
+2. **Loop de redirección para usuarios solo-gastos en `rinde.nxchile.com`.** `rinde/layout.tsx` y `login/page.tsx` redirigían a `/dashboard` de forma relativa; en el subdominio rinde el proxy reescribe `/dashboard` → `/rinde`, el guard volvía a redirigir y la página quedaba en blanco o en bucle. Ahora ambos redirigen a la **URL absoluta** `https://gastos.nxchile.com/dashboard`, que es donde vive su app.
+
 ### Precios con IVA incluido (2026-09-14)
 
 Confirmación del responsable de negocio: **todos los precios publicados son IVA incluido** en ambos productos. Se declaró en los puntos donde efectivamente se muestran los precios:

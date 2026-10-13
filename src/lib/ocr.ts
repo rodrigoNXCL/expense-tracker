@@ -1,6 +1,12 @@
 export interface OcrResult {
   text: string
-  confidence: number
+  /**
+   * Google Cloud Vision en TEXT_DETECTION no entrega un puntaje de confianza
+   * real, así que la API devuelve `null` en lugar de un valor inventado
+   * (ADR-005). La revisión de los datos extraídos es responsabilidad del
+   * usuario, no de un número que no existe.
+   */
+  confidence: number | null
 }
 
 export async function extractTextFromImage(
@@ -32,12 +38,20 @@ export async function extractTextFromImage(
     const result = await response.json()
     onProgress?.(100)
 
-    console.log(`✅ OCR: ${result.confidence.toFixed(0)}% confianza`)
+    // `confidence` llega como null: no se inventa un porcentaje (ADR-005).
+    // Formatearlo sin guardia rompía el flujo con
+    // "Cannot read properties of null (reading 'toFixed')".
+    const confianza = result.confidence ?? null
+    console.log(
+      confianza === null
+        ? '✅ OCR: texto extraído (sin puntaje de confianza disponible)'
+        : `✅ OCR: ${Number(confianza).toFixed(0)}% confianza`
+    )
     console.log(`📄 Texto:`, result.text.substring(0, 300))
 
     return {
       text: result.text,
-      confidence: result.confidence,
+      confidence: confianza,
     }
   } catch (error) {
     console.error('❌ Error OCR:', error instanceof Error ? error.message : error)

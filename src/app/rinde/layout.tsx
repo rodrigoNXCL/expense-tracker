@@ -17,9 +17,11 @@ export default async function RindeLayout({
     redirect('/login')
   }
 
-  // Usuarios 'solo gastos' (o sin tipo_usuario definido) no pueden entrar a RindeNX
+  // Usuarios 'solo gastos' (o sin tipo_usuario definido) no pueden entrar a RindeNX.
+  // En el subdominio rinde.* /dashboard se reescribe a /rinde (loop infinito).
+  // Se redirige al dominio principal de GastosNX, que es donde vive su app.
   if (session.tipo_usuario !== 'rinde' && session.tipo_usuario !== 'ambos') {
-    redirect('/dashboard')
+    redirect('https://gastos.nxchile.com/dashboard')
   }
 
   return <>{children}</>
