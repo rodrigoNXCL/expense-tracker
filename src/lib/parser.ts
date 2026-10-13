@@ -9,6 +9,8 @@ export interface ParsedExpense {
   rawText: string
   /** Ver ADR-005: Google Vision no entrega confianza real; 0 = no disponible. */
   confidence: number
+  /** False cuando el comprobante no traía fecha legible: la UI debe avisar. */
+  fechaDetectada?: boolean
   categoria?: string
   notas?: string
 }
@@ -31,7 +33,12 @@ export function parseBoletaChilena(ocrText: string, confidence?: number | null):
   const tipoDocumento: ParsedExpense['tipoDocumento'] = esFactura ? 'factura' : esVoucher ? 'voucher' : 'boleta'
 
   // ===== 1. FECHA =====
+  // No se inventa una fecha: si el comprobante no la trae, se usa la fecha de
+  // hoy y se marca `fechaDetectada: false` para que la UI avise al usuario de
+  // que debe revisarla. Antes el campo quedaba indistinguible de una fecha
+  // realmente leída.
   let fecha = new Date().toISOString().split('T')[0]
+  let fechaDetectada = false
   const fechaPatterns = [
     /(?:FECHA|EMISION|EMISIÓN)[:\s\n]*(\d{2}[-/]\d{2}[-/]\d{4})/i,
     /(\d{2}[-/]\d{2}[-/]\d{4})/,
@@ -40,6 +47,7 @@ export function parseBoletaChilena(ocrText: string, confidence?: number | null):
     const match = fullText.match(pattern)
     if (match) {
       fecha = normalizeFecha(match[1])
+      fechaDetectada = true
       break
     }
   }
@@ -94,18 +102,24 @@ export function parseBoletaChilena(ocrText: string, confidence?: number | null):
 
   // ===== 3. PROVEEDOR =====
   let proveedor = 'Proveedor no detectado'
-  // Prioridad: líneas que suenan a razón social (con "SA.", "SPA.", "LTDA.", "EIRL", "LIMITADA", "SOCIEDAD")
+  // Prioridad: líneas que suenan a razón social. Se cubren las abreviaturas con
+  // puntos ("S.A.", "E.I.R.L.", "Ltda."), que antes no casaban con \bSA\b y
+  // dejaban que ganara el fallback un token tipo "R16.568.660-1".
   const razonSocial = lines.slice(0, 8).find(l =>
-    l.length > 3 && /\b(SA\.?|SPA\.?|LTDA\.?|EIRL|E\.I\.R\.L\.|LIMITADA|SOCIEDAD)\b/i.test(l) &&
+    l.length > 3 && /(S\.?A\.?|SPA\.?|LTDA\.?|E\.?I\.?R\.?L\.?|LIMITADA|SOCIEDAD)\b/i.test(l) &&
     !/RUT|FECHA|TOTAL|BOLETA|TARJETA|VISA|MONTO|OPERACION|AUTORIZACION|HORA|TERMINAL/i.test(l)
   )
   if (razonSocial) {
     proveedor = razonSocial
   } else {
-    // Fallback: primera línea "tipo nombre" (ignorar keywords)
+    // Fallback: primera línea "tipo nombre". Se descartan las líneas que son
+    // casi solo dígitos y puntuación (encabezado de comprobante, n° de
+    // documento, códigos de producto), que antes ganaban por descarte.
     for (const line of lines.slice(0, 10)) {
       const upper = line.toUpperCase()
-      if (line.length > 3 && line.length < 50 &&
+      const sinEspacios = line.replace(/[\s.,\-:;#/]/g, '')
+      const esCodigoOCorto = sinEspacios.length > 0 && /^\d{6,}$/.test(sinEspacios)
+      if (line.length > 3 && line.length < 50 && !esCodigoOCorto &&
           !upper.includes('RUT') && !upper.includes('FECHA') &&
           !upper.includes('TOTAL') && !upper.includes('BOLETA') &&
           !upper.includes('TARJETA') && !upper.includes('VISA') &&
@@ -119,35 +133,59 @@ export function parseBoletaChilena(ocrText: string, confidence?: number | null):
   }
 
   // ===== 4. MONTO =====
-  // Captura el número en la MISMA línea o en la línea SIGUIENTE a TOTAL/MONTO COMPRA
+  // El total puede venir en la MISMA línea ("TOTAL 81.380") o en la línea
+  // siguiente ("TOTAL" y después "81.380"). Antes solo se cubría el segundo caso
+  // y el patrón "inline" usaba ^...$ sin flag multiline, por lo que nunca
+  // casaba: el monto caía al fallback y devolvía el total de la tarjeta.
   let monto = 0
   const capturarMonto = (valor: string): number => {
-    const m = parseMontoChileno(valor)
+    const limpio = valor.replace(/[$\s]/g, '')
+    if (!/^[\d.,]+$/.test(limpio)) return 0
+    const m = parseMontoChileno(limpio)
     return isNaN(m) ? 0 : m
   }
-  for (let i = 0; i < lines.length; i++) {
+  const esMontoValido = (n: number) => n > 0 && n < 100000000
+
+  // Etiquetas cuyo número NO es el total del gasto: el monto de la tarjeta es
+  // cuánto pagó el cliente, no lo que gasto la rendición.
+  const NO_ES_TOTAL = /^(TARJETA|CREDITO|DEBITO|VISA|MASTERCARD|AMERICAN\s*EXPRESS|DINERS|CAMBIO|VUELTO|EFECTIVO|ABONO|SALDO\s*ANTERIOR|PAGO\s*EFECTIVO)/i
+
+  for (let i = 0; i < lines.length && monto === 0; i++) {
     const line = lines[i]
-    if (/^(TOTAL|MONTO\s*COMPRA|MONTO)[\s:]*$/i.test(line)) {
-      // La siguiente línea numérica es el monto
+
+    // 1) "TOTAL 81.380" -> valor en la misma línea
+    const mismaLinea = line.match(/^(TOTAL(?:\s+A\s+PAGAR)?|MONTO\s+(?:TOTAL|DE\s+COMPRA)?|IMPORTE\s+TOTAL)[\s:$]*([\d.,]+)/i)
+    if (mismaLinea) {
+      const v = capturarMonto(mismaLinea[2])
+      if (esMontoValido(v)) { monto = v; break }
+    }
+
+    // 2) "TOTAL" o "TOTAL A PAGAR:" solo -> valor en las líneas siguientes
+    if (/^(TOTAL(?:\s+A\s*PAGAR)?|MONTO\s+(?:TOTAL|DE\s+COMPRA)?|IMPORTE\s+TOTAL)[\s:$]*$/i.test(line)) {
       for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
-        const valor = capturarMonto(lines[j].replace(/[$,]/g, m => (m === ',' ? '.' : m)).trim())
-        if (valor > 100 && valor < 100000000) { monto = valor; break }
+        const sig = lines[j].trim()
+        // No atravesar hacia el bloque de la tarjeta: ahí el número es otro.
+        if (NO_ES_TOTAL.test(sig) && !/^[\d.,\s$]+$/.test(sig)) break
+        const v = capturarMonto(sig)
+        if (esMontoValido(v)) { monto = v; break }
       }
       if (monto > 0) break
     }
-    const inline = fullText.match(/^(TOTAL|MONTO)[\s:]*([\d.,]+)$/)
-    if (inline && monto === 0) {
-      const v = capturarMonto(inline[2])
-      if (v > 100 && v < 100000000) monto = v
-    }
   }
-  // Fallback: número más grande razonable (excluye tokens de tarjeta)
+
+  // Fallback: se descartan los importes que aparecen en líneas de tarjeta,
+  // pago o vuelto, porque no son el total de la compra.
   if (monto === 0) {
-    const numbers = fullText.replace(/COMPRA|AUTORIZACION|OPERACION|TARJETA/g, ' ').match(/\d{1,3}(?:[.,]\d{3})*(?:,\d{2})?/g)
-    if (numbers) {
-      const amounts = numbers.map(n => parseMontoChileno(n)).filter(n => n > 100 && n < 10000000)
-      if (amounts.length > 0) monto = Math.max(...amounts)
+    const candidatos: number[] = []
+    for (const line of lines) {
+      if (NO_ES_TOTAL.test(line.trim())) continue
+      const nums = line.match(/\d{1,3}(?:[.,]\d{3})*(?:,\d{2})?/g)
+      if (nums) for (const n of nums) {
+        const v = capturarMonto(n)
+        if (esMontoValido(v) && v < 100000000) candidatos.push(v)
+      }
     }
+    if (candidatos.length > 0) monto = Math.max(...candidatos)
   }
 
   // ===== 5. GIRO y BOLETA =====
@@ -159,7 +197,7 @@ export function parseBoletaChilena(ocrText: string, confidence?: number | null):
 
   console.log('✅ Parseado:', { proveedor, rut, monto, fecha, boletaNumero, tipoDocumento })
 
-  return { fecha, rut, proveedor, monto, giro, boletaNumero, tipoDocumento, rawText: ocrText, confidence: confidence ?? 0 }
+  return { fecha, fechaDetectada, rut, proveedor, monto, giro, boletaNumero, tipoDocumento, rawText: ocrText, confidence: confidence ?? 0 }
 }
 
 // ===== HELPERS =====

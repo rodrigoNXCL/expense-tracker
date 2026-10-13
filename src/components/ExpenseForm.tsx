@@ -194,6 +194,17 @@ export default function ExpenseForm({
                 className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                 disabled={parentIsSubmitting || limiteAlcanzado}
               />
+              {/* Si el OCR no encontró fecha, el valor precargado es el de hoy y
+                  no debe pasar inadvertido: se avisa para que se revise. */}
+              {initialData.fechaDetectada === false && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-1.5 flex items-start gap-1.5">
+                  <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                  <span>
+                    No se encontró una fecha legible en el comprobante. Se dejó la fecha de
+                    hoy: corrígela si corresponde.
+                  </span>
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">

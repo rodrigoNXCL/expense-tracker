@@ -180,7 +180,14 @@ export default function CapturaPage() {
         throw new Error(result.error || 'Error al guardar el gasto')
       }
 
-      const updatedSession = { ...session, boletas_usadas: result.boletas_usadas }
+      // La respuesta trae el contador leído de Google Sheets (fuente de verdad).
+      // Se aplica también el límite vigente por si el admin lo cambió, para que
+      // la UI no dependa del valor congelado en el JWT.
+      const updatedSession = {
+        ...session,
+        boletas_usadas: result.boletas_usadas,
+        limite_boletas: result.limite_boletas ?? session.limite_boletas,
+      }
       saveSession(updatedSession)
       setUser(updatedSession)
       clearDraft()

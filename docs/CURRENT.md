@@ -184,6 +184,75 @@ Segunda iteración de la auditoría: los H1 de ambas landings eran **ganchos de 
 | ambos | `/rinde` | 200 ✅ |
 | ambos | `/dashboard` en GastosNX | 200 ✅ |
 
+### Corrección P0 de GastosNX: parser OCR y cupos (2026-10-13)
+
+Tarea autorizada con alcance acotado: corregir la precisión del OCR y el desfase de cupos, sin tocar landings, motor de visión, login, permisos ni arquitectura.
+
+#### 1. Causa raíz OCR: no era el motor, era el parser
+
+Google Cloud Vision (`TEXT_DETECTION`) lee correctamente y con buena latencia: **1.6 s estable** (primera corrida 3.4 s por arranque en frío de la función serverless). No se cambió el motor ni las latencias.
+
+Los fallos estaban en `src/lib/parser.ts`, al interpretar el texto:
+
+- **Monto:** el regex "inline" era `/^(TOTAL|MONTO)[\s:]*([\d.,]+)$/` **sin flag multiline**, así que `^`/`$` anclaban a todo el string y nunca casaba. Cuando el total venía en la misma línea (`TOTAL 81.380`), no se detectaba y se caía al fallback, que terminaba devolviendo el **total de la tarjeta** (p. ej. 100.000) en vez del gasto (81.380).
+- **Proveedor:** las abreviaturas con puntos (`S.A.`, `E.I.R.L.`) no casaban con `\bSA\b`. Sin razón social reconocida, el fallback elegía la primera línea "tipo nombre", que en muchas boletas es el encabezado del comprobante (p. ej. `R16.568.660-1`).
+- **Fecha:** cuando el comprobante no trae fecha legible se usaba la de hoy **sin ningún indicador**, indistinguible de una fecha realmente leída.
+
+**Correcciones aplicadas en `src/lib/parser.ts`:**
+1. Monto: se cubre "TOTAL <valor>" en la misma línea **y** "TOTAL" solo con el valor en las líneas siguientes, con flag correcto; se excluyen explícitamente líneas de tarjeta/crédito/débito/cambio para que el fallback no las tome como total.
+2. Proveedor: regex de razón social acepta abreviaturas con puntos; el fallback descarta líneas que son casi solo dígitos/puntuación (encabezados y códigos).
+3. Fecha: nuevo campo `fechaDetectada` (interfaz `ParsedExpense`). No se inventa fecha; la UI recibe el flag para avisar.
+4. **Aviso visible de fecha no encontrada** en `src/components/ExpenseForm.tsx`: cuando `fechaDetectada === false`, se muestra un aviso ámbar bajo el campo fecha indicando que se dejó la fecha de hoy y que debe revisarla.
+
+**Precisión medida** (5 comprobantes, parser real vía ruta de prueba, valores esperados verificados a mano):
+
+| Campo | Antes | Después |
+|---|---|---|
+| monto | 4/5 | **5/5** |
+| proveedor | 1/5 | **5/5** |
+| fecha | 4/4 evaluables | **4/4** |
+| rut | 5/5 | **5/5** |
+
+Sin regresión: un voucher con `MONTO DE COMPRA` en línea siguiente sigue extrayendo bien el monto y detectando `voucher`.
+
+#### 2. Causa raíz de cupos: contador congelado en el JWT
+
+El contador **sí se escribía** en Google Sheets, pero se leía e incrementaba desde el **JWT**, que queda congelado al iniciar sesión. Como el valor del JWT nunca cambiaba, cada guardado reescribía siempre `(valorJWT + 1)`, por lo que el contador **nunca avanzaba más allá de 1**. Además `/api/auth/me` devolvía el JWT tal cual, así que recargar la página o cambiar de dispositivo tampoco actualizaba nada.
+
+**Correcciones aplicadas:**
+- `src/app/api/save-expense/route.ts`: ahora **lee la fila vigente del usuario en `Usuarios`** (fuente de verdad) antes de validar el límite e incrementar. Reutiliza esa misma lectura para el incremento, por lo que **no añade una segunda consulta** a Sheets.
+- `src/app/api/auth/me/route.ts`: rehidrata `limite_boletas` y `boletas_usadas` desde Google Sheets en cada lectura. Si la lectura falla, degrada al valor del JWT para no dejar al usuario sin sesión.
+- `src/app/captura/page.tsx`: aplica también el `limite_boletas` vigente que devuelve el endpoint, no solo el contador.
+
+Google Sheets se mantiene como fuente de verdad. No se cambió la fuente, no se añadieron endpoints/columnas/tablas.
+
+**Pruebas de cupos ejecutadas** (caso base forzado a 500/0, usuario de prueba controlado, valores restaurados al final):
+
+| Prueba | Resultado |
+|---|---|
+| 1. Crear 10 gastos con JWT congelado en 0 | Hoja queda **500 asignados / 10 consumidos / 490 disponibles**; contador avanza 1→10 ✅ |
+| 2. `/api/auth/me` refleja el valor vigente | 10 (el JWT tenía 0) ✅ |
+| 3. Recarga / segunda llamada con el mismo JWT viejo | 10 ✅ |
+| 4. Cambio administrativo del límite (500→600) | `/api/auth/me` y el siguiente guardado reflejan 600 ✅ |
+| 5. Dos guardados simultáneos | Ver limitaciones ⚠️ |
+| 6. Gasto rechazado por límite (403) | El contador **no** se incrementa ✅ |
+
+**Limitación conocida y no resuelta (medida, no oculta):** con **dos guardados simultáneos** desde el mismo JWT, ambos leen el mismo valor vigente y ambos escriben `+1`, por lo que se pierde una unidad (hoja quedó en 12 en vez de 13). Es una condición de carrera inherente al patrón leer-luego-escribir de Google Sheets (no ofrece actualización atómica de una celda). El caso realista de doble clic / reintento manual queda fuera de alcance de este arreglo. No se ha declarado resuelto.
+
+#### Archivos modificados
+- `src/lib/parser.ts` — extracción de monto, proveedor y marca de fecha.
+- `src/components/ExpenseForm.tsx` — aviso de fecha no encontrada (único cambio de UI).
+- `src/app/api/save-expense/route.ts` — cupos desde la hoja.
+- `src/app/api/auth/me/route.ts` — rehidratación del contador.
+- `src/app/captura/page.tsx` — aplica límite vigente.
+
+#### Verificación adicional
+- Build limpio.
+- Lint sin errores nuevos en los archivos tocados (los de `ExpenseForm.tsx` son preexistentes: había 3 antes de estos cambios).
+
+#### Restricciones respetadas
+No se tocaron landings, motor de visión, login, permisos ni arquitectura. No se desplegó a producción (pendiente de autorización). No se modificó la fuente de verdad.
+
 ### Precios con IVA incluido (2026-09-14)
 
 Confirmación del responsable de negocio: **todos los precios publicados son IVA incluido** en ambos productos. Se declaró en los puntos donde efectivamente se muestran los precios:
