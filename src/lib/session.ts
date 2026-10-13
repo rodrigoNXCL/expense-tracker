@@ -120,4 +120,26 @@ export function readSession(request: NextRequest): SessionPayload | null {
   return verifySessionToken(token)
 }
 
+/**
+ * Igual que `readSession`, pero además devuelve `iat` (segundo de emisión).
+ * La reconciliación de cupos necesita saber la antigüedad de la copia del
+ * contador que viaja en el token para no leer Sheets en cada carga de página.
+ */
+export function readSessionMeta(
+  request: NextRequest
+): { session: SessionPayload; issuedAt: number } | null {
+  const token = request.cookies.get(COOKIE_NAME)?.value
+  if (!token) return null
+  const session = verifySessionToken(token)
+  if (!session) return null
+  try {
+    const payloadStr = Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+    const iat = Number(JSON.parse(payloadStr).iat)
+    if (!Number.isFinite(iat)) return null
+    return { session, issuedAt: iat }
+  } catch {
+    return null
+  }
+}
+
 export { COOKIE_NAME }

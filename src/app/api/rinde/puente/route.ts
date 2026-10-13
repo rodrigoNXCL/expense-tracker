@@ -2,11 +2,38 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSheets } from '@/lib/sheets'
 import { readSession } from '@/lib/session'
 import {
+  callLock,
+  lockErrorResponse,
+  schemaNotMigratedResponse,
+} from '@/lib/gastos-lock'
+import {
   getRindeSpreadsheetId,
   generateAsientoContable,
 } from '@/lib/rinde-helpers'
 
 export const dynamic = 'force-dynamic'
+
+/**
+ * Límite vigente de un usuario en `Usuarios!E`. Es el mismo dato que usa
+ * GastosNX: el puente no inventa una regla de consumo nueva, comparte el mismo
+ * cupo porque escribe en la misma hoja `Gastos` con el mismo `creado_por`.
+ */
+async function resolveLimite_(email: string): Promise<number> {
+  const configSheetId = process.env.GOOGLE_CONFIG_SHEET_ID
+  if (!configSheetId) throw new Error('GOOGLE_CONFIG_SHEET_ID no configurado')
+  const sheets = await getSheets(true)
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: configSheetId,
+    range: 'Usuarios!A2:J200',
+  })
+  const rows = res.data.values || []
+  const row = rows.find((r) => r[0]?.toLowerCase().trim() === email.toLowerCase().trim())
+  const limite = row ? Number(row[4]) : 0
+  if (limite <= 0) {
+    throw new Error(`El usuario ${email} no tiene un límite válido en Usuarios!E`)
+  }
+  return limite
+}
 
 interface GastoRinde {
   id: string
@@ -179,36 +206,71 @@ export async function POST(request: NextRequest) {
     const puenteResults: any[] = []
     if (gastosParaPasar.length > 0) {
       const ahora = new Date().toISOString()
-      const gastosParaGastos = gastosParaPasar.map(({ gasto }) => [
-        ahora,
-        gasto.fecha,
-        gasto.rut,
-        gasto.proveedor,
-        gasto.monto,
-        gasto.categoria,
-        gasto.boleta_numero,
-        gasto.giro,
-        gasto.notas,
-        '95',
-        gasto.image_url,
-        gasto.creado_por,
-      ])
 
-      const appendRes = await sheets.spreadsheets.values.append({
+      // Clave estable por gasto: si el puente se reintenta, el script reconoce
+      // las filas ya escritas y solo agrega las que falten. No depende de
+      // `Date.now()`, así que sobrevive a un reintento.
+      const items = gastosParaPasar.map(({ gasto }) => ({
+        idempotencyKey: `puente:${rendicion_id}:${gasto.id}`,
+        row: [
+          ahora,
+          gasto.fecha,
+          gasto.rut,
+          gasto.proveedor,
+          gasto.monto,
+          gasto.categoria,
+          gasto.boleta_numero,
+          gasto.giro,
+          gasto.notas,
+          '95',
+          gasto.image_url,
+          gasto.creado_por,
+        ],
+      }))
+
+      // El registro en `Gastos` ocurre DENTRO del bloqueo, con validación de
+      // cupo para el lote completo. Si no hay cupo suficiente no se escribe
+      // ninguna fila: la rendición no queda a medias.
+      const lockUser = gastosParaPasar[0].gasto.creado_por || session.email
+      const lockResult = await callLock('saveBatch', {
         spreadsheetId,
-        range: 'Gastos!A:L',
-        valueInputOption: 'RAW',
-        requestBody: { values: gastosParaGastos },
+        configSpreadsheetId: process.env.GOOGLE_CONFIG_SHEET_ID || null,
+        userEmail: lockUser,
+        limite: await resolveLimite_(lockUser),
+        rows: items,
       })
 
-      const updatedRange = appendRes.data.updates?.updatedRange || ''
-      const match = updatedRange.match(/A(\d+):L(\d+)/)
-      const startRow = match ? parseInt(match[1]) : 0
-      const endRow = match ? parseInt(match[2]) : startRow + gastosParaGastos.length - 1
+      if (lockResult.status === 'schema_not_migrated') {
+        return NextResponse.json(schemaNotMigratedResponse().body, { status: 409 })
+      }
+      if (lockResult.status === 'quota_exceeded') {
+        return NextResponse.json(
+          {
+            error: `Cupo insuficiente para pasar la rendición completa: quedan ${
+              lockResult.available ?? 0
+            } de ${lockResult.requested ?? items.length} gastos. No se registró ninguno.`,
+            boletas_usadas: lockResult.consumos ?? 0,
+            limite_boletas: lockResult.limite ?? 0,
+          },
+          { status: 403 }
+        )
+      }
+      if (lockResult.status !== 'ok') {
+        return NextResponse.json(
+          { error: 'No se pudo registrar el cruce de gastos', code: lockResult.status },
+          { status: 503 }
+        )
+      }
+
+      // Posición de cada fila en `Gastos`, resuelta por clave.
+      const placedByKey = new Map<string, number | null>(
+        (lockResult.placed || []).map((p) => [p.idempotencyKey, p.row])
+      )
 
       for (let i = 0; i < gastosParaPasar.length; i++) {
         const { gasto, rowIndex } = gastosParaPasar[i]
-        const gastosRow = startRow + i
+        const key = items[i].idempotencyKey
+        const gastosRow = placedByKey.get(key)
 
         await sheets.spreadsheets.values.update({
           spreadsheetId,
@@ -217,7 +279,9 @@ export async function POST(request: NextRequest) {
           requestBody: { values: [['TRUE']] },
         })
 
-        const puenteId = `PTE-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${i}`
+        // Id derivado de la clave estable: un reintento produce el mismo id en
+        // vez de uno nuevo aleatorio.
+        const puenteId = `PTE-${key.replace(/[^A-Za-z0-9]/g, '').slice(-24)}-${i}`
         await sheets.spreadsheets.values.append({
           spreadsheetId,
           range: 'Puente!A:F',
@@ -227,8 +291,8 @@ export async function POST(request: NextRequest) {
               puenteId,
               gasto.id,
               rendicion_id,
-              String(gastosRow),
-              new Date().toISOString(),
+              String(gastosRow ?? ''),
+              ahora,
               session.email,
             ]],
           },
@@ -343,9 +407,12 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('❌ Error en POST /api/rinde/puente:', error)
+    // Si el bloqueo no está disponible, el puente NO recurre a una escritura
+    // directa en `Gastos`: se devuelve un error controlado.
+    const mapped = lockErrorResponse(error)
     return NextResponse.json(
-      { error: 'Error al ejecutar puente', details: error instanceof Error ? error.message : 'Unknown' },
-      { status: 500 }
+      { ...mapped.body, details: error instanceof Error ? error.message : 'Unknown' },
+      { status: mapped.status }
     )
   }
 }

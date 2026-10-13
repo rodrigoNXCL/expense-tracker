@@ -1,16 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadReceiptImage } from '@/lib/storage'
 import { getSheets } from '@/lib/sheets'
-import { readSession } from '@/lib/session'
-import { countExpensesOfUser } from '@/lib/gastos-cuenta'
+import { readSessionMeta } from '@/lib/session'
+import {
+  callLock,
+  randomKey,
+  lockErrorResponse,
+  schemaNotMigratedResponse,
+} from '@/lib/gastos-lock'
+
+/**
+ * Antigüedad máxima de la copia del límite que viaja en el token. Pasado este
+ * plazo se relee `Usuarios` paraalker cambios administrativos.
+ */
+const MAX_SESSION_AGE_S = 5 * 60
 
 export async function POST(request: NextRequest) {
+  let lockInUse = false
   try {
-    // ADR-002: la sesión sale del servidor (cookie httpOnly), no del cliente
-    const session = readSession(request)
-    if (!session || !session.activo) {
+    // ADR-002: la sesión sale del servidor (cookie httpOnly), no del cliente.
+    // `readSessionMeta` además entrega `iat`, necesario para no leer Sheets en
+    // cada guardado.
+    const meta = readSessionMeta(request)
+    if (!meta || !meta.session.activo) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
+    const { session } = meta
 
     const formData = await request.formData()
     const imageFile = formData.get('image') as File
@@ -42,58 +57,45 @@ export async function POST(request: NextRequest) {
     // Datos de sesión provenientes del servidor (no confiables del cliente)
     const userEmail = session.email
     const userSheetId = session.sheet_id_asociado
-    const boletasUsadas = Number(session.boletas_usadas) || 0
-    const limiteBoletas = Number(session.limite_boletas) || 100
 
-    // Fuente de verdad del consumo: los registros reales del usuario en la hoja
-    // `Gastos`. No se usa la celda `Usuarios!F` porque obligaria a un
-    // leer-luego-escribir, y dos peticiones simultaneas leerian el mismo valor y
-    // escribirian el mismo +1, perdiendo un incremento. Google Sheets no ofrece
-    // incremento atomico de una celda. Los `append` sobre `Gastos!A:L` si son
-    // seguros: cada fila es un hecho consumado y no se sobrescribe.
     if (!userSheetId) {
-      throw new Error('Usuario no tiene sheet asociado')
-    }
-    const sheets = await getSheets()
-    const consumos = await countExpensesOfUser(sheets, userSheetId, userEmail)
-
-    // El limite si puede venir de la hoja: lo cambia el administrador.
-    const configSheetId = process.env.GOOGLE_CONFIG_SHEET_ID
-    let limiteVigente = limiteBoletas
-    let indiceUsuario = -1
-    if (configSheetId) {
-      try {
-        const usersResponse = await getSheets(true).then((s) =>
-          s.spreadsheets.values.get({
-            spreadsheetId: configSheetId,
-            range: 'Usuarios!A2:J200',
-          })
-        )
-        const rows = usersResponse.data.values || []
-        indiceUsuario = rows.findIndex(
-          (row) => row[0]?.toLowerCase().trim() === userEmail.toLowerCase().trim()
-        )
-        if (indiceUsuario >= 0) {
-          const limiteEnHoja = Number(rows[indiceUsuario][4])
-          if (limiteEnHoja > 0) limiteVigente = limiteEnHoja
-        }
-      } catch (err) {
-        console.warn('⚠️ No se pudo leer el limite vigente, se usa el de la sesion:', err)
-      }
-    }
-
-    if (consumos >= limiteVigente) {
       return NextResponse.json(
-        {
-          error: `Límite de boletas alcanzado (${consumos}/${limiteVigente}). Contacta para ampliar tu plan.`,
-          boletas_usadas: consumos,
-          limite_boletas: limiteVigente,
-        },
-        { status: 403 }
+        { error: 'Tu cuenta no tiene una hoja de gastos asociada. Contacta al administrador.' },
+        { status: 400 }
       )
     }
 
-    // Upload a Supabase (OPCIONAL - si falla, igual guarda el gasto)
+    // El límite lo mantiene el administrador en `Usuarios!E`. Se relee solo si
+    // la sesión está más antigua que el plazo; mientras tanto se usa la copia
+    // del token, que es exactamente la ventana de 5 minutos acordada.
+    const sessionAge = Math.floor(Date.now() / 1000) - meta.issuedAt
+    let limiteVigente = Number(session.limite_boletas) || 100
+    if (sessionAge >= MAX_SESSION_AGE_S) {
+      const configSheetId = process.env.GOOGLE_CONFIG_SHEET_ID
+      if (configSheetId) {
+        try {
+          const sheets = await getSheets(true)
+          const usersResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: configSheetId,
+            range: 'Usuarios!A2:J200',
+          })
+          const rows = usersResponse.data.values || []
+          const idx = rows.findIndex(
+            (row) => row[0]?.toLowerCase().trim() === userEmail.toLowerCase().trim()
+          )
+          if (idx >= 0) {
+            const limiteEnHoja = Number(rows[idx][4])
+            if (limiteEnHoja > 0) limiteVigente = limiteEnHoja
+          }
+        } catch (err) {
+          console.warn('⚠️ No se pudo leer el limite vigente, se usa el de la sesion:', err)
+        }
+      }
+    }
+
+    // Upload a Supabase (OPCIONAL - si falla, igual guarda el gasto).
+    // Va ANTES de llamar al script: no se mantiene el bloqueo abierto durante
+    // una llamada externa a otro servicio.
     let imageUrl = null
     if (imageFile && imageFile.size > 0) {
       try {
@@ -104,11 +106,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const spreadsheetId = userSheetId
-
-    if (!spreadsheetId) {
-      throw new Error('Usuario no tiene sheet asociado')
-    }
+    // La clave viaja con el reintento: si el cliente la reenvía, el script
+    // devuelve el resultado original en vez de crear una segunda fila.
+    const clientKey = formData.get('idempotency_key')
+    const idempotencyKey =
+      typeof clientKey === 'string' && clientKey.trim() ? clientKey.trim() : randomKey()
 
     const timestamp = new Date().toISOString()
     const row = [
@@ -126,55 +128,67 @@ export async function POST(request: NextRequest) {
       userEmail,
     ]
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: 'Gastos!A:L',
-      valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [row],
-      },
+    // A partir de aquí, la decisión de cupo y el registro ocurren DENTRO del
+    // bloqueo del script. Esta ruta nunca escribe en `Gastos` por su cuenta.
+    lockInUse = true
+    const result = await callLock('save', {
+      spreadsheetId: userSheetId,
+      configSpreadsheetId: process.env.GOOGLE_CONFIG_SHEET_ID || null,
+      userEmail,
+      idempotencyKey,
+      limite: limiteVigente,
+      row,
     })
+    lockInUse = false
 
-    // El conteo se hace UNA vez por guardado (antes de validar el limite). Tras el
-    // `append` se responde con `consumos + 1` en lugar de recontar: bajo
-    // concurrencia un recuento inmediato puede dar un valor transitorio, y
-    // `/api/auth/me` vuelve a contar las filas reales en cada carga de pagina,
-    // corrigiendo cualquier desvio. Asi cada guardado cuesta una sola lectura
-    // de la columna `L`, sin duplicar llamadas contra la cuota de Sheets.
-    const consumosTrasGuardar = consumos + 1
-
-    // `Usuarios!F` queda como dato informativo para leer en la hoja. Ninguna
-    // decision depende de el, por lo que su eventual desincronizacion no
-    // afecta el cupo.
-    if (configSheetId && indiceUsuario >= 0) {
-      try {
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: configSheetId,
-          range: `Usuarios!F${indiceUsuario + 2}`,
-          valueInputOption: 'RAW',
-          requestBody: {
-            values: [[consumosTrasGuardar]],
-          },
-        })
-      } catch (err) {
-        console.warn('⚠️ No se pudo actualizar el contador informativo:', err)
-      }
+    if (result.status === 'schema_not_migrated') {
+      return NextResponse.json(schemaNotMigratedResponse().body, { status: 409 })
     }
 
-    console.log(`✅ Gasto guardado: ${userEmail} - $${monto} (cuenta ${consumosTrasGuardar}/${limiteVigente})`)
+    if (result.status === 'quota_exceeded') {
+      const consumos = result.consumos ?? 0
+      return NextResponse.json(
+        {
+          error: `Límite de boletas alcanzado (${consumos}/${result.limite ?? limiteVigente}). Contacta para ampliar tu plan.`,
+          boletas_usadas: consumos,
+          limite_boletas: result.limite ?? limiteVigente,
+        },
+        { status: 403 }
+      )
+    }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Gasto guardado exitosamente',
-      boletas_usadas: consumosTrasGuardar,
-      limite_boletas: limiteVigente,
-      imageUrl: imageUrl,
-    })
+    if (result.status === 'ok' || result.status === 'duplicate') {
+      console.log(
+        `✅ Gasto ${result.status === 'duplicate' ? 'idempotente' : 'guardado'}: ${userEmail} - $${monto} (cuenta ${result.consumos}/${result.limite ?? limiteVigente})`
+      )
+      return NextResponse.json({
+        success: true,
+        idempotent: result.status === 'duplicate',
+        message:
+          result.status === 'duplicate'
+            ? 'Este gasto ya había sido registrado; no se creó uno nuevo.'
+            : 'Gasto guardado exitosamente',
+        boletas_usadas: result.consumos ?? 0,
+        limite_boletas: result.limite ?? limiteVigente,
+        imageUrl: imageUrl,
+      })
+    }
+
+    // Cualquier otro estado es un fallo del script, no un rechazo de negocio.
+    console.error('❌ Respuesta inesperada del lock:', result.status, result.message)
+    return NextResponse.json(
+      { error: 'Error interno del servidor', code: result.status },
+      { status: 500 }
+    )
   } catch (error) {
     console.error('❌ Error en save-expense:', error instanceof Error ? error.message : error)
+    // Si el bloqueo no está disponible, no se escribe nada: responder con un
+    // error controlado en vez de recurrir a una escritura alternativa que
+    // eludiría la serialización.
+    const mapped = lockErrorResponse(error)
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
+      { ...mapped.body, pending: lockInUse },
+      { status: mapped.status }
     )
   }
 }

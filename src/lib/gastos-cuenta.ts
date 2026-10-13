@@ -23,15 +23,22 @@ export async function countExpensesOfUser(
   email: string
 ): Promise<number> {
   try {
+    // Se leen juntas `creado_por` (L) y `estado` (N). Una sola lectura cubre el
+    // conteo y el descarte de registros rechazados por el bloqueo.
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Gastos!L2:L',
+      range: 'Gastos!L2:N',
     })
     const rows = res.data.values || []
     const target = email.toLowerCase().trim()
     return rows.reduce((acc, row) => {
       const value = row?.[0]
-      return value && value.toLowerCase().trim() === target ? acc + 1 : acc
+      if (!value || value.toLowerCase().trim() !== target) return acc
+      // Un registro marcado como rechazado por el lock no consume cupo.
+      // Histórico y registros válidos tienen `estado` vacío y cuentan normal.
+      const estado = row?.[2] ? String(row[2]).trim().toLowerCase() : ''
+      if (estado === 'rechazado') return acc
+      return acc + 1
     }, 0)
   } catch (error) {
     console.error('❌ No se pudo contar los gastos del usuario:', error)

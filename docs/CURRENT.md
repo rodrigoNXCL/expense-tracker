@@ -253,6 +253,52 @@ Google Sheets se mantiene como fuente de verdad. No se cambió la fuente, no se 
 #### Restricciones respetadas
 No se tocaron landings, motor de visión, login, permisos ni arquitectura. No se desplegó a producción (pendiente de autorización). No se modificó la fuente de verdad.
 
+### Control de cupos con Apps Script LockService — implementado, PENDIENTE de despliegue
+
+⚠️ **El guardado de gastos y el puente RindeNX están DESHABILITADOS hasta que se despliegue el script.** Responden `503` y no registran nada. Esto es intencional (fallo cerrado): antes que escribir sin serialización, el sistema se detiene. `d31b1e4` y `38b2ea2` siguen en `main`.
+
+#### Archivos
+
+- `google-apps-script/GastosLock.gs` — script con `LockService`.
+- `src/lib/gastos-lock.ts` — cliente Node, falla cerrado.
+- `src/app/api/save-expense/route.ts` — delega la decisión de cupo y el registro.
+- `src/app/api/rinde/puente/route.ts` — ahora valida cupo (antes no lo hacía).
+- `src/app/api/auth/me/route.ts` — reconciliación cada 5 minutos.
+- `src/lib/gastos-cuenta.ts` — excluye registros `rechazado`.
+- `src/lib/session.ts` — `readSessionMeta()` expone `iat`.
+- `docs/DEPLOY_GAS_LOCK.md` — despliegue, verificación, pruebas y rotación.
+
+#### Cambios de esquema (NO ejecutados)
+
+`Gastos` pasa de `A:L` a `A:N`: `M`=`idempotency_key`, `N`=`estado`. Sin backfill: vacío = `ok`, así que el histórico no se toca. Lo ejecuta el usuario con `action=migrate`.
+
+#### Reglas de consumo por flujo (documentadas, sin cambios de negocio)
+
+| | GastosNX `save-expense` | RindeNX `rinde/puente` |
+|---|---|---|
+| Permiso | cualquier usuario | solo `rol === 'admin'` |
+| Hoja | `sheet_id_asociado` | el **mismo** `sheet_id_asociado` |
+| Interruptor | ninguno | `config.gastos_activo` |
+| Columna L | `userEmail` | `creado_por` de origen |
+| Columna 9 | `ocr_confidence` | literal `'95'` |
+| Validaba cupo | sí | **no** (corregido en este cambio) |
+
+⚠️ **Cambio de comportamiento observable:** el puente ahora rechaza una rendición que antes pasaba si no hay cupo para el lote completo. No se alteró ningún límite ni regla comercial; solo se dejó de ignorar el límite.
+
+#### Verificado localmente
+
+- Build sin errores de tipos.
+- **Fallo cerrado:** sin `GAS_LOCK_URL` → `503 lock_unavailable`, **0 filas escritas**, reintentos con la misma clave también `503`.
+- **Regla de 5 minutos:** con token fresco devuelve la copia (`999` inyectado se respetó, 0 lecturas); con token de 10 min reconcilió desde Sheets (`14` real,ignorando el `999`) y renovó la cookie.
+
+#### NO verificado
+
+Nada de la serialización real. Requiere el script desplegado y las pruebas de `docs/DEPLOY_GAS_LOCK.md` §8: misma clave simultánea, claves distintas, último cupo, cupo agotado, error parcial y puente repetido. **No se afirma que la concurrencia esté resuelta hasta entonces.**
+
+#### Despliegue
+
+No desplegado. Pendiente de autorización.
+
 ### Cierre técnico: concurrencia de cupos (2026-10-13)
 
 Continuación de la corrección P0 de GastosNX. **No se toca lo ya resuelto en `d31b1e4`**; este es un commit separado y exclusivo de concurrencia.

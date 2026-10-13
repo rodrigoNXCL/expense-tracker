@@ -406,7 +406,26 @@ Se documenta una decisión cuando:
 - Se introduce un nuevo patrón que afecte a múltiples módulos.
 - Se detecta una inconsistencia de diseño y se decide su resolución (recomendación: además descrita en `CURRENT.md`, sección "Observaciones").
 
-Antes de registrar:
+### ADR-014 — Serialización del consumo de cupos con Apps Script LockService
+
+- **Fecha:** 2026-10-13
+- **Estado:** 🟡 **Implementado, pendiente de validación en el sistema desplegado**
+- **Contexto:** `Usuarios!F` se actualizaba con leer-luego-escribir. Dos peticiones simultáneas leían el mismo valor y escribían el mismo `+1`: se perdía un incremento. Google Sheets **no ofrece incremento atómico de celda ni escritura condicional**, y un bloqueo en memoria no serviría porque las instancias serverless son efímeras y no coordinan entre sí. El commit `38b2ea2` eliminó la pérdida **derivando el consumo de las filas reales de `Gastos`**, lo que corrigió el conteo pero dejó dos problemas: (a) `rinde/puente` escribía en `Gastos` **sin validar el cupo en absoluto**, y (b) un reintento de la misma operación creaba una segunda fila y consumía dos veces.
+- **Decisión:**
+  1. **LockService de Google Apps Script** serializa toda operación que consuma cupos. Dentro de la sección crítica (verificar clave → releer consumo y límite → decidir → escribir) desaparece la carrera. Autorizado expresamente por el usuario; sin KV/Redis ni servicios de terceros.
+  2. **`idempotency_key` viaja en el mismo append que la fila**, de modo que no existe ventana con gasto sin clave. Un reintento devuelve el resultado original sin crear fila ni consumir.
+  3. **Nunca se borra un gasto válido.** Si aun así el consumo superara el límite, se marca `estado='rechazado'` **solo la fila propia**; un registro rechazado no cuenta para el consumo.
+  4. **Falla cerrado.** Sin `GAS_LOCK_URL`/`GAS_LOCK_SECRET`, o si el script no responde, las rutas devuelven `503` y no escriben. Ninguna ruta conserva una escritura alternativa que eluda el bloqueo.
+  5. **`Usuarios!F` es informativo.** El consumo se deriva de las filas, así que un fallo al actualizarlo no pierde nada y la reconciliación lo repara. Ese es el mecanismo de recuperación ante fallos parciales: no se asume que varias escrituras en Sheets sean atómicas.
+  6. **Lecturas controladas:** `/api/auth/me` no lee Sheets si la sesión tiene menos de 5 minutos; al vencer el plazo reconcilia contador y límite y renueva la cookie. Un cambio administrativo puede tardar hasta 5 minutos en reflejarse.
+- **Esquema:** `Gastos` de `A:L` a `A:N` — `M`=`idempotency_key`, `N`=`estado`. Ambas vacías cuentan como estado `ok`, por lo que los registros históricos **no se modifican** y no requieren backfill. La migración la ejecuta el usuario de forma explícita (`action=migrate`), nunca automáticamente.
+- **Alternativas consideradas:**
+  - **Contador atómico externo (Redis/KV):** la más robusta, pero introduce dependencia e infraestructura prohibidas sin autorización.
+  - **Derivación desde filas (`38b2ea2`):** elimina incrementos perdidos sin infraestructura, pero no idempotencia ni serialización estricta. Se mantiene como segunda barrera y como mecanismo de reconciliación.
+  - **Rollback compensatorio:** choca con la regla de no eliminar gastos válidos. Se sustituyó por **neutralizar** (marcar rechazado) en lugar de borrar.
+- **Riesgos aceptados:** latencia adicional de 1–3 s en el guardado (la clave de idempotencia neutraliza el doble clic que provoca); `getScriptLock()` serializa globalmente y no por empresa; la edición manual de `Gastos` en el navegador queda fuera del bloqueo.
+- **Pendiente:** el script no está desplegado. La garantía central **no está validada** hasta ejecutar pruebas concurrentes reales contra el endpoint desplegado (ver `docs/DEPLOY_GAS_LOCK.md` §8).
+- **Referencias:** `google-apps-script/GastosLock.gs`, `src/lib/gastos-lock.ts`, `src/app/api/save-expense/route.ts`, `src/app/api/rinde/puente/route.ts`, `src/app/api/auth/me/route.ts`, `docs/DEPLOY_GAS_LOCK.md`.Antes de registrar:
 
 - Revisar si la decisión contradice una existente → si es el caso, indicarlo y justificar el cambio.
 - Marcar con estado `Deprecada`/`Superada` la decisión anterior afectada.
