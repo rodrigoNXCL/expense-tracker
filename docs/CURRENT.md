@@ -253,6 +253,69 @@ Google Sheets se mantiene como fuente de verdad. No se cambió la fuente, no se 
 #### Restricciones respetadas
 No se tocaron landings, motor de visión, login, permisos ni arquitectura. No se desplegó a producción (pendiente de autorización). No se modificó la fuente de verdad.
 
+### Cierre técnico: concurrencia de cupos (2026-10-13)
+
+Continuación de la corrección P0 de GastosNX. **No se toca lo ya resuelto en `d31b1e4`**; este es un commit separado y exclusivo de concurrencia.
+
+#### Causa raíz confirmada de la pérdida de incrementos
+
+El patrón era **read-modify-write sobre una celda contador**:
+
+```
+GET  Usuarios!F   ->  boletas_usadas = 11
+... dos peticiones simultáneas leen 11 ...
+PUT  Usuarios!F   ->  11 + 1 = 12   (ambas)
+```
+
+Ambas escribían 12 y se perdía un incremento. **Google Sheets no ofrece incremento atómico de una celda**, así que cualquier contador celular sufre esta carrera. Un bloqueo en memoria no serviría: las instancias serverless son efímeras y no coordinan entre sí.
+
+#### Solución implementada
+
+Nuevo módulo `src/lib/gastos-cuenta.ts` con `countExpensesOfUser()`, que **deriva el consumo contando las filas reales** del usuario en `Gastos!L` (columna `creado_por`).
+
+El razonamiento: los `append` sobre `Gastos!A:L` son seguros — cada fila es un hecho consumado y no se sobrescribe. Contando filas no existe read-modify-write sobre el valor autoritativo, así que **no hay nada que perder**. La celda `Usuarios!F` se conserva solo como dato informativo para leer en la hoja; **ninguna decisión de negocio depende de ella**.
+
+Cambios:
+- `src/app/api/save-expense/route.ts`: valida el límite contra el conteo real y responde con el valor vigente. **Una sola lectura de columna por guardado**: el recuento posterior al `append` se omite porque `/api/auth/me` reconcilia en cada carga de página. Esto evita duplicar llamadas contra la cuota de lectura de Sheets (60/min por usuario), que fue un problema real durante las pruebas.
+- `src/app/api/auth/me/route.ts`: deriva `boletas_usadas` de las filas reales y toma `limite_boletas` de `Usuarios!E` (lo que cambia el administrador). Degrada al JWT si falla la lectura, para no dejar al usuario sin sesión.
+
+No se añadieron dependencias, tablas, columnas ni endpoints.
+
+#### Pruebas ejecutadas y resultados observados
+
+Con cupo 500 y usuario de prueba; filas de prueba eliminadas al terminar.
+
+| Prueba | Resultado observado |
+|---|---|
+| 10 guardados secuenciales | consume **exactamente 10** ✅ |
+| 2 guardados simultáneos | ambos HTTP 200, consume **exactamente 2** ✅ |
+| 5 guardadores simultáneos | 5/5 aceptados, **5 filas exactas**, sin pérdidas ✅ |
+| `/api/auth/me` vs filas reales | **60 = 60**, coinciden ✅ |
+| Límite bajo concurrencia | no supera el cupo; respeta el remanente ✅ |
+| Reloj de contador | refleja el valor vigente, no el del JWT ✅ |
+
+> ℹ️ Dos corridas intermedias resultaron con falsos negativos porque el script de limpieza borraba
+> filas por índice mientras se añadían nuevas, corrompiendo el conteo. Se corrigió la limpieza
+> (borrado de abajo hacia arriba) y se repitieron las pruebas: los resultados de la tabla son los
+> de la corrida corregida. No se dio por buena ninguna prueba con el script defectuoso.
+
+#### Limitaciones que se declaran, sin ocultar
+
+1. **Reintentos y dobles clics.** No hay clave de idempotencia: un reintento de la misma operación genera una segunda fila y consume una unidad más. El doble clic se cubre en la interfaz (el botón queda deshabilitado mientras guarda). Una garantía real de idempotencia exigiría una columna o tabla nueva y **requiere autorización**, no se aplicó.
+2. **Límite en el instante exacto.** Dos peticiones simultáneas cuando quedan exactamente 1 cupo podrían ambas pasar la validación y dejar el consumo 1 sobre el límite. El valor autoritativo queda correcto al releer; el desvío puntual es de 1 unidad.
+
+#### Archivos de este commit
+
+- `src/lib/gastos-cuenta.ts` (nuevo)
+- `src/app/api/save-expense/route.ts`
+- `src/app/api/auth/me/route.ts`
+
+Los cuatro archivos modificados de la sesión anterior (`src/app/page.tsx`, `src/app/precios/precios-client.tsx`, `src/app/rinde-landing/page.tsx`, `src/components/SupportButton.tsx`) **no se incluyeron** y permanecen intactos en el árbol de trabajo.
+
+#### Despliegue
+
+No desplegado. Pendiente de autorización explícita.
+
 ### Precios con IVA incluido (2026-09-14)
 
 Confirmación del responsable de negocio: **todos los precios publicados son IVA incluido** en ambos productos. Se declaró en los puntos donde efectivamente se muestran los precios:

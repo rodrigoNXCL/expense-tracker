@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readSession } from '@/lib/session'
 import { getSheets } from '@/lib/sheets'
+import { countExpensesOfUser } from '@/lib/gastos-cuenta'
 
 /**
  * Devuelve la sesión validada del servidor a partir de la cookie httpOnly (ADR-002).
@@ -20,36 +21,44 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ user: null }, { status: 401 })
   }
 
-  const spreadsheetId = process.env.GOOGLE_CONFIG_SHEET_ID
-  if (!spreadsheetId) {
-    return NextResponse.json({ user: session })
-  }
-
-  try {
-    const sheets = await getSheets(true)
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: 'Usuarios!A2:J200',
-    })
-    const rows = response.data.values || []
-    const row = rows.find((r) => r[0]?.toLowerCase().trim() === session.email.toLowerCase().trim())
-
-    if (!row) {
+// El limite lo mantiene el administrador en `Usuarios!E`.
+    const spreadsheetId = process.env.GOOGLE_CONFIG_SHEET_ID
+    if (!spreadsheetId) {
       return NextResponse.json({ user: session })
     }
 
-    const limite = Number(row[4])
-    const usadas = Number(row[5])
+    try {
+      const sheets = await getSheets(true)
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: 'Usuarios!A2:J200',
+      })
+      const rows = response.data.values || []
+      const row = rows.find((r) => r[0]?.toLowerCase().trim() === session.email.toLowerCase().trim())
+      const limite = row ? Number(row[4]) : 0
 
-    return NextResponse.json({
-      user: {
-        ...session,
-        limite_boletas: limite > 0 ? limite : session.limite_boletas,
-        boletas_usadas: Number.isFinite(usadas) ? usadas : session.boletas_usadas,
-      },
-    })
-  } catch (error) {
-    console.error('❌ /api/auth/me: no se pudo leer el contador desde Sheets:', error)
-    return NextResponse.json({ user: session })
-  }
+      // El consumo se cuenta desde los gastos reales del usuario, no desde la
+      // celda `Usuarios!F`, que es solo informativa. Asi el contador coincide
+      // siempre con la fuente de verdad, sin read-modify-write que pierda
+      // incrementos bajo concurrencia.
+      let usadas = session.boletas_usadas
+      if (session.sheet_id_asociado) {
+        try {
+          usadas = await countExpensesOfUser(sheets, session.sheet_id_asociado, session.email)
+        } catch (err) {
+          console.warn('⚠️ /api/auth/me: no se pudo contar, se usa el valor de sesión:', err)
+        }
+      }
+
+      return NextResponse.json({
+        user: {
+          ...session,
+          limite_boletas: limite > 0 ? limite : session.limite_boletas,
+          boletas_usadas: usadas,
+        },
+      })
+    } catch (error) {
+      console.error('❌ /api/auth/me: no se pudo leer desde Sheets:', error)
+      return NextResponse.json({ user: session })
+    }
 }

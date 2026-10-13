@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { uploadReceiptImage } from '@/lib/storage'
 import { getSheets } from '@/lib/sheets'
 import { readSession } from '@/lib/session'
+import { countExpensesOfUser } from '@/lib/gastos-cuenta'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,35 +45,48 @@ export async function POST(request: NextRequest) {
     const boletasUsadas = Number(session.boletas_usadas) || 0
     const limiteBoletas = Number(session.limite_boletas) || 100
 
-    // La fuente de verdad del cupo es Google Sheets, no el JWT (que queda
-    // congelado al iniciar sesión). Se resuelve una sola vez, antes de guardar,
-    // para validar el límite contra el valor vigente y reutilizar la fila en el
-    // incremento posterior: cero lecturas extra.
-    const configSheetId = process.env.GOOGLE_CONFIG_SHEET_ID
-    let contadorVigente = boletasUsadas
-    let limiteVigente = limiteBoletas
-    let filaUsuario: string[] | null = null
-    let indiceUsuario = -1
+    // Fuente de verdad del consumo: los registros reales del usuario en la hoja
+    // `Gastos`. No se usa la celda `Usuarios!F` porque obligaria a un
+    // leer-luego-escribir, y dos peticiones simultaneas leerian el mismo valor y
+    // escribirian el mismo +1, perdiendo un incremento. Google Sheets no ofrece
+    // incremento atomico de una celda. Los `append` sobre `Gastos!A:L` si son
+    // seguros: cada fila es un hecho consumado y no se sobrescribe.
+    if (!userSheetId) {
+      throw new Error('Usuario no tiene sheet asociado')
+    }
+    const sheets = await getSheets()
+    const consumos = await countExpensesOfUser(sheets, userSheetId, userEmail)
 
+    // El limite si puede venir de la hoja: lo cambia el administrador.
+    const configSheetId = process.env.GOOGLE_CONFIG_SHEET_ID
+    let limiteVigente = limiteBoletas
+    let indiceUsuario = -1
     if (configSheetId) {
-      const usersResponse = await getSheets().then((s) =>
-        s.spreadsheets.values.get({ spreadsheetId: configSheetId, range: 'Usuarios!A2:J100' })
-      )
-      const rows = usersResponse.data.values || []
-      indiceUsuario = rows.findIndex((row) => row[0]?.toLowerCase() === userEmail.toLowerCase())
-      if (indiceUsuario >= 0) {
-        filaUsuario = rows[indiceUsuario]
-        contadorVigente = Number(filaUsuario[5]) || 0
-        const limiteEnHoja = Number(filaUsuario[4])
-        if (limiteEnHoja > 0) limiteVigente = limiteEnHoja
+      try {
+        const usersResponse = await getSheets(true).then((s) =>
+          s.spreadsheets.values.get({
+            spreadsheetId: configSheetId,
+            range: 'Usuarios!A2:J200',
+          })
+        )
+        const rows = usersResponse.data.values || []
+        indiceUsuario = rows.findIndex(
+          (row) => row[0]?.toLowerCase().trim() === userEmail.toLowerCase().trim()
+        )
+        if (indiceUsuario >= 0) {
+          const limiteEnHoja = Number(rows[indiceUsuario][4])
+          if (limiteEnHoja > 0) limiteVigente = limiteEnHoja
+        }
+      } catch (err) {
+        console.warn('⚠️ No se pudo leer el limite vigente, se usa el de la sesion:', err)
       }
     }
 
-    if (contadorVigente >= limiteVigente) {
+    if (consumos >= limiteVigente) {
       return NextResponse.json(
         {
-          error: `Límite de boletas alcanzado (${contadorVigente}/${limiteVigente}). Contacta para ampliar tu plan.`,
-          boletas_usadas: contadorVigente,
+          error: `Límite de boletas alcanzado (${consumos}/${limiteVigente}). Contacta para ampliar tu plan.`,
+          boletas_usadas: consumos,
           limite_boletas: limiteVigente,
         },
         { status: 403 }
@@ -90,7 +104,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const sheets = await getSheets()
     const spreadsheetId = userSheetId
 
     if (!spreadsheetId) {
@@ -122,24 +135,38 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    if (configSheetId && indiceUsuario >= 0 && filaUsuario) {
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: configSheetId,
-        range: `Usuarios!F${indiceUsuario + 2}`,
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: [[contadorVigente + 1]],
-        },
-      })
+    // El conteo se hace UNA vez por guardado (antes de validar el limite). Tras el
+    // `append` se responde con `consumos + 1` en lugar de recontar: bajo
+    // concurrencia un recuento inmediato puede dar un valor transitorio, y
+    // `/api/auth/me` vuelve a contar las filas reales en cada carga de pagina,
+    // corrigiendo cualquier desvio. Asi cada guardado cuesta una sola lectura
+    // de la columna `L`, sin duplicar llamadas contra la cuota de Sheets.
+    const consumosTrasGuardar = consumos + 1
+
+    // `Usuarios!F` queda como dato informativo para leer en la hoja. Ninguna
+    // decision depende de el, por lo que su eventual desincronizacion no
+    // afecta el cupo.
+    if (configSheetId && indiceUsuario >= 0) {
+      try {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: configSheetId,
+          range: `Usuarios!F${indiceUsuario + 2}`,
+          valueInputOption: 'RAW',
+          requestBody: {
+            values: [[consumosTrasGuardar]],
+          },
+        })
+      } catch (err) {
+        console.warn('⚠️ No se pudo actualizar el contador informativo:', err)
+      }
     }
 
-    console.log(`✅ Gasto guardado: ${userEmail} - $${monto} (cuenta ${contadorVigente}/${limiteVigente})`)
+    console.log(`✅ Gasto guardado: ${userEmail} - $${monto} (cuenta ${consumosTrasGuardar}/${limiteVigente})`)
 
     return NextResponse.json({
       success: true,
       message: 'Gasto guardado exitosamente',
-      // Valores vigentes leídos de Google Sheets, no los del JWT congelado.
-      boletas_usadas: contadorVigente + 1,
+      boletas_usadas: consumosTrasGuardar,
       limite_boletas: limiteVigente,
       imageUrl: imageUrl,
     })
