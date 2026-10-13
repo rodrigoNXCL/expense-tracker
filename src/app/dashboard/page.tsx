@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSession, loadSession, logout } from '@/lib/auth'
+import { RINDE_DASHBOARD, GASTOS_DASHBOARD } from '@/lib/domains'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -43,9 +44,11 @@ export default function DashboardPage() {
         router.replace('/login')
         return
       }
-      // Usuarios 'solo rinde' no deberían estar en el dashboard de GastosNX
+      // Usuarios 'solo rinde' no deberían estar en el dashboard de GastosNX.
+      // URL absoluta: en el subdominio rinde.* una ruta relativa /rinde se
+      // reescribe a /rinde/rinde y devuelve 404 (pantalla en blanco).
       if (session.tipo_usuario === 'rinde') {
-        router.replace('/rinde')
+        router.replace(RINDE_DASHBOARD)
         return
       }
       setUser(session)
@@ -200,7 +203,7 @@ export default function DashboardPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => router.push('/rinde')}
+                  onClick={() => router.push(RINDE_DASHBOARD)}
                   className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
                   title="Ir a RindeNX"
                 >
@@ -503,7 +506,7 @@ export default function DashboardPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push(GASTOS_DASHBOARD)}
             className="flex flex-col items-center gap-1 h-auto py-2 px-4 text-emerald-600"
           >
             <BarChart3 className="h-5 w-5" />

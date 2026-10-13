@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { saveSession } from '@/lib/auth'
+import { RINDE_DASHBOARD, GASTOS_DASHBOARD } from '@/lib/domains'
 import { Mail, Lock, Check, Loader2, X, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 
@@ -47,14 +48,15 @@ export default function LoginPage() {
       // ADR-002: la cookie httpOnly ya fue seteada por el servidor.
       // Guardamos solo para el caché en memoria del cliente.
       saveSession(result.user)
-      // Usuarios con tipo 'gastos' acceden al dashboard de GastosNX. Si el login
-      // ocurre desde rinde.nxchile.com, un redirect relativo (/dashboard) caeria
-      // en el loop del proxy (/rinde/dashboard -> /rinde -> redirect -> loop).
-      // Se usa la URL absoluta para evitar eso (ADR-013).
+      // Cada producto vive en su subdominio y el proxy de src/proxy.ts reescribe
+      // las rutas desconocidas en rinde.*. Navegar con rutas relativas entre
+      // productos rompe: /rinde desde gastos.nxchile.com abre RindeNX en el
+      // dominio equivocado, y /dashboard desde rinde.nxchile.com nunca llega a
+      // GastosNX (se queda en blanco). Se usan URLs absolutas (ADR-013).
       if (result.user.tipo_usuario === 'rinde' || result.user.tipo_usuario === 'ambos') {
-        router.push('/rinde')
+        router.push(RINDE_DASHBOARD)
       } else {
-        router.push('https://gastos.nxchile.com/dashboard')
+        router.push(GASTOS_DASHBOARD)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')

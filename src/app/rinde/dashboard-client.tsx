@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { GASTOS_DASHBOARD } from '@/lib/domains'
 import {
   ArrowLeft, Plus, FileText, CheckCircle, Clock, XCircle,
   TrendingUp, Loader2, LogOut, ArrowRight, Wallet, Shield, Layers, Receipt, KeyRound
@@ -176,7 +177,9 @@ export default function RindeDashboardClient({ session }: Props) {
             <div className="flex items-center gap-3">
               {(session.tipo_usuario === 'ambos' || isAdmin) && (
                 <button
-                  onClick={() => router.push('/dashboard')}
+                  // URL absoluta: en el subdominio rinde.* una ruta relativa /dashboard se
+                  // reescribe a /rinde y el usuario no llega a GastosNX.
+                  onClick={() => router.push(GASTOS_DASHBOARD)}
                   className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition-colors"
                   title="Volver a GastosNX"
                 >

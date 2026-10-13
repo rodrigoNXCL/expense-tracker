@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { GASTOS_DASHBOARD } from '@/lib/domains'
 import { getSession, loadSession, logout } from '@/lib/auth'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -230,7 +231,7 @@ const resetForm = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')}>
+              <Button variant="ghost" size="sm" onClick={() => router.push(GASTOS_DASHBOARD)}>
                 <Receipt className="h-4 w-4 mr-2" />
                 Dashboard
               </Button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { RINDE_DASHBOARD } from '@/lib/domains'
 import {
   ArrowLeft, Wallet, Plus, X, Edit2, Trash2, Lock, Unlock, Users, CheckCircle, XCircle, Clock
 } from 'lucide-react'
@@ -171,7 +172,7 @@ export default function FondosClient({ session }: { session: any }) {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => router.push('/rinde')}
+                onClick={() => router.push(RINDE_DASHBOARD)}
                 className="p-2 hover:bg-amber-50 rounded-lg text-amber-600"
               >
                 <ArrowLeft className="w-5 h-5" />

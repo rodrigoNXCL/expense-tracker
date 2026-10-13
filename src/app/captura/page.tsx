@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { GASTOS_DASHBOARD } from '@/lib/domains'
 import Image from 'next/image'
 import CameraCapture from '@/components/CameraCapture'
 import OcrProcessor from '@/components/OcrProcessor'
@@ -256,7 +257,7 @@ export default function CapturaPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push(GASTOS_DASHBOARD)}
                 className="text-gray-600 hover:text-emerald-600"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
@@ -323,7 +324,7 @@ export default function CapturaPage() {
                   </p>
                 </div>
                 <Button
-                  onClick={() => router.push('/dashboard')}
+                  onClick={() => router.push(GASTOS_DASHBOARD)}
                   className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold"
                 >
                   Volver al Dashboard
@@ -419,7 +420,7 @@ export default function CapturaPage() {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push(GASTOS_DASHBOARD)}
                 className="w-full border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-semibold"
               >
                 Ver Dashboard

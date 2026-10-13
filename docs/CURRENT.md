@@ -158,6 +158,32 @@ Segunda iteración de la auditoría: los H1 de ambas landings eran **ganchos de 
    Se corrigieron ambos: el tipo `OcrResult.confidence` pasó a `number | null`, el log formatea solo si hay valor, y el badge muestra 'Texto reconocido · por verificar' (mismo criterio honesto que GastosNX, sin número inventado). Verificado contra imagen real: la API devuelve `confidence: null` y el flujo ya no lanza.
 2. **Loop de redirección para usuarios solo-gastos en `rinde.nxchile.com`.** `rinde/layout.tsx` y `login/page.tsx` redirigían a `/dashboard` de forma relativa; en el subdominio rinde el proxy reescribe `/dashboard` → `/rinde`, el guard volvía a redirigir y la página quedaba en blanco o en bucle. Ahora ambos redirigen a la **URL absoluta** `https://gastos.nxchile.com/dashboard`, que es donde vive su app.
 
+### Navegación entre productos: rutas absolutas (2026-09-14)
+
+**Causa raíz común de los dos síntomas reportados.** GastosNX y RindeNX comparten deploy pero viven en subdominios distintos, y `src/proxy.ts` reescribe en `rinde.*` toda ruta desconocida con el prefijo `/rinde`. Consecuencia: **toda navegación entre productos con ruta relativa rompe**.
+
+| Síntoma | Ruta relativa | Resultado | Fix |
+|---|---|---|---|
+| Usuario `gastos` entra a `/rinde` en el subdominio | `redirect('/dashboard')` | el proxy reescribe a `/rinde`, el guard reexpulsa y vuelve a redirigir: **bucle / pantalla en blanco** | URL absoluta a `gastos.nxchile.com/dashboard` |
+| Usuario `rinde` en `/dashboard` de GastosNX | `replace('/rinde')` | queda en `/rinde/rinde`: **404 en blanco** | URL absoluta a `rinde.nxchile.com/rinde` |
+| Usuario `ambos` en RindeNX pulsa "volver a GastosNX" | `push('/dashboard')` | se queda en el mismo subdominio, **nunca llega a GastosNX** | URL absoluta |
+
+**Solución:** nuevo módulo `src/lib/domains.ts` con `RINDE_DASHBOARD` y `GASTOS_DASHBOARD` (URLs absolutas) más `isRindeHost()`. Se aplicó en **todos** los cruces entre productos: `login/page.tsx`, `rinde/layout.tsx`, `rinde/dashboard-client.tsx`, `dashboard/page.tsx`, `rinde/fondos`, `rinde/puente`, `detalle-client.tsx`, `captura/page.tsx` y `admin/page.tsx`.
+
+> **Regla:** nunca cruzar productos con ruta relativa. Usar siempre las constantes de `lib/domains.ts`.
+> Este bug es la misma familia que ADR-013 (el proxy reescribiendo rutas que debía dejar pasar): allí fue
+> `/api/**`, aquí son las rutas de navegación entre dominios.
+
+**Verificación con cookies de sesión reales** (firmadas con el mismo algoritmo que `session.ts`, HS256 de 3 partes):
+
+| Perfil | Ruta probada | Resultado |
+|---|---|---|
+| solo-gastos | `/rinde` en el subdominio | redirige a `https://gastos.nxchile.com/dashboard` ✅ |
+| solo-gastos | `/dashboard` en GastosNX | 200 ✅ |
+| rinde | `/rinde` | 200 ✅ |
+| ambos | `/rinde` | 200 ✅ |
+| ambos | `/dashboard` en GastosNX | 200 ✅ |
+
 ### Precios con IVA incluido (2026-09-14)
 
 Confirmación del responsable de negocio: **todos los precios publicados son IVA incluido** en ambos productos. Se declaró en los puntos donde efectivamente se muestran los precios:
