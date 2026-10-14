@@ -253,6 +253,39 @@ Google Sheets se mantiene como fuente de verdad. No se cambió la fuente, no se 
 #### Restricciones respetadas
 No se tocaron landings, motor de visión, login, permisos ni arquitectura. No se desplegó a producción (pendiente de autorización). No se modificó la fuente de verdad.
 
+### Correccion de migrate_ con la fila 1 vacia (2026-10-14)
+
+**Defecto:** `resolveLayout_()` devolvia las posiciones historicas (L/M/N) como
+si las cabeceras ya existieran cuando la fila 1 estaba completamente vacia.
+Consecuencias encadenadas:
+- `save_` escribia la `idempotency_key` en una columna que nunca tuvo cabecera,
+  y `findByKey_` leia una columna vacia, con lo que la idempotencia era
+  ineffective.
+- `migrate_` respondia `already_migrated` **sin escribir nada**, dando por
+  hecha una migracion que no habia ocurrido.
+
+**Comportamiento definido (explicito, coherente y seguro):** con la fila 1
+vacia el esquema es AMBIGUO y la operacion se detiene con `schema_conflict`,
+tanto en `save_`/`saveBatch_` como en `migrate_`. No se asumen posiciones, no se
+escribe nada y el mensaje indica anadir las cabeceras manualmente.
+
+Motivo: sin fila de cabeceras no hay forma de verificar que la L sea realmente
+`creado_por`; asumirlo haria que el consumo se contara sobre la columna
+equivocada. Ninguna hoja de clientes esta en este caso: las cuatro hojas
+`Gastos` verificadas tienen cabecera con `creado_por` en la columna 12.
+
+**Escenarios de migracion cubiertos por pruebas:** ambas cabeceras ausentes,
+solo una ausente, ambas presentes, fila 1 vacia, destino ocupado,
+`creado_por` no identificable y cabeceras en posiciones distintas de las
+historicas. La migracion es idempotente: tres ejecuciones seguidas no duplican
+cabeceras ni alteran el historico.
+
+**Auditoria real (solo lectura, 2026-10-14):** las 4 hojas de empresa
+requieren migracion; en todas `creado_por` esta en la columna 12 y los destinos
+M y N estan libres. Sin conflictos. Los 4 identificadores coinciden con el
+respaldo pre-migracion verificado. Ninguna migracion fue ejecutada.
+
+
 ### Correccion de autenticacion del lock (2026-10-14)
 
 **Sintoma reportado:** el endpoint Apps Script respondia `unauthorized` con

@@ -203,7 +203,13 @@ function migrate_(spreadsheetId) {
   // (`creado_por`) es ilegible o si el destino está ocupado.
   const layout = resolveLayout_(sheet, { requireControl: false })
   if (!layout.ok) {
-    return { status: layout.status, message: layout.message }
+    return {
+      status: layout.status,
+      message: layout.message,
+      // Se reenvía el diagnóstico completo para que la auditoría de la
+      // migración sepa por qué se detuvo, sin exponer datos de la hoja.
+      esquema_detectado: layout.esquema_detectado,
+    }
   }
 
   const cols = layout
@@ -618,11 +624,23 @@ function openGastos_(spreadsheetId) {
  * `{ ok: false, status, message }` si el esquema no es utilizable.
  *
  * Decisiones:
- *  - Con cabeceras, las posiciones se toman del NOMBRE. Si falta `creado_por`,
- *    el esquema es ambiguo y se detiene: asumir la L podría contar el consumo
- *    de la columna equivocada.
- *  - Sin fila de cabeceras (fila 1 vacía), se usa el esquema histórico
- *    (A..L, `creado_por` en L, control en M y N).
+ *  - Las posiciones se toman SIEMPRE del nombre de la cabecera en la fila 1.
+ *  - Si la fila 1 está COMPLETAMENTE VACÍA, el esquema es AMBIGUO y se detiene
+ *    con `schema_conflict`.
+ *
+ *    Antes esta rama devolvía las posiciones históricas (L/M/N) como si las
+ *    cabeceras ya existieran. Eso producía dos fallos encadenados: `save_`
+ *    escribía la clave en una columna que nunca se había cabecera, y `migrate_`
+ *    respondía `already_migrated` sin escribir nada. Sin fila de cabeceras no
+ *    hay forma de verificar que la L sea realmente `creado_por`, y asumirlo
+ *    haría que el consumo se contara sobre la columna equivocada. Es más seguro
+ *    detenerse y que una persona confirme la estructura.
+ *
+ *    Ninguna hoja de clientes está en este caso: las cuatro hojas `Gastos`
+ *    verificadas tienen fila de cabeceras con `creado_por` en la L.
+ *
+ *  - Si falta `creado_por` con la fila 1 poblada, también se detiene: mismo
+ *    motivo.
  *  - Las tres columnas de control deben ser distintas entre sí.
  */
 function resolveLayout_(sheet, options) {
@@ -641,13 +659,17 @@ function resolveLayout_(sheet, options) {
   }
 
   if (!hayCabeceras) {
+    // Fila 1 vacía: NO se asume ninguna posición. Ver el comentario del
+    // docblock. Se detiene aquí tanto para operar como para migrar.
     return {
-      ok: true,
-      key: LEGACY_KEY_COL,
-      state: LEGACY_STATE_COL,
-      createdBy: LEGACY_CREATED_BY_COL,
-      lastCol: Math.max(lastCol, LEGACY_STATE_COL),
-      esquema: 'legacy_sin_cabeceras',
+      ok: false,
+      status: 'schema_conflict',
+      message:
+        'La fila 1 de ' + SHEET_NAME + ' esta completamente vacia, asi que no se puede verificar ' +
+        'que columna es ' + HEADER_CREATED_BY + ' ni donde deben ir ' + HEADER_KEY + '/' + HEADER_STATE +
+        '. No se asumio el esquema historico ni se escribio nada. Anade las cabeceras manualmente ' +
+        'y vuelve a ejecutar la migracion.',
+      esquema_detectado: 'sin_cabeceras',
     }
   }
 

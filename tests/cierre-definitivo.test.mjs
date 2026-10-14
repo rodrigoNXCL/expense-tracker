@@ -108,13 +108,14 @@ test('3b sin columnas de control: schema_not_migrated, no se escribe', () => {
   assert.equal(g.writes.length, 0)
 })
 
-test('3c hoja sin fila de cabeceras: usa el esquema histórico (L/M/N)', () => {
-  const { invoke, g } = base({ header: [] }) // fila 1 vacía
+test('3c hoja sin fila de cabeceras: se detiene, no asume posiciones', () => {
+  // Comportamiento corregido: sin cabeceras no se puede verificar cuál es
+  // `creado_por`, así que NO se asume L/M/N. Antes devolvía ok y escribía la
+  // clave en una columna nunca cabecera.
+  const { invoke, g } = base({ header: [] })
   const r = guardar(invoke, {})
-  assert.equal(r.status, 'ok', 'sin cabeceras se aplica el layout histórico')
-  assert.equal(g.grid[1][11], EMAIL, 'L = creado_por')
-  assert.equal(g.grid[1][12], 'k1', 'M = clave')
-  assert.equal(g.grid[1][13], 'ok', 'N = estado')
+  assert.equal(r.status, 'schema_conflict', 'debe detenerse, no operar sobre un esquema supuesto')
+  assert.equal(g.writes.length, 0, 'cero escrituras')
 })
 
 test('3d cabeceras desplazadas: la clave se escribe donde dice la cabecera', () => {
