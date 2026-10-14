@@ -253,6 +253,35 @@ Google Sheets se mantiene como fuente de verdad. No se cambió la fuente, no se 
 #### Restricciones respetadas
 No se tocaron landings, motor de visión, login, permisos ni arquitectura. No se desplegó a producción (pendiente de autorización). No se modificó la fuente de verdad.
 
+### Correccion del desfase del indicador del plan tras guardar (2026-10-14)
+
+**Sintoma en produccion:** tras guardar, "Gastos Registrados" pasa a 11 pero el
+indicador del plan se queda en 10/9999 con 9989 disponibles. Al iniciar sesion
+de nuevo muestra 11/9999 y 9988.
+
+**Causa raiz:** `/api/auth/me` devuelve la COPIA del token mientras la sesion
+sea menor de 5 minutos, para no leer Google Sheets en cada carga de pagina. Esa
+copia queda congelada en el momento del login. `/api/save-expense` devolvia los
+contadores correctos en el cuerpo de la respuesta, pero NO renovaba la cookie:
+al volver al dashboard, `loadSession()` consultaba `/api/auth/me`, recibia la
+copia vieja y reinstalaba el valor anterior en el estado del componente. Por eso
+"Gastos Registrados" avanzaba (lo lee `/api/expenses`, que si va a la hoja) y el
+plan se quedaba atras. Los datos persistidos siempre fueron correctos.
+
+**Correccion (minima):** tras un guardado confirmado, la ruta renueva la cookie
+de sesion con los contadores que devuelve el lock, usando el nuevo helper
+`contadorTrasGuardar` de `src/lib/sesion-contadores.ts`. No se tocan
+`GastosLock.gs`, las migraciones, los precios ni las reglas de cupos.
+
+**Pruebas:**
+- `tests/desfase-dashboard.test.mjs` (7 casos): 10 -> 11 usadas y 9989 -> 9988
+  disponibles, conservacion del resto de la sesion, no mutacion del original,
+  reintento idempotente que no mueve el contador y reflejo de un limite
+  cambiado por el administrador.
+- `tests/desfase-dashboard.http.mjs`: recorrido HTTP real contra las rutas de
+  Next y el script real en una hoja en memoria. 7/7.
+
+
 ### Correccion de validateBatchItems_ y guarda de colision en migrate_ (2026-10-14)
 
 **Defecto 1 - payload real incompatible con la validacion.** `saveBatch_`

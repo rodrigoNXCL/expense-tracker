@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadReceiptImage } from '@/lib/storage'
 import { getSheets } from '@/lib/sheets'
-import { readSessionMeta } from '@/lib/session'
+import { readSessionMeta, signSession, setSessionCookie } from '@/lib/session'
+import { contadorTrasGuardar } from '@/lib/sesion-contadores'
 import {
   callLock,
   randomKey,
@@ -167,19 +168,30 @@ export async function POST(request: NextRequest) {
       console.log(
         `✅ Gasto ${result.status === 'duplicate' ? 'idempotente' : 'guardado'}: ${userEmail} - $${monto} (cuenta ${result.consumos}/${result.limite ?? limiteVigente}, limite desde ${result.limit_source || 'n/d'})`
       )
-      return NextResponse.json({
+      const usadas = result.consumos ?? 0
+      const limite = result.limite ?? limiteVigente
+
+      // Se renueva la cookie con los contadores que acaba de devolver el lock.
+      // Sin esto, `/api/auth/me` devuelve la copia del token (que solo se
+      // reconcilia cada 5 minutos) y el dashboard queda mostrando el valor
+      // anterior al guardado hasta que expire esa ventana o se inicie sesión
+      // de nuevo. Con la cookie renovada, la copia ya lleva el dato correcto.
+      const refreshed = contadorTrasGuardar(session, usadas, limite)
+      const ok = NextResponse.json({
         success: true,
         idempotent: result.status === 'duplicate',
         message:
           result.status === 'duplicate'
             ? 'Este gasto ya había sido registrado; no se creó uno nuevo.'
             : 'Gasto guardado exitosamente',
-        boletas_usadas: result.consumos ?? 0,
-        limite_boletas: result.limite ?? limiteVigente,
+        boletas_usadas: usadas,
+        limite_boletas: limite,
         limit_source: result.limit_source,
         imageUrl: imageUrl,
         idempotency_key: idempotencyKey,
       })
+      setSessionCookie(ok, signSession(refreshed))
+      return ok
     }
 
     // Todo lo demás es fallo: nunca se reporta como éxito.
