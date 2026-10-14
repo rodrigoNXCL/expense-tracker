@@ -253,6 +253,42 @@ Google Sheets se mantiene como fuente de verdad. No se cambió la fuente, no se 
 #### Restricciones respetadas
 No se tocaron landings, motor de visión, login, permisos ni arquitectura. No se desplegó a producción (pendiente de autorización). No se modificó la fuente de verdad.
 
+### Correccion de validateBatchItems_ y guarda de colision en migrate_ (2026-10-14)
+
+**Defecto 1 - payload real incompatible con la validacion.** `saveBatch_`
+llamaba a `validateBatchItems_(rows, userEmail)` ANTES de resolver el esquema, y
+esa funcion leia `creado_por` de la columna FIJA 12 (`LEGACY_CREATED_BY_COL`).
+Consecuencias: con el esquema real no habia problema, pero con cualquier esquema
+desplazado validaba el contenido de otra columna, produciendo rechazos falsos
+de lotes validos o, peor, aceptando lotes cuyo consumo se atribuiria a una
+columna distinta de la que se acaba de escribir.
+
+Correccion: `saveBatch_` resuelve el esquema ANTES de validar, y
+`validateBatchItems_` recibe `createdByCol` y lee `creado_por` en la posicion
+detectada. Se mantiene el rechazo de lotes con `creado_por` mixto porque el
+cupo se calcula por usuario y no puede atribuirse con una sola comparacion
+contra `Usuarios!E`.
+
+**Defecto 2 - colision al migrar.** Si `creado_por` estuviera en M o N, la
+migracion habria escrito la cabecera de control encima y sobrescrito datos.
+Ahora `migrate_` detiene esa hoja con `schema_conflict` y reporta la columna
+implicada, sin escribir nada.
+
+**Pruebas nuevas** (`tests/validacion-lote.test.mjs`, 9 casos): deteccion de la
+posicion real en dos esquemas, lote valido con esquema desplazado, escritura en
+la columna detectada, rechazo de `creado_por` ajeno, esquema real en L, vacio
+atribuido al usuario autenticado, esquema incompatible detenido antes de
+validar, colision en migracion y migracion normal sin tocar datos.
+
+**Aceptacion funcional** (`.gs` real sobre hoja en memoria, sin tocar hojas de
+clientes): 13/13. Gasto real guardado y visible con L/M/N correctos; la misma
+operacion repetida no duplica; el cupo se actualiza; el gasto rechazado no
+consume; la transferencia RindeNX (`saveBatch`) registra, no duplica al repetir
+y rechaza el lote completo cuando excede el cupo; una rendicion sin escritura en
+`Gastos` no consume; y ningun fallo de autenticacion o esquema se presenta como
+guardo exitoso.
+
+
 ### Correccion de migrate_ con la fila 1 vacia (2026-10-14)
 
 **Defecto:** `resolveLayout_()` devolvia las posiciones historicas (L/M/N) como

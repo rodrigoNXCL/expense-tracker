@@ -217,6 +217,23 @@ function migrate_(spreadsheetId) {
   const destino = sheet.getRange(1, LEGACY_CREATED_BY_COL + 1, 1, 2).getValues()[0]
 
   const conflicto = []
+
+  // Guarda de colisión: las columnas de destino (M/N) NO pueden ser la misma
+  // que `creado_por`. Si lo fueran, escribir la cabecera sobrescribiría el
+  // encabezado de esa columna y el consumo se contaría sobre la columna
+  // equivocada. Se detiene esa hoja y se reporta.
+  if (cols.createdBy === LEGACY_KEY_COL || cols.createdBy === LEGACY_STATE_COL) {
+    return {
+      status: 'schema_conflict',
+      message:
+        'La cabecera ' + HEADER_CREATED_BY + ' esta en la columna ' + cols.createdBy +
+        ', que es el destino de las cabeceras de control. Escribirlas sobrescribiria datos. ' +
+        'No se modifico nada.',
+      esquema_detectado: cols.esquema,
+      created_by_col: cols.createdBy,
+    }
+  }
+
   if (cols.key === -1 && String(destino[0] || '').trim() !== '') {
     conflicto.push(
       'M contiene "' + destino[0] + '" y no es la cabecera ' + HEADER_KEY
@@ -456,13 +473,15 @@ function saveBatch_(b) {
     return { status: 'bad_request', message: 'userEmail invalido' }
   }
 
-  const itemsError = validateBatchItems_(b.rows, b.userEmail)
-  if (itemsError) return itemsError
-
+  // El esquema se resuelve ANTES de validar el lote: la posición real de
+  // `creado_por` se detecta por cabecera y no puede suponerse.
   const sheet = openGastos_(b.spreadsheetId)
   const layout = resolveLayout_(sheet)
   if (!layout.ok) return layoutError_(layout)
   const cols = layout
+
+  const itemsError = validateBatchItems_(b.rows, b.userEmail, cols.createdBy)
+  if (itemsError) return itemsError
 
   const data = readRows_(sheet, cols)
   const email = norm_(b.userEmail)
@@ -780,11 +799,20 @@ function isEmail_(value) {
  * son arreglos, y CLAVES DUPLICADAS dentro del mismo lote (que de otro modo
  * insertarían dos filas con la misma clave). También exige que todas las filas
  * pertenezcan al mismo usuario, porque el cupo se calcula por usuario y un
- * lote mixto haría imposible atribuir el consumo correctamente.
+ * lote mixto haría imposible atribuir el consumo con una sola comparación
+ * contra `Usuarios!E`.
+ *
+ * `creado_por` se lee en la posición REAL detectada por cabecera
+ * (`createdByCol`), nunca en una columna fija: suponer la L haría validar el
+ * contenido equivocado, con rechazos falsos o, peor, lotes aceptados cuyo
+ * consumo se atribuiría a la columna equivocada.
  */
-function validateBatchItems_(rows, email) {
+function validateBatchItems_(rows, email, createdByCol) {
   const vistos = {}
   const problemas = []
+  const createdBy = (createdByCol && createdByCol > 0)
+    ? createdByCol
+    : LEGACY_CREATED_BY_COL
 
   for (let i = 0; i < rows.length; i++) {
     const item = rows[i]
@@ -809,7 +837,7 @@ function validateBatchItems_(rows, email) {
       problemas.push(ref + ': row vacio o no es un arreglo')
       continue
     }
-    const creado = norm_(item.row[LEGACY_CREATED_BY_COL - 1])
+    const creado = norm_(item.row[createdBy - 1])
     if (creado && creado !== norm_(email)) {
       problemas.push(
         ref + ': creado_por (' + creado + ') no coincide con el usuario del lote (' +
