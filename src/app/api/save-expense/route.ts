@@ -6,7 +6,8 @@ import {
   callLock,
   randomKey,
   lockErrorResponse,
-  schemaNotMigratedResponse,
+  mapLockStatus,
+  isWriteConfirmed,
 } from '@/lib/gastos-lock'
 
 /**
@@ -17,6 +18,7 @@ const MAX_SESSION_AGE_S = 5 * 60
 
 export async function POST(request: NextRequest) {
   let lockInUse = false
+  let lastIdempotencyKey: string | undefined
   try {
     // ADR-002: la sesión sale del servidor (cookie httpOnly), no del cliente.
     // `readSessionMeta` además entrega `iat`, necesario para no leer Sheets en
@@ -111,6 +113,7 @@ export async function POST(request: NextRequest) {
     const clientKey = formData.get('idempotency_key')
     const idempotencyKey =
       typeof clientKey === 'string' && clientKey.trim() ? clientKey.trim() : randomKey()
+    lastIdempotencyKey = idempotencyKey
 
     const timestamp = new Date().toISOString()
     const row = [
@@ -141,25 +144,28 @@ export async function POST(request: NextRequest) {
     })
     lockInUse = false
 
-    if (result.status === 'schema_not_migrated') {
-      return NextResponse.json(schemaNotMigratedResponse().body, { status: 409 })
-    }
+    // Decisión por `status`, nunca por el código HTTP: Apps Script siempre
+    // responde 200. Un estado no reconocido cae en fail-closed.
+    const mapping = mapLockStatus(result)
 
     if (result.status === 'quota_exceeded') {
       const consumos = result.consumos ?? 0
       return NextResponse.json(
         {
           error: `Límite de boletas alcanzado (${consumos}/${result.limite ?? limiteVigente}). Contacta para ampliar tu plan.`,
+          code: 'quota_exceeded',
           boletas_usadas: consumos,
           limite_boletas: result.limite ?? limiteVigente,
+          idempotency_key: idempotencyKey,
         },
         { status: 403 }
       )
     }
 
-    if (result.status === 'ok' || result.status === 'duplicate') {
+    // `ok` y `duplicate` son los únicos estados que confirman la escritura.
+    if (isWriteConfirmed(result)) {
       console.log(
-        `✅ Gasto ${result.status === 'duplicate' ? 'idempotente' : 'guardado'}: ${userEmail} - $${monto} (cuenta ${result.consumos}/${result.limite ?? limiteVigente})`
+        `✅ Gasto ${result.status === 'duplicate' ? 'idempotente' : 'guardado'}: ${userEmail} - $${monto} (cuenta ${result.consumos}/${result.limite ?? limiteVigente}, limite desde ${result.limit_source || 'n/d'})`
       )
       return NextResponse.json({
         success: true,
@@ -170,25 +176,37 @@ export async function POST(request: NextRequest) {
             : 'Gasto guardado exitosamente',
         boletas_usadas: result.consumos ?? 0,
         limite_boletas: result.limite ?? limiteVigente,
+        limit_source: result.limit_source,
         imageUrl: imageUrl,
+        idempotency_key: idempotencyKey,
       })
     }
 
-    // Cualquier otro estado es un fallo del script, no un rechazo de negocio.
-    console.error('❌ Respuesta inesperada del lock:', result.status, result.message)
+    // Todo lo demás es fallo: nunca se reporta como éxito.
+    console.error('❌ Guardado rechazado por el lock:', result.status, result.message)
     return NextResponse.json(
-      { error: 'Error interno del servidor', code: result.status },
-      { status: 500 }
+      {
+        error:
+          mapping.outcome === 'schema_problem'
+            ? 'La hoja de esta empresa aún no tiene las columnas de control (idempotency_key, estado). El guardado está deshabilitado hasta ejecutar la migración autorizada.'
+            : mapping.outcome === 'limit_unknown'
+              ? 'No pudimos verificar tu límite de boletas en este momento. No se guardó tu gasto ni se consumió cupo. Intenta de nuevo en unos segundos.'
+            : mapping.outcome === 'rejected_needs_ops'
+              ? 'El gasto quedó registrado pero requiere revisión manual. Contacta al administrador.'
+              : 'No se pudo confirmar el guardado de tu gasto. Intenta de nuevo.',
+        code: mapping.code,
+        retryable: mapping.retryable,
+        // La clave se devuelve siempre: permite reintentar sin duplicar.
+        idempotency_key: idempotencyKey,
+      },
+      { status: mapping.http }
     )
   } catch (error) {
     console.error('❌ Error en save-expense:', error instanceof Error ? error.message : error)
     // Si el bloqueo no está disponible, no se escribe nada: responder con un
     // error controlado en vez de recurrir a una escritura alternativa que
     // eludiría la serialización.
-    const mapped = lockErrorResponse(error)
-    return NextResponse.json(
-      { ...mapped.body, pending: lockInUse },
-      { status: mapped.status }
-    )
+    const mapped = lockErrorResponse(error, lastIdempotencyKey)
+    return NextResponse.json({ ...mapped.body, pending: lockInUse }, { status: mapped.status })
   }
 }

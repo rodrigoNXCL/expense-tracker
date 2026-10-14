@@ -253,6 +253,171 @@ Google Sheets se mantiene como fuente de verdad. No se cambió la fuente, no se 
 #### Restricciones respetadas
 No se tocaron landings, motor de visión, login, permisos ni arquitectura. No se desplegó a producción (pendiente de autorización). No se modificó la fuente de verdad.
 
+### Correccion de autenticacion del lock (2026-10-14)
+
+**Sintoma reportado:** el endpoint Apps Script respondia `unauthorized` con
+"Secreto compartido incorrecto." aunque el secreto fuese correcto.
+
+**Causa raiz (codigo):** `handle_()` leia el secreto SOLO de
+`e.parameter.token` (query string). Si el cliente lo enviaba en el cuerpo JSON,
+`e.parameter.token` era `undefined`, se convertia en `''` y `secretsMatch_`
+fallaba en su primera guarda `if (!a || !b) return false` **sin llegar a
+comparar nada**. El mensaje de error era identico tanto para un secreto erroneo
+como para un token que nunca llego, lo que ocultaba la causa real.
+
+**Correccion:**
+- Nueva funcion `extractToken_(e)`: acepta el token de la query string **o** del
+  cuerpo JSON. La query tiene prioridad; el cuerpo rescata si falta.
+- `handle_` aplica `.trim()` a la propiedad del script para tolerar espacios
+  invisibles de copiar/pegar.
+
+No se relaja la seguridad: sin token, con token erroneo o con la propiedad
+ausente se sigue rechazando (`unauthorized` / `not_configured`).
+
+**Verificado por HTTP real contra el script desplerado en un endpoint local:**
+token en query -> ok; token en cuerpo -> ok (antes fallaba); token erroneo ->
+unauthorized; sin token -> unauthorized.
+
+**Integracion Next.js -> HTTP -> script (hoja en memoria, sin tocar datos de
+clientes): 7/7.** Guardado real, idempotencia con la misma clave, dos
+peticiones simultaneas serializadas que consumen exactamente 2, rechazo 403 con
+cupo lleno sin consumir, y reintento de clave ya registrada que devuelve el
+resultado original sin consumir.
+
+
+### Cierre definitivo de GastosLock.gs — 5 defectos reales corregidos (2026-10-13)
+
+Sin commit, push, despliegue ni migracion. `npm test` 107/107.
+
+#### A. Esquema de columnas
+
+- **Las escrituras asumian M/N fijos.** `readHeader_` detectaba por nombre, pero
+  `save_`/`saveBatch_` construian la fila con `FALLBACK_CREATED_BY_COL` fijo: si
+  el esquema detectado colocaba las columnas de control en otro sitio, la clave
+  se escribia en la columna equivocada. Ahora `buildRow_` escribe sobre las
+  posiciones **detectadas**.
+- **`creado_por` se asumia en la L en silencio.** Si la fila 1 tenia contenido
+  pero ninguna cabecera `creado_por`, se caia a la columna L, que podria contar
+  el consumo sobre la columna equivocada. Ahora es `schema_conflict` y se detiene.
+  El fallback a L solo aplica si la fila 1 esta **vacia** (hoja sin cabeceras).
+- **Colisiones de columnas** entre las tres cabeceras de control: ahora se
+  rechazan.
+- **Bug en la reescritura:** `migrate_` heredaba la exigencia de columnas ya
+  migradas, con lo que no podia migrar. Resuelto con `requireControl: false`.
+
+#### B. Idempotencia de lotes
+
+- Las filas malformadas se **ignoraban en silencio** (`continue`). Ahora se
+  rechaza el lote entero con el detalle en `errores`.
+- **Claves duplicadas dentro del mismo lote** no se detectaban: se insertaban dos
+  filas con la misma clave. Ahora es `bad_request`.
+- Validacion de clave vacia / >200 chars y de `row` no-arreglo.
+- Un lote con `creado_por` distinto del usuario se rechaza: el cupo es por
+  usuario y un lote mixto haria imposible atribuir el consumo.
+
+#### C. Escrituras parciales (sin atomicidad)
+
+- Un `appendRow` fallido abortaba con `script_error` generico, sin saber que se
+  habia escrito. Ahora cada fila se inserta en su propio `try/catch` y se
+  devuelve **`partial_batch`** con `inserted_keys`, `failed_keys`, `pending_keys`
+  y `placed`, para auditoria y recuperacion.
+- `save_` devuelve `write_failed` si su unico `appendRow` falla.
+- El reintento del mismo lote reconoce las claves ya escritas y solo inserta lo
+  que falta (probado: 4 claves -> 2 escritas -> reintento -> 4 filas, sin
+  duplicados).
+- **No se afirma atomicidad en ningun punto.** No se borra nada para deshacer.
+
+#### D. Comentarios y contratos
+
+- Corregido el comentario que afirmaba que sin secreto "responde 401": es
+  imposible, `ContentService` siempre devuelve 200.
+- Corregido el docblock de `resolveLimit_`, que describia un fallback de limite
+  que ya no existe.
+- `json_()` perdio el parametro de codigo HTTP: ahora solo serializa.
+
+#### Verificacion
+
+`npm test` 107/107 | `npx tsc --noEmit` 0 errores | `npm run build` correcto.
+
+### Cierre tecnico del lock de cupos — defectos reales corregidos (2026-10-13)
+
+Sin commit ni despliegue. La garantia central sigue **sin validar en el sistema
+desplegado**.
+
+#### Defectos reales encontrados y corregidos (no eran hipotesis)
+
+1. **Contrato incompatible entre script y backend.** `GastosLock.gs` validaba y
+   leia `b.email`, pero el backend envia `userEmail`. El conteo nunca coincidia,
+   por lo que **el limite no se habria aplicado nunca**: `countConsumed_` siempre
+   devolvia 0. Unificado en `userEmail`.
+2. **La clave de idempotencia se escribia sobre `creado_por`.** El `slice(0,
+   FALLBACK_CREATED_BY_COL - 1)` trunca a 11 columnas en vez de 12, asi que la
+   clave caia en L y `estado` en M. Habria corrompido el conteo de consumo.
+   Corregido a `slice(0, FALLBACK_CREATED_BY_COL)`.
+3. **`saveBatch` no detectaba claves existentes.** Llamaba
+   `findByKey_(data, cols.key, ...)` pasando el numero en vez del objeto
+   `cols`, por lo que `cols.key` era `undefined` y la busqueda nunca encontraba
+   nada: **un reintento del puente duplicaba todas las filas**.
+4. **`ContentService` no permite codigos HTTP.** `json_(obj, code)`mentedaba
+   401/409/503 que nunca se enviaban. Ahora el codigo es solo metadato y el
+   backend decide por `status`. Documentado en `DEPLOY_GAS_LOCK.md` seccion 0.
+5. **`migrate_` leia L y M en vez de M y N** (off-by-one en `getRange`, que usa
+   base 1), marcando como conflicto una migracion legitima.
+6. **`saveBatch_` confiaba en el limite enviado** en vez de leer `Usuarios!E`.
+   Ahora ambos caminos (`save` y `saveBatch`) leen el limite autoritativo dentro
+   del bloqueo, lo que elimina la ventana de 5 min del token.
+7. **`GAS_LOCK_TIMEOUT_MS` se capturaba al importar el modulo**, asi que cambiarlo
+   en caliente no tenia efecto. Ahora se lee en cada llamada.
+8. **El frontend nunca enviava `idempotency_key`.** El backend generaba un UUID
+   nuevo en cada intento, por lo que un reintento tras timeout duplicaba el gasto.
+   `captura/page.tsx` ahora genera la clave una vez por boleta, la conserva entre
+   reintentos, la descarta al confirmar y evita dobles envíos.
+
+#### Idempotencia de las operaciones posteriores del puente (punto de mayor riesgo)
+
+`saveBatch` protegia `Gastos`, pero no las escrituras siguientes. Ahora, sin
+cambiar el esquema ni la logica contable:
+
+- `asiento.id` era `Date.now() + Math.random()` (aleatorio): un reintento
+  duplicaba el asiento. Se sustituye por un id **determinista** derivado de
+  `rendicion_id`.
+- `Puente` usa ids deterministas; los cruces ya registrados se omiten.
+- El descuento del fondo se protege con un **marcador estable** en `Puente`
+  (`PTE-FONDO-<hash>`, `rinde_gasto_id = __SALDO_FONDO__`) escrito ANTES de
+  modificar el saldo. Un reintento lo ve y no vuelve a descontar.
+- La rendicion se marca `procesando` antes de las escrituras: un fallo parcial
+  deja un estado recuperable, no un estado ambiguo.
+- `aprobada` se escribe **solo** si asiento y descuento quedaron completos; si
+  falta algo se devuelve 503 `partial_processing` y queda en `procesando`.
+- Un reintento sobre una rendicion ya `aprobada` responde exito idempotente sin
+  escribir nada.
+- **No se afirma atomicidad**: Sheets no la ofrece. Es identify-and-skip, con
+  verificacion previa de cada paso.
+- Logica contable intacta: `max(0, saldo - total_rendido)` sin cambios.
+
+#### Pruebas
+
+`npm test` — **55/55**. Arranque del `.gs` real en sandbox con dobles de Apps
+Script; ninguna hoja real de clientes.
+
+| Fichero | Casos | Cubre |
+|---|---|---|
+| `tests/gaslock.test.mjs` | 23 | contrato, validacion, cupos, migracion |
+| `tests/gastos-lock-client.test.mjs` | 14 | mapeo de estados, fail-closed, HTML/redireccion |
+| `tests/puente-idempotencia.test.mjs` | 12 | ids deterministas, plan de reintento, saldo |
+| `tests/concurrencia.test.mjs` | 6 | lock tomado siempre, sin escritura si no se obtiene |
+
+#### Estado
+
+- `npx tsc --noEmit`: 0 errores.
+- `npm run build`: correcto.
+- `npx eslint` sobre los archivos tocados: 15 problemas, **identico al baseline**
+  en HEAD (13 en `puente`, 2 en `captura`). Ninguno nuevo.
+
+**No verificado:** la serializacion real de `LockService`, la latencia real y las
+pruebas concurrentes desplegadas. Requieren el script desplegado.
+**No se commiteo, no se desplego, no se migraron hojas.**
+
 ### Control de cupos con Apps Script LockService — implementado, PENDIENTE de despliegue
 
 ⚠️ **El guardado de gastos y el puente RindeNX están DESHABILITADOS hasta que se despliegue el script.** Responden `503` y no registran nada. Esto es intencional (fallo cerrado): antes que escribir sin serialización, el sistema se detiene. `d31b1e4` y `38b2ea2` siguen en `main`.

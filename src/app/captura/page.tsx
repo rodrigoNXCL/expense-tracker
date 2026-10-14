@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { GASTOS_DASHBOARD } from '@/lib/domains'
 import Image from 'next/image'
@@ -9,6 +9,7 @@ import ExpenseForm from '@/components/ExpenseForm'
 import { OcrResult } from '@/lib/ocr'
 import { ParsedExpense } from '@/lib/parser'
 import { getSession, loadSession, logout, saveSession } from '@/lib/auth'
+import { nuevaClave, claveParaReintento } from '@/lib/idempotency-cliente'
 import { parseBoletaChilena } from '@/lib/parser'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -59,6 +60,12 @@ export default function CapturaPage() {
   const [error, setError] = useState<string | null>(null)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // Clave de idempotencia de la operación en curso. Se genera una vez por
+  // envío y SE CONSERVA entre reintentos: si la respuesta anterior se perdió,
+  // reenviar la misma clave recupera el resultado original en vez de crear una
+  // segunda fila. Solo se descarta cuando el guardado queda confirmado o cuando
+  // el usuario abandona la captura y arranca una boleta distinta.
+  const idempotencyKeyRef = useRef<string>('')
   const [user, setUser] = useState<any>(null)
   const [showOcr, setShowOcr] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined)
@@ -142,6 +149,14 @@ export default function CapturaPage() {
   }
 
   const handleSaveExpense = async (data: ParsedExpense) => {
+    // Guardia de reentrada: el botón ya se deshabilita, pero evita que dos
+    // disparosalmost simultáneos generen claves distintas.
+    if (isSubmitting) return
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current = nuevaClave()
+    }
+    const idempotencyKey = idempotencyKeyRef.current
+
     setIsSubmitting(true)
     setError(null)
 
@@ -169,6 +184,8 @@ export default function CapturaPage() {
         notas: data.notas,
         ocr_confidence: data.confidence,
       }))
+      // Misma clave en cada reintento de ESTA boleta.
+      formData.append('idempotency_key', idempotencyKey)
 
       const response = await fetch('/api/save-expense', {
         method: 'POST',
@@ -176,6 +193,10 @@ export default function CapturaPage() {
       })
 
       const result = await response.json()
+      // La politica de reintento vive en `@/lib/idempotency-cliente` y esta
+      // probada: conserva la misma clave ante fallos transitorios y la descarta
+      // solo cuando la escritura se confirma o el rechazo es definitivo.
+      idempotencyKeyRef.current = claveParaReintento(idempotencyKey, result, response.ok)
       if (!response.ok) {
         throw new Error(result.error || 'Error al guardar el gasto')
       }

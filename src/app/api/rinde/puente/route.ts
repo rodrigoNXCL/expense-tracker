@@ -4,8 +4,24 @@ import { readSession } from '@/lib/session'
 import {
   callLock,
   lockErrorResponse,
-  schemaNotMigratedResponse,
+  mapLockStatus,
+  isWriteConfirmed,
 } from '@/lib/gastos-lock'
+import {
+  ESTADO_PROCESANDO,
+  asientoYaInsertado,
+  MARCA_FONDO,
+  asientoIdDeterminista,
+  puenteIdDeterminista,
+  puenteFondoId,
+  claveGasto,
+  normalizarEstado,
+  rendicionEnEstadoTerminal,
+  rendicionEnProceso,
+  calcularNuevoSaldoFondo,
+  planificarPuente,
+  lockSinEscritura,
+} from '@/lib/puente-idempotencia'
 import {
   getRindeSpreadsheetId,
   generateAsientoContable,
@@ -161,9 +177,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Rendición no encontrada' }, { status: 404 })
     }
     const rendRow = rendRows[rendRowIndex]
-    if (rendRow[3] === 'cerrada' || rendRow[3] === 'aprobada' || rendRow[3] === 'rechazada') {
+    const rendicionId = String(rendRow[0] || '')
+    const estadoActual = normalizarEstado(rendRow[3])
+    const rendRowNumber = rendRowIndex + 2
+
+    if (rendicionEnEstadoTerminal(rendRow) && estadoActual !== ESTADO_PROCESANDO) {
+      if (estadoActual === 'aprobada') {
+        // Reintento de una rendición YA completada: se responde con éxito
+        // idempotente y NO se repite ninguna escritura (ni asiento, ni
+        // descuento de fondo, ni cruces).
+        return NextResponse.json({
+          success: true,
+          idempotent: true,
+          estado: 'aprobada',
+          rendicion_id: rendicionId,
+          gastos_pasados: 0,
+          asiento_id: rendRow[9] || '',
+          mensaje: 'La rendición ya había sido aprobada; no se repitió ninguna operación.',
+        })
+      }
       return NextResponse.json({ error: 'La rendición ya fue procesada' }, { status: 400 })
     }
+
+    // Una rendición que quedó en `procesando` es recuperable: el reintento
+    // continúa el trabajo verificando paso a paso qué falta, sin duplicar lo
+    // ya hecho.
+    const reanudando = rendicionEnProceso(rendRow)
 
     const gastosRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -203,6 +242,33 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Se marca `procesando` antes de tocar nada. Si el proceso muere a mitad,
+    // la rendicion queda en un estado RECUPERABLE: un reintento la continua
+    // verificando cada paso. Si se dejara sin marcar, un reintento no podria
+    // distinguir "nunca empezo" de "empezo y se cayo".
+    if (!reanudando) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `Rendiciones!D${rendRowNumber}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [[ESTADO_PROCESANDO]] },
+      })
+    }
+
+    // Estado previo de las tablas de seguimiento, para no repetir pasos.
+    const puentePrevio = await sheets.spreadsheets.values.get({ spreadsheetId, range: 'Puente!A:F' })
+    const filasPuente = puentePrevio.data.values || []
+    const asientosPrevio = await sheets.spreadsheets.values.get({ spreadsheetId, range: 'Asientos!A:J' })
+    const filasAsientos = asientosPrevio.data.values || []
+
+    const plan = planificarPuente({
+      rendicion: [rendicionId, rendRow[3] === ESTADO_PROCESANDO ? ESTADO_PROCESANDO : ''],
+      filasPuente,
+      filasAsientos,
+      gastosAPasar: gastosParaPasar.map((g) => ({ id: g.gasto.id })),
+      tieneFondo: false,
+    })
+
     const puenteResults: any[] = []
     if (gastosParaPasar.length > 0) {
       const ahora = new Date().toISOString()
@@ -211,7 +277,7 @@ export async function POST(request: NextRequest) {
       // las filas ya escritas y solo agrega las que falten. No depende de
       // `Date.now()`, así que sobrevive a un reintento.
       const items = gastosParaPasar.map(({ gasto }) => ({
-        idempotencyKey: `puente:${rendicion_id}:${gasto.id}`,
+        idempotencyKey: claveGasto(rendicion_id, gasto.id),
         row: [
           ahora,
           gasto.fecha,
@@ -240,25 +306,55 @@ export async function POST(request: NextRequest) {
         rows: items,
       })
 
-      if (lockResult.status === 'schema_not_migrated') {
-        return NextResponse.json(schemaNotMigratedResponse().body, { status: 409 })
-      }
+      // Decisión por `status`: Apps Script siempre responde HTTP 200.
       if (lockResult.status === 'quota_exceeded') {
+        // La rendicion vuelve a su estado anterior: no se registro nada del lote.
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `Rendiciones!D${rendRowNumber}`,
+          valueInputOption: 'RAW',
+          requestBody: { values: [[rendRow[3] || '']] },
+        })
         return NextResponse.json(
           {
             error: `Cupo insuficiente para pasar la rendición completa: quedan ${
               lockResult.available ?? 0
             } de ${lockResult.requested ?? items.length} gastos. No se registró ninguno.`,
+            code: 'quota_exceeded',
             boletas_usadas: lockResult.consumos ?? 0,
             limite_boletas: lockResult.limite ?? 0,
           },
           { status: 403 }
         )
       }
-      if (lockResult.status !== 'ok') {
+      if (!isWriteConfirmed(lockResult)) {
+        const mapping = mapLockStatus(lockResult)
+        // Si el lock garantiza que no escribio nada, la rendicion vuelve a su
+        // estado anterior: no se dejo a medias sin motivo. Si el resultado es
+        // ambiguo, se mantiene `procesando` para que el reintento resuelva por
+        // clave de idempotencia.
+        if (lockSinEscritura(lockResult.status)) {
+          await sheets.spreadsheets.values.update({
+            spreadsheetId,
+            range: `Rendiciones!D${rendRowNumber}`,
+            valueInputOption: 'RAW',
+            requestBody: { values: [[rendRow[3] || '']] },
+          })
+        }
+        const mensaje =
+          mapping.outcome === 'limit_unknown'
+            ? 'No pudimos verificar el limite de boletas. No se registro ningun gasto ni se completo la rendicion.'
+            : mapping.outcome === 'schema_problem'
+              ? 'La hoja de esta empresa aun no tiene las columnas de control. No se registro ningun gasto.'
+              : 'No se pudo registrar el cruce de gastos. No se completo la rendicion.'
         return NextResponse.json(
-          { error: 'No se pudo registrar el cruce de gastos', code: lockResult.status },
-          { status: 503 }
+          {
+            error: mensaje,
+            code: mapping.code,
+            retryable: mapping.retryable,
+            estado: lockSinEscritura(lockResult.status) ? rendRow[3] || '' : ESTADO_PROCESANDO,
+          },
+          { status: mapping.http }
         )
       }
 
@@ -267,11 +363,14 @@ export async function POST(request: NextRequest) {
         (lockResult.placed || []).map((p) => [p.idempotencyKey, p.row])
       )
 
+      const crucesPendientes = new Set(plan.registrarCruces)
+
       for (let i = 0; i < gastosParaPasar.length; i++) {
         const { gasto, rowIndex } = gastosParaPasar[i]
         const key = items[i].idempotencyKey
         const gastosRow = placedByKey.get(key)
 
+        // `GastosRinde!N` es una marca booleana: reescribir TRUE es inocuo.
         await sheets.spreadsheets.values.update({
           spreadsheetId,
           range: `GastosRinde!N${rowIndex}`,
@@ -279,25 +378,28 @@ export async function POST(request: NextRequest) {
           requestBody: { values: [['TRUE']] },
         })
 
-        // Id derivado de la clave estable: un reintento produce el mismo id en
-        // vez de uno nuevo aleatorio.
-        const puenteId = `PTE-${key.replace(/[^A-Za-z0-9]/g, '').slice(-24)}-${i}`
-        await sheets.spreadsheets.values.append({
-          spreadsheetId,
-          range: 'Puente!A:F',
-          valueInputOption: 'RAW',
-          requestBody: {
-            values: [[
-              puenteId,
-              gasto.id,
-              rendicion_id,
-              String(gastosRow ?? ''),
-              ahora,
-              session.email,
-            ]],
-          },
-        })
-        puenteResults.push({ id: puenteId, gasto_id: gasto.id, gastos_row: gastosRow })
+        // Id estable: un reintento produce el MISMO id, y si ya existe en
+        // `Puente` se omite la insercion (no se duplica el registro).
+        const puenteId = puenteIdDeterminista(rendicion_id, gasto.id)
+        if (crucesPendientes.has(gasto.id)) {
+          await sheets.spreadsheets.values.append({
+            spreadsheetId,
+            range: 'Puente!A:F',
+            valueInputOption: 'RAW',
+            requestBody: {
+              values: [[
+                puenteId,
+                gasto.id,
+                rendicion_id,
+                String(gastosRow ?? ''),
+                ahora,
+                session.email,
+              ]],
+            },
+          })
+          filasPuente.push([puenteId, gasto.id, rendicion_id, String(gastosRow ?? ''), ahora, session.email])
+        }
+        puenteResults.push({ id: puenteId, gasto_id: gasto.id, gastos_row: gastosRow, ya_registrado: !crucesPendientes.has(gasto.id) })
       }
     }
 
@@ -334,6 +436,12 @@ export async function POST(request: NextRequest) {
 
     const asiento = generateAsientoContable(rendicion_id, montoBoletas, montoFacturas, rendRow[5], montoAsignadoFondo, config.cuenta_anticipo, config.cuenta_saldo_favor, config.cuenta_saldo_contra)
 
+    // Id estable derivado de la rendicion. `generateAsientoContable` genera uno
+    // aleatorio, que en un reintento duplicaria el asiento; aqui se sustituye
+    // por uno determinista ANTES de escribir, de modo que el paso se pueda
+    // detectar como ya hecho.
+    asiento.id = asientoIdDeterminista(rendicion_id)
+
     const asientoValues: any[][] = []
     asiento.lineas.forEach((linea) => {
       asientoValues.push([
@@ -350,14 +458,78 @@ export async function POST(request: NextRequest) {
       ])
     })
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: 'Asientos!A:J',
-      valueInputOption: 'RAW',
-      requestBody: { values: asientoValues },
+    // Solo se inserta si no existe ya un asiento con este id.
+    const planFinal = planificarPuente({
+      rendicion: [rendicionId, ESTADO_PROCESANDO],
+      filasPuente,
+      filasAsientos,
+      gastosAPasar: gastosParaPasar.map((g) => ({ id: g.gasto.id })),
+      tieneFondo: fondoId && fondoRowIdx !== -1,
     })
 
-    const rendRowNumber = rendRowIndex + 2
+    let asientoInsertado = false
+    if (planFinal.insertarAsiento) {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: 'Asientos!A:J',
+        valueInputOption: 'RAW',
+        requestBody: { values: asientoValues },
+      })
+      asientoInsertado = true
+    }
+
+    // Descuento del fondo: IDENTICO una sola vez, controlado por un marcador
+    // estable en `Puente`. La regla contable no cambia.
+    let fondoDescontado = false
+    if (fondoId && fondoRowIdx !== -1 && planFinal.descontarFondo) {
+      const fondoRow = fondosRows[fondoRowIdx]
+      const nuevoSaldo = calcularNuevoSaldoFondo(parseFloat(fondoRow[3]) || 0, totalRendido)
+
+      // Primero el marcador y luego el saldo: si se cae en medio, el reintento
+      // ve el marcador y NO vuelve a descontar.
+      const marcaFondoId = puenteFondoId(rendicion_id)
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: 'Puente!A:F',
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [[marcaFondoId, MARCA_FONDO, rendicion_id, String(totalRendido), fechaCierre, session.email]],
+        },
+      })
+      filasPuente.push([marcaFondoId, MARCA_FONDO, rendicion_id, String(totalRendido), fechaCierre, session.email])
+
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `Fondos!D${fondoRowIdx + 2}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [[String(nuevoSaldo)]] },
+      })
+      fondoDescontado = true
+    }
+
+    // La rendicion SOLO se marca `aprobada` cuando las operaciones obligatorias
+    // ya quedaron hechas. Si algo falla antes, queda en `procesando` y el
+    // reintento continua.
+    const pasosObligatoriosPendientes: string[] = []
+    if (!asientoInsertado && !asientoYaInsertado) pasosObligatoriosPendientes.push('asiento')
+    if (fondoId && fondoRowIdx !== -1 && !fondoDescontado) pasosObligatoriosPendientes.push('descuento_fondo')
+
+    if (pasosObligatoriosPendientes.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Rendición dejada en estado '${ESTADO_PROCESANDO}': no se pudo completar ${
+            pasosObligatoriosPendientes.join(' y ')
+          }. Reintenta para continuar.`,
+          code: 'partial_processing',
+          estado: ESTADO_PROCESANDO,
+          rendicion_id: rendicion_id,
+          pendiente: pasosObligatoriosPendientes,
+        },
+        { status: 503 }
+      )
+    }
+
     const updatedRend = [
       rendRow[0],
       rendRow[1],
@@ -378,30 +550,19 @@ export async function POST(request: NextRequest) {
       requestBody: { values: [updatedRend] },
     })
 
-    // Descontar saldo del fondo asociado con el TOTAL rendido (boletas+vouchers+facturas)
-    if (fondoId && fondoRowIdx !== -1) {
-      const fondoRow = fondosRows[fondoRowIdx]
-      const saldoActual = parseFloat(fondoRow[3]) || 0
-      const nuevoSaldo = Math.max(0, saldoActual - totalRendido)
-      const fondoRowNumber = fondoRowIdx + 2
-
-      await sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range: `Fondos!D${fondoRowNumber}`,
-        valueInputOption: 'RAW',
-        requestBody: { values: [[String(nuevoSaldo)]] },
-      })
-    }
-
     return NextResponse.json({
       success: true,
+      idempotent: reanudando,
       estado: 'aprobada',
       rendicion_id,
       gastos_pasados: puenteResults.length,
       asiento_id: asiento.id,
       total_rendido: totalRendido,
       saldo_diferencia: asiento.diferencia,
-      mensaje: puenteResults.length > 0
+      fondo_descontado: fondoDescontado,
+      mensaje: reanudando
+        ? `Rendición aprobada. Operación reanudada: no se repitieron pasos ya completados.`
+        : puenteResults.length > 0
         ? `Rendición aprobada. ${puenteResults.length} gasto(s) pasado(s) a GastosNX.`
         : 'Rendición aprobada sin pasar gastos a GastosNX.',
     })
