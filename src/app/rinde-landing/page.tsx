@@ -14,7 +14,7 @@ export default function RindeLandingPage() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowStickyCTA(window.scrollY > 800)
+      setShowStickyCTA(window.scrollY > 200)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -24,7 +24,7 @@ export default function RindeLandingPage() {
   const whatsappLink = `https://wa.me/56977412178?text=${whatsappMessage}`
 
   return (
-    <main className="min-h-screen bg-white text-neutral-900 antialiased">
+    <main id="main-content" className="min-h-screen bg-white text-neutral-900 antialiased">
       {/* ===== NAVBAR ===== */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-white/85 backdrop-blur-xl border-b border-black/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,6 +38,10 @@ export default function RindeLandingPage() {
               </span>
             </div>
             <div className="flex items-center gap-1">
+              <a href="tel:+56977412178" target="_blank" rel="noopener noreferrer" className="hidden md:inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors">
+                <MessageCircle className="w-4 h-4" />
+                +56 9 7741 2178
+              </a>
               <button onClick={() => router.push('/precios')} className="px-5 py-2.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors">Planes y precios</button>
               <button onClick={() => router.push('/login')} className="px-5 py-2.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors">Iniciar Sesión</button>
               <a href="https://gastos.nxchile.com" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex ml-2 px-5 py-2.5 bg-neutral-900 text-white text-sm font-semibold rounded-full hover:bg-neutral-700 transition-colors">
@@ -66,6 +70,10 @@ export default function RindeLandingPage() {
               <p className="text-xl sm:text-2xl font-semibold text-neutral-700 mb-5">
                 Rendiciones que llegan cuadradas, todos los meses.
               </p>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-100 border border-amber-200/60 text-amber-800 rounded-full text-[13px] font-semibold mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                Desde $9.900 / mes · pago anual · IVA incluido
+              </div>
               <p className="text-lg text-neutral-500 mb-8 max-w-xl leading-relaxed">
                 Registra los gastos y respaldos de cada fondo, revisa y aprueba las
                 rendiciones, y conoce el saldo pendiente de cada responsable desde un
@@ -373,7 +381,9 @@ export default function RindeLandingPage() {
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Wallet className="w-6 h-6 text-amber-600" /></div>
               <h3 className="text-base font-semibold text-neutral-900 mb-1.5">Fondo → Gasto → Saldo</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">Cada fondo asignado se追踪 desde su entrega hasta su cierre. Siempre sabes qué fondo está en manos de quién y cuánto falta por justificar.</p>
+              <p className="text-neutral-500 text-sm leading-relaxed">
+                Cada fondo asignado se controla desde su entrega hasta su cierre. Siempre sabes en manos de quién está, cuánto falta por justificar y qué saldo queda pendiente.
+              </p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-black/5">
               <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-4 ring-1 ring-amber-100"><Camera className="w-6 h-6 text-amber-600" /></div>
@@ -784,6 +794,7 @@ export default function RindeLandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm">Contacto</h4>
               <ul className="space-y-2.5 text-sm">
+                <li><a href="tel:+56977412178" className="hover:text-white transition-colors">+56 9 7741 2178</a></li>
                 <li><a href="mailto:rinde@nxchile.com" className="hover:text-white transition-colors">rinde@nxchile.com</a></li>
                 <li><a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">WhatsApp +56 9 7741 2178</a></li>
                 <li><a href="https://www.nxchile.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">nxchile.com</a></li>
@@ -813,20 +824,6 @@ export default function RindeLandingPage() {
           </a>
         </div>
       )}
-
-      {/* ===== WHATSAPP FLOTANTE ===== */}
-      <a
-          href={whatsappLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Contactar por WhatsApp"
-          className="hidden md:flex fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] hover:bg-[#1DA851] text-white rounded-full shadow-2xl shadow-black/20 items-center justify-center transition-all hover:scale-110 group"
-        >
-          <MessageCircle className="w-7 h-7" />
-          <span className="absolute right-full mr-3 px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            ¿Dudas? Escríbenos
-          </span>
-        </a>
     </main>
   )
 }

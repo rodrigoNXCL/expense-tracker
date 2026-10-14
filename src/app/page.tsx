@@ -8,11 +8,10 @@ import Image from 'next/image'
 export default function LandingPage() {
   const router = useRouter()
   const [showStickyCTA, setShowStickyCTA] = useState(false)
-  const [showWhatsApp, setShowWhatsApp] = useState(true)
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowStickyCTA(window.scrollY > 800)
+      setShowStickyCTA(window.scrollY > 200)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -22,7 +21,7 @@ export default function LandingPage() {
   const whatsappLink = `https://wa.me/56977412178?text=${whatsappMessage}`
 
   return (
-    <main className="min-h-screen bg-white text-neutral-900 antialiased">
+    <main id="main-content" className="min-h-screen bg-white text-neutral-900 antialiased" style={{ paddingBottom: '80px' }}>
       {/* ===== NAVBAR ===== */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-white/85 backdrop-blur-xl border-b border-black/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,6 +36,10 @@ export default function LandingPage() {
               className="h-10 w-auto object-contain"
             />
             <div className="flex items-center gap-1">
+              <a href="tel:+56977412178" target="_blank" rel="noopener noreferrer" className="hidden md:inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors">
+                <MessageCircle className="w-4 h-4" />
+                +56 9 7741 2178
+              </a>
               <button onClick={() => router.push('/login')} className="px-5 py-2.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors">Iniciar Sesión</button>
               <button onClick={() => router.push('/registro')} className="ml-2 px-5 py-2.5 bg-neutral-900 text-white text-sm font-semibold rounded-full hover:bg-neutral-700 transition-colors">Ver Planes</button>
             </div>
@@ -882,6 +885,29 @@ export default function LandingPage() {
                 <button onClick={() => router.push('/registro')} className="px-8 py-3.5 bg-transparent text-white text-base font-semibold rounded-full border border-white/25 hover:border-white/50 transition-all">Ver Planes</button>
               </div>
               <p className="text-sm text-neutral-500 mt-8">⏱️ Recibirás tus accesos en máximo 24 hrs hábiles</p>
+              <div className="mt-10 grid sm:grid-cols-3 gap-3 max-w-2xl mx-auto lg:mx-0">
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="px-4 py-3 bg-[#25D366] hover:bg-[#1DA851] text-white rounded-xl text-center transition-all">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <MessageCircle className="w-4 h-4" />
+                    <span className="text-sm font-semibold">WhatsApp</span>
+                  </div>
+                  <p className="text-xs text-emerald-100 mt-1">+56 9 7741 2178</p>
+                </a>
+                <a href="mailto:gastos@nxchile.com?subject=Solicito%20demo%20de%20GastosNX" className="px-4 py-3 bg-white hover:bg-neutral-50 text-neutral-700 rounded-xl text-center transition-all border border-neutral-200">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <FileText className="w-4 h-4 text-neutral-500" />
+                    <span className="text-sm font-semibold">Correo</span>
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1">gastos@nxchile.com</p>
+                </a>
+                <button onClick={() => router.push('/login')} className="px-4 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl text-center transition-all">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <Lock className="w-4 h-4 text-neutral-500" />
+                    <span className="text-sm font-semibold">Ya soy usuario</span>
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1">Entro a mi cuenta</p>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1020,6 +1046,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm">Empresa</h4>
               <ul className="space-y-2.5 text-sm">
+                <li><a href="tel:+56977412178" className="hover:text-white transition-colors">+56 9 7741 2178</a></li>
                 <li><a href="mailto:gastos@nxchile.com" className="hover:text-white transition-colors">gastos@nxchile.com</a></li>
                 <li><button onClick={() => router.push('/login')} className="hover:text-white transition-colors">Iniciar Sesión</button></li>
               </ul>
@@ -1047,22 +1074,6 @@ export default function LandingPage() {
             <MessageCircle className="w-5 h-5" />
           </a>
         </div>
-      )}
-
-      {/* ===== WHATSAPP FLOTANTE ===== */}
-      {showWhatsApp && (
-        <a
-          href={whatsappLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Contactar por WhatsApp"
-          className="hidden md:flex fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] hover:bg-[#1DA851] text-white rounded-full shadow-2xl shadow-emerald-500/30 items-center justify-center transition-all hover:scale-110 group"
-        >
-          <MessageCircle className="w-7 h-7" />
-          <span className="absolute right-full mr-3 px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            ¿Dudas? Escríbenos
-          </span>
-        </a>
       )}
     </main>
   )
