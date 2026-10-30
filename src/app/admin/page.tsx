@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { GASTOS_DASHBOARD } from '@/lib/domains'
+import { construirPayloadUsuario } from '@/lib/admin-usuarios'
 import { getSession, loadSession, logout } from '@/lib/auth'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -105,7 +106,11 @@ email: '',
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        // La empresa y el plan se heredan de la sesion real en el momento del
+        // envio: formData se inicializo al montar, cuando currentUser aun era
+        // null, y quedaba con empresa vacia -> rechazo "Email, contrasena y
+        // nombre de empresa son requeridos" en toda alta.
+        body: JSON.stringify(construirPayloadUsuario(currentUser, formData)),
       })
 
       const result = await response.json()

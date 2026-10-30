@@ -253,6 +253,31 @@ Google Sheets se mantiene como fuente de verdad. No se cambió la fuente, no se 
 #### Restricciones respetadas
 No se tocaron landings, motor de visión, login, permisos ni arquitectura. No se desplegó a producción (pendiente de autorización). No se modificó la fuente de verdad.
 
+### Correccion de alta de usuario desde el dashboard admin (2026-10-14)
+
+**Sintoma:** como admin, al agregar un usuario desde el dashboard de GastosNX,
+el backend respondia siempre `Email, contrasena y nombre de empresa son
+requeridos`.
+
+**Causa raiz:** el estado del formulario se inicializaba al MONTAR el
+componente, cuando `currentUser` todavia era `null` (se carga despues en el
+`useEffect`). El snapshot quedaba con `empresa_nombre: ''` y `plan: 'free'`
+para siempre. La UI mostraba "Empresa heredada" leyendo `currentUser`
+directamente, pero el cuerpo enviado llevaba la empresa vacia, y el backend
+exige los tres campos. Ademas, el backend recalcula `limite_boletas` desde el
+`plan` del body, asi que el plan congelado en `free` tambien alteraba el
+resultado.
+
+**Correccion minima:** nuevo builder puro `construirPayloadUsuario`
+(`src/lib/admin-usuarios.ts`) que toma empresa y plan de la sesion real EN EL
+MOMENTO DEL ENVIO, con fallback al formulario. `handleCreateUser` lo usa. No se
+cambian reglas comerciales: el backend sigue exigiendo email/password/empresa y
+sigue recalculando el limite desde el plan.
+
+**Pruebas:** `tests/admin-crear-usuario.test.mjs` (7 casos) reproduce el
+desfase y confirma el payload corregido. `npm test` 168/168, `tsc` 0 errores,
+build correcto.
+
 ### Correccion del desfase del indicador del plan tras guardar (2026-10-14)
 
 **Sintoma en produccion:** tras guardar, "Gastos Registrados" pasa a 11 pero el
