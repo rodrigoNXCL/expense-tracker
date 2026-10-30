@@ -1,12 +1,16 @@
 # Despliegue del control de cupos (Apps Script + LockService)
 
-**Estado: el script NO está desplegado.** Hasta que se completen los pasos de este
-documento, el guardado de gastos y el puente RindeNX responden `503` y **no
-registran nada**. Es intencional: el sistema falla cerrado antes que escribir sin
-serialización.
+**Estado (2026-10-14): desplegado y operativo.** El Web App "GastosNX - Control de Cupos"
+está publicado y `GAS_LOCK_URL` / `GAS_LOCK_SECRET` están configuradas en Vercel
+Production (confirmado por el owner). La migración de esquema de la sección 4
+**fue ejecutada y verificada**: auditoría de solo lectura del 2026-10-14 confirma
+`idempotency_key` (M) y `estado` (N) presentes en las 4 hojas de empresa
+(NXChile, San Andres SpA, Bastcon, RCC EIRL), con `creado_por` en L y sin
+conflictos.
 
-⚠️ No se modificó el esquema de ninguna hoja. La migración (sección 4) la
-ejecutas tú, de forma explícita.
+Este documento se conserva como **referencia operativa**: contrato del script,
+procedimiento de despliegue/migración (para nuevas hojas de empresa), verificación
+y rotación de credenciales. Las secciones 2–6 describen pasos ya ejecutados.
 
 ---
 
@@ -164,7 +168,7 @@ En **Vercel → Project → Settings → Environment Variables** (scope: **Produ
 | `GAS_LOCK_TIMEOUT_MS` | `20000` | opcional |
 
 Después: **Deployments → Redeploy** del último commit, o redeploy con un nuevo
-commit. Hasta que ambas variables existan, el guardado responde `503`.
+commit. Si faltara alguna variable, el guardado responde `503` (fail-closed).
 
 ## 7. Verificar el endpoint (comandos exactos)
 
@@ -186,11 +190,12 @@ curl -s -X POST "$GAS_LOCK_URL?token=$GAS_LOCK_SECRET" \
 # -> {"status":"schema_not_migrated"}
 ```
 
-## 8. Pruebas desplegadas obligatorias (sección 8)
+## 8. Pruebas desplegadas de concurrencia e idempotencia
 
-La garantía central **no está validada hasta ejecutar esto contra el endpoint
-desplegado**. Los tests locales (`npm test`, 55 casos) prueban la lógica con un
-sandbox, pero **no reproducen la serialización real de Google**.
+Los tests locales (`npm test`, 168 casos) prueban la lógica con un sandbox, pero
+**no reproducen la serialización real de Google**. Esta batería contra el
+endpoint publicado es la **verificación formal recomendada** del despliegue
+actual (no bloqueante para la operación diaria).
 
 | Prueba | Criterio de éxito |
 |---|---|

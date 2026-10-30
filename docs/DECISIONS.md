@@ -391,9 +391,31 @@ Las inconsistencias detectadas durante la revisión completa del proyecto (2026-
 - **Verificación:** build en verde; APIs en el subdominio devuelven JSON (`401` sin sesión); `/api/auth` responde `{"error":"..."}` en `401` en lugar de HTML; páginas y assets que funcionaban conservan su código (`/`, `/precios`, `/login`, `/rinde-landing` → `200`; `/rinde`, `/rinde/fondos` → `307`; `/super-admin` → `404` por diseño).
 - **Referencias:** `src/proxy.ts`, `src/app/login/page.tsx`, `DEPLOY.md` §2.1, `PRUEBAS_LOCALES.md` §11, `CURRENT.md` §2.
 
-### Nota sobre registro de nuevas inconsistencias
+### ADR-014 — Serialización del consumo de cupos con Apps Script LockService
 
-A partir de ahora, cualquier nueva inconsistencia detectada se registrará con el formato ADR de la sección anterior y una referencia cruzada en `CURRENT.md` (sección "Observaciones / temas pendientes").
+- **Fecha:** 2026-10-13 · **Desplegada y operativa:** 2026-10-14
+- **Estado:** ✅ **Desplegada y operativa** (Web App "GastosNX - Control de Cupos" publicado; `GAS_LOCK_URL`/`GAS_LOCK_SECRET` en Vercel Production; migración de esquema ejecutada y verificada por auditoría de solo lectura el 2026-10-14 — `idempotency_key` en M y `estado` en N presentes en las 4 hojas de empresa).
+- **Contexto:** `Usuarios!F` se actualizaba con leer-luego-escribir. Dos peticiones simultáneas leían el mismo valor y escribían el mismo `+1`: se perdía un incremento. Google Sheets **no ofrece incremento atómico de celda ni escritura condicional**, y un bloqueo en memoria no serviría porque las instancias serverless son efímeras y no coordinan entre sí. El commit `38b2ea2` eliminó la pérdida **derivando el consumo de las filas reales de `Gastos`**, lo que corrigió el conteo pero dejó dos problemas: (a) `rinde/puente` escribía en `Gastos` **sin validar el cupo en absoluto**, y (b) un reintento de la misma operación creaba una segunda fila y consumía dos veces.
+- **Decisión:**
+  1. **LockService de Google Apps Script** serializa toda operación que consuma cupos. Dentro de la sección crítica (verificar clave → releer consumo y límite → decidir → escribir) desaparece la carrera. Autorizado expresamente por el usuario; sin KV/Redis ni servicios de terceros.
+  2. **`idempotency_key` viaja en el mismo append que la fila**, de modo que no existe ventana con gasto sin clave. Un reintento devuelve el resultado original sin crear fila ni consumir.
+  3. **Nunca se borra un gasto válido.** Si aun así el consumo superara el límite, se marca `estado='rechazado'` **solo la fila propia**; un registro rechazado no cuenta para el consumo.
+  4. **Falla cerrado.** Sin `GAS_LOCK_URL`/`GAS_LOCK_SECRET`, o si el script no responde, las rutas devuelven `503` y no escriben. Ninguna ruta conserva una escritura alternativa que eluda el bloqueo.
+  5. **`Usuarios!F` es informativo.** El consumo se deriva de las filas, así que un fallo al actualizarlo no pierde nada y la reconciliación lo repara. Ese es el mecanismo de recuperación ante fallos parciales: no se asume que varias escrituras en Sheets sean atómicas.
+  6. **Lecturas controladas:** `/api/auth/me` no lee Sheets si la sesión tiene menos de 5 minutos; al vencer el plazo reconcilia contador y límite y renueva la cookie. Un cambio administrativo puede tardar hasta 5 minutos en reflejarse. Tras un guardado exitoso, la ruta renueva la cookie con los contadores confirmados para que el dashboard no muestre valores previos.
+- **Esquema:** `Gastos` de `A:L` a `A:N` — `M`=`idempotency_key`, `N`=`estado`. Ambas vacías cuentan como estado `ok`, por lo que los registros históricos **no se modificaron** y no requirieron backfill. La migración se ejecutó por acción explícita (`action=migrate`) del owner y quedó verificada.
+- **Alternativas consideradas:**
+  - **Contador atómico externo (Redis/KV):** la más robusta, pero introduce dependencia e infraestructura prohibidas sin autorización.
+  - **Derivación desde filas (`38b2ea2`):** elimina incrementos perdidos sin infraestructura, pero no idempotencia ni serialización estricta. Se mantiene como segunda barrera y como mecanismo de reconciliación.
+  - **Rollback compensatorio:** choca con la regla de no eliminar gastos válidos. Se sustituyó por **neutralizar** (marcar rechazado) en lugar de borrar.
+- **Riesgos aceptados:** latencia adicional de 1–3 s en el guardado (la clave de idempotencia neutraliza el doble clic que provoca); `getScriptLock()` serializa globalmente y no por empresa; la edición manual de `Gastos` en el navegador queda fuera del bloqueo.
+- **Contrato HTTP (2026-10-13):** `ContentService` de Apps Script **no permite fijar códigos de estado**. Todas las respuestas son HTTP 200 con el resultado en `status`. El backend decide por `status`, nunca por el código HTTP, y trata cualquier estado desconocido como fallo. Un estado no reconocido jamás se interpreta como éxito.
+- **Límite autoritativo, sin fallback (2026-10-13):** `save` y `saveBatch` leen `Usuarios!E` **dentro del bloqueo**. Si esa lectura falla, el script **no decide cupo y no escribe nada**: devuelve `limit_unavailable` (HTTP real 200, cuerpo con `status`), que el backend traduce a 503 **reintentable**. **Decisión comercial:** es preferible bloquear temporalmente un guardado honesto a conceder cupo por encima del límite real. El valor que envía el backend es una copia del JWT con TTL de 7 días (reconciliada cada 5 min como mucho); usarlo como fallback significaría que, tras una bajada de límite por parte del administrador, un fallo transitorio de lectura concedería unidades de más. No es un riesgo acotado a 5 minutos. El reintento es seguro porque reutiliza la misma `idempotency_key`.
+- **Idempotencia del puente (2026-10-13):** una clave en `Gastos` no cubría las escrituras posteriores. `asiento.id` pasó de `Date.now()+random()` a determinista por `rendicion_id`; `Puente` usa ids deterministas; el descuento del fondo se protege con un marcador estable escrito antes de modificar el saldo; la rendición se marca `procesando` y solo se aprueba cuando todo quedó completo. **No hay atomicidad** — es identify-and-skip. Sin cambios de esquema ni de la lógica contable.
+- **Refinamientos (2026-10-14):** (a) autenticación robusta: el secreto se acepta de la query string **o** del cuerpo, con `trim` de la propiedad, porque solo leer `e.parameter.token` devolvía `unauthorized` aunque el secreto fuera correcto; (b) esquema defensivo: con fila 1 vacía, `creado_por` ausente o destino ocupado la operación se detiene con `schema_conflict` sin escribir; (c) `saveBatch` valida el lote con la columna `creado_por` **detectada** (no fija) y rechaza claves duplicadas dentro del mismo lote; (d) un `appendRow` fallido devuelve `partial_batch`/`write_failed` con las claves insertadas, fallidas y pendientes, para auditar y recuperar sin duplicar.
+- **Referencias:** `google-apps-script/GastosLock.gs`, `src/lib/gastos-lock.ts`, `src/app/api/save-expense/route.ts`, `src/app/api/rinde/puente/route.ts`, `src/app/api/auth/me/route.ts`, `docs/DEPLOY_GAS_LOCK.md`.
+
+---
 
 ## Guía para registrar nuevas decisiones
 
@@ -406,30 +428,10 @@ Se documenta una decisión cuando:
 - Se introduce un nuevo patrón que afecte a múltiples módulos.
 - Se detecta una inconsistencia de diseño y se decide su resolución (recomendación: además descrita en `CURRENT.md`, sección "Observaciones").
 
-### ADR-014 — Serialización del consumo de cupos con Apps Script LockService
-
-- **Fecha:** 2026-10-13
-- **Estado:** 🟡 **Implementado, pendiente de validación en el sistema desplegado**
-- **Contexto:** `Usuarios!F` se actualizaba con leer-luego-escribir. Dos peticiones simultáneas leían el mismo valor y escribían el mismo `+1`: se perdía un incremento. Google Sheets **no ofrece incremento atómico de celda ni escritura condicional**, y un bloqueo en memoria no serviría porque las instancias serverless son efímeras y no coordinan entre sí. El commit `38b2ea2` eliminó la pérdida **derivando el consumo de las filas reales de `Gastos`**, lo que corrigió el conteo pero dejó dos problemas: (a) `rinde/puente` escribía en `Gastos` **sin validar el cupo en absoluto**, y (b) un reintento de la misma operación creaba una segunda fila y consumía dos veces.
-- **Decisión:**
-  1. **LockService de Google Apps Script** serializa toda operación que consuma cupos. Dentro de la sección crítica (verificar clave → releer consumo y límite → decidir → escribir) desaparece la carrera. Autorizado expresamente por el usuario; sin KV/Redis ni servicios de terceros.
-  2. **`idempotency_key` viaja en el mismo append que la fila**, de modo que no existe ventana con gasto sin clave. Un reintento devuelve el resultado original sin crear fila ni consumir.
-  3. **Nunca se borra un gasto válido.** Si aun así el consumo superara el límite, se marca `estado='rechazado'` **solo la fila propia**; un registro rechazado no cuenta para el consumo.
-  4. **Falla cerrado.** Sin `GAS_LOCK_URL`/`GAS_LOCK_SECRET`, o si el script no responde, las rutas devuelven `503` y no escriben. Ninguna ruta conserva una escritura alternativa que eluda el bloqueo.
-  5. **`Usuarios!F` es informativo.** El consumo se deriva de las filas, así que un fallo al actualizarlo no pierde nada y la reconciliación lo repara. Ese es el mecanismo de recuperación ante fallos parciales: no se asume que varias escrituras en Sheets sean atómicas.
-  6. **Lecturas controladas:** `/api/auth/me` no lee Sheets si la sesión tiene menos de 5 minutos; al vencer el plazo reconcilia contador y límite y renueva la cookie. Un cambio administrativo puede tardar hasta 5 minutos en reflejarse.
-- **Esquema:** `Gastos` de `A:L` a `A:N` — `M`=`idempotency_key`, `N`=`estado`. Ambas vacías cuentan como estado `ok`, por lo que los registros históricos **no se modifican** y no requieren backfill. La migración la ejecuta el usuario de forma explícita (`action=migrate`), nunca automáticamente.
-- **Alternativas consideradas:**
-  - **Contador atómico externo (Redis/KV):** la más robusta, pero introduce dependencia e infraestructura prohibidas sin autorización.
-  - **Derivación desde filas (`38b2ea2`):** elimina incrementos perdidos sin infraestructura, pero no idempotencia ni serialización estricta. Se mantiene como segunda barrera y como mecanismo de reconciliación.
-  - **Rollback compensatorio:** choca con la regla de no eliminar gastos válidos. Se sustituyó por **neutralizar** (marcar rechazado) en lugar de borrar.
-- **Riesgos aceptados:** latencia adicional de 1–3 s en el guardado (la clave de idempotencia neutraliza el doble clic que provoca); `getScriptLock()` serializa globalmente y no por empresa; la edición manual de `Gastos` en el navegador queda fuera del bloqueo.
-- **Contrato HTTP (corrección 2026-10-13):** `ContentService` de Apps Script **no permite fijar códigos de estado**. Todas las respuestas son HTTP 200 con el resultado en `status`. El backend decide por `status`, nunca por el código HTTP, y trata cualquier estado desconocido como fallo. Un estado no reconocido jamás se interpreta como éxito.
-- **Límite autoritativo, sin fallback (corregido 2026-10-13):** `save` y `saveBatch` leen `Usuarios!E` **dentro del bloqueo**. Si esa lectura falla, el script **no decide cupo y no escribe nada**: devuelve `limit_unavailable` (HTTP real 200, cuerpo con `status`), que el backend traduce a 503 **reintentable**. **Decisión comercial:** es preferible bloquearemporalmente un guardado honesto a conceder cupo por encima del límite real. El valor que envía el backend es una copia del JWT con TTL de 7 días (reconciliada cada 5 min como mucho); usarlo como fallback significaría que, tras una bajada de límite por parte del administrador, un fallo transitorio de lectura concedería unidades de más. No es un riesgo acotado a 5 minutos. El reintento es seguro porque reutiliza la misma `idempotency_key`.
-- **Idempotencia del puente (2026-10-13):** una clave en `Gastos` no cubría las escrituras posteriores. `asiento.id` pasó de `Date.now()+random()` a determinista por `rendicion_id`; `Puente` usa ids deterministas; el descuento del fondo se protege con un marcador estable escrito antes de modificar el saldo; la rendición se marca `procesando` y solo se aprueba cuando todo quedó completo. **No hay atomicidad** — es identify-and-skip. Sin cambios de esquema ni de la lógica contable.
-- **Pendiente:** el script no está desplegado. La garantía central **no está validada** hasta ejecutar pruebas concurrentes reales contra el endpoint desplegado (ver `docs/DEPLOY_GAS_LOCK.md` §8).
-- **Referencias:** `google-apps-script/GastosLock.gs`, `src/lib/gastos-lock.ts`, `src/app/api/save-expense/route.ts`, `src/app/api/rinde/puente/route.ts`, `src/app/api/auth/me/route.ts`, `docs/DEPLOY_GAS_LOCK.md`.Antes de registrar:
+Antes de registrar:
 
 - Revisar si la decisión contradice una existente → si es el caso, indicarlo y justificar el cambio.
 - Marcar con estado `Deprecada`/`Superada` la decisión anterior afectada.
 - Mantenerlo en español y consistente con `AI_PROTOCOL.md`.
+
+Cualquier nueva inconsistencia detectada se registra con el formato ADR de esta sección y una referencia cruzada en `CURRENT.md` (secciones "Estado de producción" e "Historial").
